@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
-import Header from "./TableComponent/Header"
 import Table1 from "./TableComponent/Table1";
 import Table2 from "./TableComponent/Table2";
 import Table3 from "./TableComponent/Table3";
 import Table4 from "./TableComponent/Table4";
 import Demo from "./TableComponent/Demo";
+import Home from "./Home";
+import TableLayout from "./TableComponent/layout";
 
 function App() {
   const [data, setData] = useState([]);
@@ -51,27 +52,31 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <Header />
         <Routes>
-          <Route
-            index
-            element={
-              <Table1 api={API_URL} columnsToDisplay={columnsToDisplay} />
-            }
-          />
+          <Route index element={
+            <Home />
+          } />
+          <Route path="/*" element={<TableLayout />}>
+            <Route
+              path="table1"
+              element={
+                <Table1 api={API_URL} columnsToDisplay={columnsToDisplay} />
+              }
+            />
 
-          <Route
-            path="/table2"
-            element={
-              <Table2 api={API_URL} columnsToDisplay={columnsToDisplay} />
-            }
-          />
-          <Route
-            path="/table3"
-            element={<Table3 alertButtons={alertBtns} apiUrl={API_URL} />}
-          />
-          <Route path="/table4" element={<Table4 />} />
-          <Route path="/demo-code" element={<Demo />} />
+            <Route
+              path="table2"
+              element={
+                <Table2 api={API_URL} columnsToDisplay={columnsToDisplay} />
+              }
+            />
+            <Route
+              path="table3"
+              element={<Table3 alertButtons={alertBtns} apiUrl={API_URL} />}
+            />
+            <Route path="table4" element={<Table4 />} />
+            <Route path="demo-code" element={<Demo />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </>

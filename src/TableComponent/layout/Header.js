@@ -6,7 +6,7 @@ const Header = () => {
 
   return (
     <div className="header">
-      <Link className={`header-link ${location === "/" && "active"}`} to="/">
+      <Link className={`header-link ${location === "/table1" && "active"}`} to="/">
         Table 1
       </Link>
       <Link
