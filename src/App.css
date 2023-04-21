@@ -1,0 +1,21 @@
+.header {
+  margin-bottom: 35px;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-link {
+  text-decoration: none;
+  padding: 10px;
+  background: #61dafb;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 5px;
+}
+
+.header-link.active {
+  background: #282c34;
+}
