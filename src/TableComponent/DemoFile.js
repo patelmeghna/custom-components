@@ -1,15 +1,8 @@
+import { faLeftLong, faMagnifyingGlass, faRightLong } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useReducer } from "react";
-import { Container, Table } from "react-bootstrap";
-
-const initialState = {
-  apiResponse: [],
-  tableHeaders: [],
-  pageSize: 10,
-  currentPage: 1,
-  columns: [],
-  openRows: [],
-};
-
+import { Container, FormControl, InputGroup, Table } from "react-bootstrap";
+import '../App.css'
 const reducer = (state, action) => {
   switch (action.type) {
     case "SET_API_RESPONSE":
@@ -20,6 +13,63 @@ const reducer = (state, action) => {
       return { ...state, currentPage: action.payload };
     case "SET_SIZE":
       return { ...state, pageSize: action.payload };
+    case "SELECT_ALL":
+      return {
+        ...state,
+        selectedRows: action.payload.data,
+      };
+    case "DESELECT_ALL":
+      return {
+        ...state,
+        selectedRows: [],
+      };
+    case "SELECT_ROW":
+      return {
+        ...state,
+        selectedRows: [...state.selectedRows, action.payload.row],
+      };
+    case "DESELECT_ROW":
+      return {
+        ...state,
+        selectedRows: state.selectedRows.filter(
+          (row) => row !== action.payload.row
+        ),
+      };
+    case "PREV_PAGE":
+      return {
+        ...state,
+        currentPage:
+          state.currentPage > 1 ? state.currentPage - 1 : state.currentPage,
+        inputPageNumber:
+          state.currentPage > 1 ? state.currentPage - 1 : state.currentPage,
+      };
+    case "NEXT_PAGE":
+      return {
+        ...state,
+        currentPage:
+          state.currentPage < state.totalPages
+            ? state.currentPage + 1
+            : state.currentPage,
+        inputPageNumber:
+          state.currentPage < state.totalPages
+            ? state.currentPage + 1
+            : state.currentPage,
+      };
+
+    case "SET_TOTAL_PAGES":
+      return { ...state, totalPages: action.payload };
+    case "SET_CURRENT_PAGE":
+      return { ...state, currentPage: action.payload };
+    case "SELECT_OPTION":
+      return {
+        ...state,
+        itemsPerPage: action.payload,
+      };
+    case "SET_INPUT_PAGE_NUMBER":
+      return {
+        ...state,
+        inputPageNumber: action.payload,
+      };
     case "INITIALIZE":
       return {
         ...state,
@@ -74,9 +124,20 @@ const reducer = (state, action) => {
 };
 
 function DemoFile(props) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, {
+    apiResponse: [],
+    tableHeaders: [],
+    pageSize: 10,
+    currentPage: 1,
+    columns: [],
+    openRows: [],
+    selectedRows: [],
+    itemsPerPage: 10,
+    totalPages: 0,
+    reset:false
+  });
 
-  const { apiResponse, tableHeaders, pageSize, currentPage } = state;
+  const { apiResponse, tableHeaders, pageSize, currentPage, selectedRows } = state;
 
   const pageCount = Math.ceil(apiResponse.length / pageSize);
 
@@ -85,16 +146,27 @@ function DemoFile(props) {
 
   const currentItems = apiResponse.slice(startIndex, endIndex);
 
-  const handlePageChange = (page) => {
-    dispatch({ type: "SET_PAGE", payload: page });
-  };
+  const pageNumbers = [];
+  for (let i = 1; i <= state.totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  // const handlePageChange = (page) => {
+  //   dispatch({ type: "SET_PAGE", payload: page });
+  // };
 
   const handleSizeChange = (size) => {
     dispatch({ type: "SET_SIZE", payload: size });
   };
 
   const urlPattern = /^(http|https):\/\//i;
+  const totalRecord = state.itemsPerPage * state.totalPages;
 
+
+  useEffect(() => {
+    const totalPages = Math.ceil(state.apiResponse.length / state.itemsPerPage);
+    dispatch({ type: "SET_TOTAL_PAGES", payload: totalPages });
+  }, [state.apiResponse, state.itemsPerPage]);
   useEffect(() => {
     fetch(props.api)
       .then((response) => response.json())
@@ -107,20 +179,82 @@ function DemoFile(props) {
       });
   }, []);
 
+  const handleSelectAll = (event) => {
+    const { checked } = event.target;
+
+    if (checked) {
+      dispatch({ type: "SELECT_ALL", payload: { data: state.apiResponse } });
+    } else {
+      dispatch({ type: "DESELECT_ALL" });
+    }
+  };
+  const handleSelectRow = (event, row) => {
+    const { checked } = event.target;
+    if (checked) {
+      dispatch({ type: "SELECT_ROW", payload: { row } });
+    } else {
+      dispatch({ type: "DESELECT_ROW", payload: { row } });
+      // dispatch({ type: "DESELECT_ALL" });
+    }
+  };
+
+  const handlePrevious = () => {
+    dispatch({ type: "PREV_PAGE" });
+  };
+
+  const handleNext = () => {
+    dispatch({ type: "NEXT_PAGE" });
+  };
+
+  const handlePageChange = (page) => {
+    // dispatch({ type: "SET_PAGE", payload: page });
+    // Validate the input value
+    debugger
+    const numValue = parseInt(state.inputPageNumber, 10);
+    
+    if (isNaN(numValue) || numValue < 1 || numValue > state.totalPages) {
+      
+      return;
+    }
+    
+    dispatch({ type: "SET_CURRENT_PAGE", payload: numValue });
+  };
+
+
+
+  function handleSelectChange(event, type) {
+    
+    const value = event.target.value;
+    
+    if (type === "navigatePage") {
+      
+      // Update input value
+      dispatch({ type: "SET_INPUT_PAGE_NUMBER", payload: value });
+    } else if (type === "itemsPerPage") {
+      
+      dispatch({ type: "SELECT_OPTION", payload: parseInt(value, 10) });
+    }
+  }
+
   return (
     <Container>
       <Table striped bordered>
         <thead>
           <tr>
+            <th><input type="checkbox" onClick={handleSelectAll} /></th>
             {tableHeaders.map((header) => (
               <th key={header}>{header}</th>
             ))}
-            <th></th>
           </tr>
         </thead>
         <tbody>
-          {currentItems.slice(0, pageSize).map((item) => (
+          {currentItems.slice(0, pageSize).map((item, index) => (
             <tr key={item.id}>
+              <th><input
+                type="checkbox"
+                checked={selectedRows.includes(item)}
+                onChange={(event) => handleSelectRow(event, item)}
+              /></th>
               {tableHeaders.map((header) => (
                 <td key={header}>
                   {urlPattern.test(item[header]) ? (
@@ -141,11 +275,12 @@ function DemoFile(props) {
           ))}
         </tbody>
       </Table>
-
-      <div>
+      <div className="row">
+        <div className="column">
+        <div>
         <button
           disabled={state.currentPage === 1}
-          onClick={() => handlePageChange(state.currentPage - 1)}
+          onClick={() => handlePrevious()}
         >
           Previous
         </button>
@@ -198,13 +333,14 @@ function DemoFile(props) {
         )}
         <button
           disabled={state.currentPage === pageCount}
-          onClick={() => handlePageChange(state.currentPage + 1)}
+          onClick={() => handleNext()}
         >
           Next
         </button>
       </div>
-
-      <div>
+        </div>
+        <div className="column">
+        <div>
         <label>Page Size:</label>
         <select
           value={pageSize}
@@ -215,7 +351,46 @@ function DemoFile(props) {
           <option value="50">50</option>
           <option value="100">100</option>
         </select>
+        <span> Records</span>
+        <p className="m-0 fw-bold">Total {totalRecord} record</p>
       </div>
+        </div>
+        <div className="column">
+        <div className="d-flex">
+        <button className="btn btn-primary me-1" onClick={handlePrevious}>
+          <FontAwesomeIcon icon={faLeftLong} />
+        </button>
+        <div className="d-flex">
+          <span>Page </span>
+          <InputGroup>
+            <FormControl
+              type="number"
+              min="1"
+              max={state.totalPages}
+              value={state.inputPageNumber}
+              onChange={(event) =>
+                handleSelectChange(event, "navigatePage")
+              }
+            />
+            <InputGroup.Text>
+              <button className="p-0 btn" onClick={handlePageChange}>
+                <FontAwesomeIcon icon={faMagnifyingGlass} />
+              </button>
+            </InputGroup.Text>
+          </InputGroup>
+
+          <span> of {pageNumbers[pageNumbers.length - 1]}</span>
+        </div>
+        <button className="btn btn-primary ms-1" onClick={handleNext}>
+          <FontAwesomeIcon icon={faRightLong} />
+        </button>
+      </div>
+        </div>
+      </div>
+    
+
+    
+      
     </Container>
   );
 }

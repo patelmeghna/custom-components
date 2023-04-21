@@ -1,0 +1,1 @@
+export const getTableValues = state => state.CustomTable.getTableValues;
