@@ -25,49 +25,11 @@ export default function ModifiedDatePicker(props) {
     showYear: "",
     timeFormat: "AM",
     endTimeFormat: "AM",
+    value: "hi",
+    isFocused: false,
+    isEndFocused: false,
   };
   // initial value :: end
-
-  // default variables :: begin
-  const firstDayOfMonth = new Date(
-    initialState.year,
-    initialState.month,
-    1
-  ).getDay();
-  const lastDayOfMonth = new Date(
-    initialState.year,
-    initialState.month + 1,
-    0
-  ).getDate();
-  const numOfRows = Math.ceil((firstDayOfMonth + lastDayOfMonth) / 7);
-  const prevMonth = initialState.month === 0 ? 11 : initialState.month + 1;
-  const prevYear =
-    initialState.month === 0 ? initialState.year + 1 : initialState.year;
-  const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
-  const currentYear = new Date().getFullYear();
-  const minYear = currentYear - 10;
-  const maxYear = currentYear + 10;
-  const monthFormat = new Intl.DateTimeFormat("en-US", { month: "numeric" });
-  const monthName = monthFormat.format(
-    new Date(initialState.year, initialState.month)
-  );
-  const yearFormat = new Intl.DateTimeFormat("en-US", { year: "numeric" });
-  const yearValue = yearFormat.format(
-    new Date(initialState.year, initialState.month)
-  );
-  const minDate = new Date(props.minimumDate);
-  const maxDate = new Date(props.maximumDate);
-  const defaultDate = new Date(props.defaultSelectedDate);
-  const defaultEnd = new Date(props.defaultEndDate);
-  const defaultMonth = new Date(props.defaultSelectedMonth);
-  const years = [];
-  const yearOptions = [];
-  const hourOptions = [];
-  const minuteOptions = [];
-  let startDate = "";
-  let endDate = "";
-  const id = props.id;
-  // default variables :: end
 
   // reducer :: begin
   const reducer = (state, action) => {
@@ -207,12 +169,12 @@ export default function ModifiedDatePicker(props) {
           selectedEnd: null,
           month: state.currentDate.getMonth(),
           year: state.currentDate.getFullYear(),
-          time: "",
-          endTime: "",
-          selectedHour: "",
-          selectedMinute: "",
-          selectedEndHour: "",
-          selectedEndMinute: "",
+          time: "hh:mm",
+          endTime: "hh:mm",
+          selectedHour: null,
+          selectedMinute: null,
+          selectedEndHour: null,
+          selectedEndMinute: null,
           show: "",
           showClock: "",
           showEndClock: "",
@@ -499,7 +461,7 @@ export default function ModifiedDatePicker(props) {
               };
             }
           }
-          if (state.selectedStart) {
+          if (state.selectedStart !== null) {
             if (state.time === null || state.time === "hh:mm") {
               if (props.clockTimeFormat === "am-pm") {
                 return {
@@ -515,6 +477,25 @@ export default function ModifiedDatePicker(props) {
                   selectedHour: "00",
                   selectedMinute: "00",
                   time: `00:00 ${newTimeFormat}`,
+                  show: toggleTime,
+                };
+              }
+            }
+            if (state.time !== null || state.time !== "hh:mm") {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  selectedHour: state.selectedHour,
+                  selectedMinute: state.selectedMinute,
+                  time: `${state.selectedHour}:${state.selectedMinute} ${newTimeFormat}`,
+                  show: toggleTime,
+                };
+              } else {
+                return {
+                  ...state,
+                  selectedHour: state.selectedHour,
+                  selectedMinute: state.selectedMinute,
+                  time: `${state.selectedHour}:${state.selectedMinute} ${newTimeFormat}`,
                   show: toggleTime,
                 };
               }
@@ -669,6 +650,25 @@ export default function ModifiedDatePicker(props) {
               }
             }
           }
+          if (state.endTime !== null || state.endTime !== "hh:mm") {
+            if (props.clockTimeFormat === "am-pm") {
+              return {
+                ...state,
+                selectedEndHour: state.selectedEndHour,
+                selectedEndMinute: state.selectedEndMinute,
+                endTime: `${state.selectedEndHour}:${state.selectedEndMinute} ${newTimeFormat}`,
+                show: "",
+              };
+            } else {
+              return {
+                ...state,
+                selectedEndHour: state.selectedEndHour,
+                selectedEndMinute: state.selectedEndMinute,
+                endTime: `${state.selectedEndHour}:${state.selectedEndMinute} ${newTimeFormat}`,
+                show: "",
+              };
+            }
+          }
           // end date selection :: end
         }
       // apply event handler :: end
@@ -724,6 +724,58 @@ export default function ModifiedDatePicker(props) {
         };
       // basic functionalities of monthOnly :: end
 
+      // set input value into selectedStart :: begin
+      case "SET_SELECTED_START":
+        return {
+          ...state,
+          show: "",
+          selectedStart: action.payload,
+          month: action.payload.getMonth(),
+          year: action.payload.getFullYear(),
+        };
+      // set input value into selectedStart :: end
+
+      // set input value into selectedStart :: begin
+      case "SET_SELECTED_END":
+        return {
+          ...state,
+          show: "",
+          selectedEnd: action.payload,
+          month: action.payload.getMonth(),
+          year: action.payload.getFullYear(),
+        };
+      // set input value into selectedStart :: end
+
+      case "REMOVE_END_DATE":
+        return { ...state, selectedEnd: null };
+
+      case "FOCUS":
+        return { ...state, isFocused: true };
+      case "BLUR":
+        return { ...state, isFocused: false };
+      case "FOCUS_ON_END":
+        return { ...state, isEndFocused: true };
+      case "BLUR_ON_END":
+        return { ...state, isEndFocused: false };
+
+      // find time from input field text :: begin
+      case "SET_TIME":
+        return {
+          ...state,
+          time: action.payload,
+          showClock: "show",
+        };
+      case "SET_HOUR":
+        return {
+          ...state,
+          selectedHour: action.payload,
+        };
+      case "SET_MINUTE":
+        return {
+          ...state,
+          selectedMinute: action.payload,
+        };
+      // find time from input field text :: end
       default:
         return state;
     }
@@ -752,6 +804,34 @@ export default function ModifiedDatePicker(props) {
     endTimeFormat,
   } = state;
   // reducer hook :: end
+
+  // default variables :: begin
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+  const numOfRows = Math.ceil((firstDayOfMonth + lastDayOfMonth) / 7);
+  const prevMonth = month === 0 ? 11 : month + 1;
+  const prevYear = month === 0 ? year + 1 : year;
+  const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+  const currentYear = new Date().getFullYear();
+  const minYear = currentYear - 20;
+  const maxYear = currentYear + 40;
+  const monthFormat = new Intl.DateTimeFormat("en-US", { month: "numeric" });
+  const monthName = monthFormat.format(new Date(year, month));
+  const yearFormat = new Intl.DateTimeFormat("en-US", { year: "numeric" });
+  const yearValue = yearFormat.format(new Date(year, month));
+  const minDate = new Date(props.minimumDate);
+  const maxDate = new Date(props.maximumDate);
+  const defaultDate = new Date(props.defaultSelectedDate);
+  const defaultEnd = new Date(props.defaultEndDate);
+  const defaultMonth = new Date(props.defaultSelectedMonth);
+  const years = [];
+  const yearOptions = [];
+  const hourOptions = [];
+  const minuteOptions = [];
+  let startDate = "";
+  let endDate = "";
+  const id = props.id;
+  // default variables :: end
 
   // handle event listeners :: begin
   const handleFormatChange = () => {
@@ -844,6 +924,23 @@ export default function ModifiedDatePicker(props) {
 
   // useEffect hook :: begin
   useEffect(() => {
+    props.onChange && props.onChange(selectedStart);
+  }, [selectedStart]);
+
+  useEffect(() => {
+    props.onEndChange && props.onEndChange(selectedEnd);
+  }, [selectedEnd]);
+
+  useEffect(() => {
+    if (
+      props.selectedMode !== "range" ||
+      props.selectedMode !== "dateTimeRange"
+    ) {
+      dispatch({ type: "REMOVE_END_DATE" });
+    }
+  }, [props.selectedMode]);
+
+  useEffect(() => {
     document.addEventListener("click", handleDocumentClick);
     return () => {
       document.removeEventListener("click", handleDocumentClick);
@@ -932,10 +1029,24 @@ export default function ModifiedDatePicker(props) {
     ? "."
     : "";
 
+  let startDateNumber;
+  if (selectedStart?.getDate() < 10) {
+    startDateNumber = `0${selectedStart?.getDate()}`;
+  } else {
+    startDateNumber = selectedStart?.getDate();
+  }
+
+  let startMonthNumber;
+  if (selectedStart?.getMonth() < 9) {
+    startMonthNumber = `0${selectedStart?.getMonth() + 1}`;
+  } else {
+    startMonthNumber = selectedStart?.getMonth() + 1;
+  }
+
   const startDateFormat = (str, separator) => {
     const stringMap = {
-      DD: selectedStart?.getDate() || "DD",
-      MM: selectedStart?.getMonth() + 1 || "MM",
+      DD: startDateNumber || "DD",
+      MM: startMonthNumber || "MM",
       YYYY: selectedStart?.getFullYear() || "YYYY",
     };
 
@@ -948,10 +1059,24 @@ export default function ModifiedDatePicker(props) {
 
   startDate = startDateFormat(str, separator);
 
+  let endDateNumber;
+  if (selectedEnd?.getDate() < 10) {
+    endDateNumber = `0${selectedEnd?.getDate()}`;
+  } else {
+    endDateNumber = selectedEnd?.getDate();
+  }
+
+  let endMonthNumber;
+  if (selectedEnd?.getMonth() < 9) {
+    endMonthNumber = `0${selectedEnd?.getMonth() + 1}`;
+  } else {
+    endMonthNumber = selectedEnd?.getMonth() + 1;
+  }
+
   const endDateFormat = (str, separator) => {
     const stringMap = {
-      DD: selectedEnd?.getDate() || "DD",
-      MM: selectedEnd?.getMonth() + 1 || "MM",
+      DD: endDateNumber || "DD",
+      MM: endMonthNumber || "MM",
       YYYY: selectedEnd?.getFullYear() || "YYYY",
     };
 
@@ -987,8 +1112,113 @@ export default function ModifiedDatePicker(props) {
   }
   // logics for calendar :: end
 
+  /* =================================
+     =================================
+     function for input value :: begin
+     =================================
+     ================================= */
+  const handleDateChange = (event) => {
+    const value = event.target.value;
+    const format = props.format || "DD/MM/YYYY";
+
+    const str = format
+      .replace("DD", "\\d{2}")
+      .replace("MM", "\\d{2}")
+      .replace("YYYY", "\\d{4}");
+
+    const regex = new RegExp(`^${str}$`);
+
+    if (value.match(regex)) {
+      const dd = value.slice(format.indexOf("DD"), format.indexOf("DD") + 2);
+      const mm = value.slice(format.indexOf("MM"), format.indexOf("MM") + 2);
+      const yyyy = value.slice(
+        format.indexOf("YYYY"),
+        format.indexOf("YYYY") + 4
+      );
+
+      const dateArr = [yyyy, mm, dd];
+      const rearrangedDateStr = dateArr.join("-");
+
+      dispatch({
+        type: "SET_SELECTED_START",
+        payload: new Date(rearrangedDateStr),
+      });
+    }
+
+    const timeRegex = /(\d{2}:\d{2})/;
+
+    const matches = value.match(timeRegex);
+
+    console.log(matches);
+
+    if (matches && matches.length > 1) {
+      var time = matches[0];
+      var hour = matches[1];
+      // var minute = matches[2];
+      console.log("Time: " + time); // Output: Time: 09:30
+      console.log("Hour: " + hour); // Output: Hour: 09
+      // console.log("Minute: " + minute); // Output: Minute: 30
+
+      dispatch({ type: "SET_TIME", payload: time });
+    } else {
+      console.log("No time found in the input text.");
+    }
+  };
+  function handleFocus() {
+    dispatch({ type: "FOCUS" });
+    props.onFocus && props.onFocus();
+  }
+
+  function handleBlur() {
+    dispatch({ type: "BLUR" });
+    props.onBlur && props.onBlur();
+  }
+
+  const handleEndDateChange = (event) => {
+    const value = event.target.value;
+    const format = props.format || "DD/MM/YYYY";
+
+    const str = format
+      .replace("DD", "\\d{2}")
+      .replace("MM", "\\d{2}")
+      .replace("YYYY", "\\d{4}");
+
+    const regex = new RegExp(`^${str}$`);
+
+    if (value.match(regex)) {
+      const dd = value.slice(format.indexOf("DD"), format.indexOf("DD") + 2);
+      const mm = value.slice(format.indexOf("MM"), format.indexOf("MM") + 2);
+      const yyyy = value.slice(
+        format.indexOf("YYYY"),
+        format.indexOf("YYYY") + 4
+      );
+
+      const dateArr = [yyyy, mm, dd];
+      const rearrangedDateStr = dateArr.join("-");
+
+      dispatch({
+        type: "SET_SELECTED_END",
+        payload: new Date(rearrangedDateStr),
+      });
+    }
+  };
+  function handleEndFocus() {
+    dispatch({ type: "FOCUS_ON_END" });
+    props.onEndFocus && props.onEndFocus();
+  }
+
+  function handleEndBlur() {
+    dispatch({ type: "BLUR_ON_END" });
+    props.onEndBlur && props.onEndBlur();
+  }
+
+  /* =================================
+     =================================
+     function for input value :: end
+     =================================
+     ================================= */
   return (
-    <div className={props.className}>
+    <div className={props.className} style={props.style}>
       <div className="calendar-wrap" id={id}>
         <div className={`calendar ${show}`}>
           <>
@@ -1239,17 +1469,29 @@ export default function ModifiedDatePicker(props) {
             onClick={handleShow}
             disabled={props.isDisabled || props.isReadOnly}
           >
-            <input
-              type="text"
-              value={`${selectedStart ? `${startDate} ` : ""}${
-                props.selectedMode ? (showClock !== "" ? time : "") : ""
-              }`}
-              onChange={(e) => e.preventDefault}
-              onBlur={props.onBlur}
-              onFocus={props.onFocus}
-              className={selectedStart ? "selected" : ""}
-              placeholder={props.format ? props.format : "MM/DD/YYYY"}
-            />
+            {state.isFocused ? (
+              <input
+                style={{ padding: "12px" }}
+                type="text"
+                onChange={handleDateChange}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                className={selectedStart ? "selected" : ""}
+                placeholder={props.format ? props.format : "DD/MM/YYYY"}
+              />
+            ) : (
+              <input
+                style={{ padding: "12px" }}
+                type="text"
+                value={`${selectedStart ? startDate : ""}${
+                  props.selectedMode ? (showClock !== "" ? ` ${time}` : "") : ""
+                }`}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                className={selectedStart ? "selected" : ""}
+                placeholder={props.format ? props.format : "DD/MM/YYYY"}
+              />
+            )}
           </div>
           <div
             className={
@@ -1263,19 +1505,37 @@ export default function ModifiedDatePicker(props) {
             onClick={handleShowEnd}
             disabled={props.isDisabled || props.isReadOnly}
           >
-            <input
-              type="text"
-              value={`${
-                selectedEnd >= selectedStart && selectedEnd ? `${endDate} ` : ""
-              }${
-                props.selectedMode ? (showEndClock !== "" ? endTime : "") : ""
-              }`}
-              onChange={(e) => e.preventDefault}
-              onBlur={props.onBlur}
-              onFocus={props.onFocus}
-              className={selectedEnd ? "selected" : ""}
-              placeholder={props.format ? props.format : "MM/DD/YYYY"}
-            />
+            {state.isEndFocused ? (
+              <input
+                style={{ padding: "12px" }}
+                type="text"
+                onChange={handleEndDateChange}
+                onBlur={handleEndBlur}
+                onFocus={handleEndFocus}
+                className={selectedEnd ? "selected" : ""}
+                placeholder={props.format ? props.format : "DD/MM/YYYY"}
+              />
+            ) : (
+              <input
+                style={{ padding: "12px" }}
+                type="text"
+                value={`${
+                  selectedEnd >= selectedStart && selectedEnd
+                    ? `${endDate}`
+                    : ""
+                }${
+                  props.selectedMode
+                    ? showEndClock !== ""
+                      ? ` ${endTime}`
+                      : ""
+                    : ""
+                }`}
+                onBlur={handleEndBlur}
+                onFocus={handleEndFocus}
+                className={selectedEnd ? "selected" : ""}
+                placeholder={props.format ? props.format : "DD/MM/YYYY"}
+              />
+            )}
           </div>
         </div>
         {/* ===== display value :: end ===== */}
@@ -1306,16 +1566,15 @@ const MonthOnly = (props) => {
   };
   const years = [];
   const id = props.id;
-  const defaultMonth = new Date(props.defaultSelectedMonth);
 
   const reducer = (state, action) => {
     switch (action.type) {
       case "MONTH_IN_MONTHONLY":
         return {
           ...state,
-          month: defaultMonth.getMonth(),
-          presentYear: defaultMonth.getFullYear(),
-          changedYear: defaultMonth.getFullYear(),
+          month: state.defaultMonth.getMonth(),
+          presentYear: state.defaultMonth.getFullYear(),
+          changedYear: state.defaultMonth.getFullYear(),
         };
       case "PREVIOUS_YEAR":
         if (state.showYear === "show") {

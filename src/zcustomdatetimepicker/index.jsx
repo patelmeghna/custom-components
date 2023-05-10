@@ -9,7 +9,7 @@ function DatePicker() {
 
   return (
     <Container className="py-5">
-      <ModifiedDatePicker id="date-picker-1" />
+      <ModifiedDatePicker id="date-picker-1" selectedMode="dateTime" />
     </Container>
   );
 }
