@@ -181,32 +181,48 @@ const Table1 = ({ api, columnsToDisplay }) => {
     dispatch({ type: "SET_CURRENT_PAGE", payload: pageNumber });
   };
 
+  let visibleColumns = columns;
+  let hiddenColumns;
+
+  // const handleHidden
+
+  console.log(visibleColumns);
+
   return (
     <>
-      <Container className="d-none">
-        <Card>
-          <Card.Body>
-            <Row>
-              <Col md="6">
+      <Container>
+        <Row>
+          <Col md="5">
+            <Card>
+              <Card.Title className="p-3 border-bottom">
+                <h4>Hidden Columns</h4>
+              </Card.Title>
+              <Card.Body>
                 {unselectedColumns.map((column, index) => (
                   // Display unselected columns
-                  <h5 key={index}>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={column.selected}
-                        onChange={(event) =>
-                          handleToggleColumn(event, column.name)
-                        }
-                      />
-                      <span>{column.name}</span>
-                    </label>
+                  <h5
+                    key={index}
+                    onClick={(event) => handleToggleColumn(event, column.name)}
+                  >
+                    {column.name}
                   </h5>
                 ))}
-              </Col>
-              <Col md="6">
-                {columns.map((column, index) => (
-                  <h4
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md="2">
+            <button>Show</button>
+            <button>Hide</button>
+          </Col>
+          <Col md="5">
+            <Card>
+              <Card.Title className="p-3 border-bottom">
+                <h4>Visible Columns</h4>
+              </Card.Title>
+              <Card.Body>
+                {selectedColumns.map((column, index) => (
+                  // Display selected columns
+                  <h5
                     key={index}
                     draggable
                     onDragStart={(event) => {
@@ -220,29 +236,15 @@ const Table1 = ({ api, columnsToDisplay }) => {
                       const hoverIndex = index;
                       handleRearrangeColumns(dragIndex, hoverIndex);
                     }}
+                    onClick={(event) => handleToggleColumn(event, column.name)}
                   >
                     {column.name}
-                  </h4>
-                ))}
-                {selectedColumns.map((column, index) => (
-                  // Display selected columns
-                  <h5 key={index}>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={column.selected}
-                        onChange={(event) =>
-                          handleToggleColumn(event, column.name)
-                        }
-                      />
-                      <span>{column.name}</span>
-                    </label>
                   </h5>
                 ))}
-              </Col>
-            </Row>
-          </Card.Body>
-        </Card>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
       </Container>
 
       <Container className="py-5">
