@@ -27,7 +27,8 @@
 td.selected,
 .start-range,
 .first-date,
-.last-date {
+.last-date,
+.start-range.disabled {
   background-color: #5cb85c;
   color: #fff;
 }
@@ -237,6 +238,8 @@ button svg {
 
 .table-btn:disabled {
   color: #828282;
+  background-color: #cacaca;
+  cursor: not-allowed;
 }
 
 .clock-wrap {

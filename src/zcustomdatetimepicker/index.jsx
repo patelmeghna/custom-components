@@ -1,15 +1,28 @@
-import React from "react";
-import ModifiedDatePicker from "./ModifiedDatePicker";
+import React, { useState } from "react";
+import VDateTimePicker from "./VDateTimePicker";
 import { Container } from "react-bootstrap";
+import VMonth from "./VMonth";
 
 function DatePicker() {
-  // const handleClick = (data) => {
-  //   console.log(data);
-  // };
-
+  const [isDisabled, setIsDisabled] = useState(false);
   return (
     <Container className="py-5">
-      <ModifiedDatePicker id="date-picker-1" selectedMode="dateTime" />
+      <VDateTimePicker
+        id="date-picker-1"
+        className="custom-date-picker"
+        minimumDate={"2020-02-12"}
+      />
+
+      <h4>Month only</h4>
+
+      <VMonth
+        defaultSelectedMonth={"2023-07"}
+        id="month"
+        disableControl
+        setIsDisabled={setIsDisabled}
+        isDisabled={isDisabled}
+        resetControl
+      />
     </Container>
   );
 }

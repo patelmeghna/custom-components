@@ -1,7 +1,7 @@
 import "./zcustomdatetimepicker.css";
 import { useReducer, useEffect } from "react";
 
-export default function ModifiedDatePicker(props) {
+export default function VDateTimePicker(props) {
   // initial value :: begin
   const initialState = {
     currentDate: new Date(),
@@ -30,6 +30,24 @@ export default function ModifiedDatePicker(props) {
     isEndFocused: false,
   };
   // initial value :: end
+
+  let minDate;
+  const maxDate = new Date(props.maximumDate);
+  const defaultDate = new Date(props.defaultSelectedDate);
+  const defaultEnd = new Date(props.defaultEndDate);
+  const defaultMonth = new Date(props.defaultSelectedMonth);
+
+  if (typeof props.minimumDate !== "boolean") {
+    const date = `${new Date(props.minimumDate).getFullYear()}-${new Date(
+      props.minimumDate
+    ).getMonth()}-${new Date(props.minimumDate).getDate()}`;
+    minDate = new Date(date);
+  } else {
+    const date = `${new Date().getFullYear()}-${new Date().getMonth()}-${new Date().getDate()}`;
+    minDate = new Date(date);
+  }
+
+  console.log(minDate);
 
   // reducer :: begin
   const reducer = (state, action) => {
@@ -139,15 +157,29 @@ export default function ModifiedDatePicker(props) {
         };
 
       case "TOGGLE_SHOW":
+        let showStart = !state.show;
+        if (props.isDisabled || props.isReadOnly) {
+          showStart = "";
+        } else {
+          showStart =
+            state.show === "" || state.show === "show-end" ? "show" : "";
+        }
         return {
           ...state,
-          show: state.show === "" ? "show" : "",
+          show: showStart,
         };
 
       case "TOGGLE_SHOW_END":
+        let showEnd = !state.show;
+        if (props.isDisabled || props.isReadOnly) {
+          showEnd = "";
+        } else {
+          showEnd =
+            state.show === "" || state.show === "show" ? "show-end" : "";
+        }
         return {
           ...state,
-          show: state.show === "" ? "show-end" : "",
+          show: showEnd,
         };
 
       case "TOGGLE_SHOW_CLOCK":
@@ -244,7 +276,7 @@ export default function ModifiedDatePicker(props) {
       case "CHANGE_MONTH":
         let newChangeMonth = parseInt(action.payload);
         let newSelectedMonth = parseInt(action.payload);
-        console.log(minDate.getFullYear());
+
         if (minDate.getFullYear() === state.year) {
           if (minDate.getMonth() > newChangeMonth) {
             newChangeMonth = minDate.getMonth();
@@ -735,7 +767,7 @@ export default function ModifiedDatePicker(props) {
         };
       // set input value into selectedStart :: end
 
-      // set input value into selectedStart :: begin
+      // set input value into selectedEnd :: begin
       case "SET_SELECTED_END":
         return {
           ...state,
@@ -744,7 +776,7 @@ export default function ModifiedDatePicker(props) {
           month: action.payload.getMonth(),
           year: action.payload.getFullYear(),
         };
-      // set input value into selectedStart :: end
+      // set input value into selectedEnd :: end
 
       case "REMOVE_END_DATE":
         return { ...state, selectedEnd: null };
@@ -760,22 +792,76 @@ export default function ModifiedDatePicker(props) {
 
       // find time from input field text :: begin
       case "SET_TIME":
+        let startTimeFormat = state.timeFormat;
+        let startHour = state.selectedHour;
+        let startMinute = state.selectedMinute;
+        if (props.clockTimeFormat === "am-pm") {
+          startTimeFormat = action.format;
+          startMinute = action.minute;
+          if (action.hour <= 12) {
+            startHour = action.hour;
+          } else {
+            startMinute = action.minute;
+          }
+        } else {
+          startHour = action.hour;
+          startMinute = action.minute;
+          startTimeFormat = "";
+        }
         return {
           ...state,
-          time: action.payload,
+          selectedHour: startHour,
+          selectedMinute: startMinute,
+          timeFormat: startTimeFormat,
+          time: `${state.selectedHour}:${state.selectedMinute} ${state.timeFormat}`,
           showClock: "show",
-        };
-      case "SET_HOUR":
-        return {
-          ...state,
-          selectedHour: action.payload,
-        };
-      case "SET_MINUTE":
-        return {
-          ...state,
-          selectedMinute: action.payload,
+          show: "",
         };
       // find time from input field text :: end
+
+      // find end time from input field text :: begin
+      case "SET_END_TIME":
+        let endTimeFormat = state.endTimeFormat;
+        let endHour = state.selectedEndHour;
+        let endMinute = state.selectedEndMinute;
+        if (props.clockTimeFormat === "am-pm") {
+          endTimeFormat = action.format;
+          endMinute = action.minute;
+          if (action.hour <= 12) {
+            endHour = action.hour;
+          } else {
+            endMinute = action.minute;
+          }
+        } else {
+          endHour = action.hour;
+          endMinute = action.minute;
+          endTimeFormat = "";
+        }
+        return {
+          ...state,
+          showEndClock: "show",
+          show: "",
+          selectedEndHour: endHour,
+          selectedEndMinute: endMinute,
+          endTime: `${state.selectedEndHour}:${state.selectedEndMinute} ${state.endTimeFormat}`,
+        };
+      case "SET_END_HOUR":
+        return {
+          ...state,
+          selectedEndHour: action.payload,
+        };
+      case "SET_END_MINUTE":
+        return {
+          ...state,
+          selectedEndMinute: action.payload,
+        };
+      case "SET_END_TIME_FORMAT":
+        return {
+          ...state,
+          endTimeFormat: action.payload,
+          show: "",
+        };
+      // find end time from input field text :: end
       default:
         return state;
     }
@@ -815,15 +901,6 @@ export default function ModifiedDatePicker(props) {
   const currentYear = new Date().getFullYear();
   const minYear = currentYear - 20;
   const maxYear = currentYear + 40;
-  const monthFormat = new Intl.DateTimeFormat("en-US", { month: "numeric" });
-  const monthName = monthFormat.format(new Date(year, month));
-  const yearFormat = new Intl.DateTimeFormat("en-US", { year: "numeric" });
-  const yearValue = yearFormat.format(new Date(year, month));
-  const minDate = new Date(props.minimumDate);
-  const maxDate = new Date(props.maximumDate);
-  const defaultDate = new Date(props.defaultSelectedDate);
-  const defaultEnd = new Date(props.defaultEndDate);
-  const defaultMonth = new Date(props.defaultSelectedMonth);
   const years = [];
   const yearOptions = [];
   const hourOptions = [];
@@ -832,6 +909,33 @@ export default function ModifiedDatePicker(props) {
   let endDate = "";
   const id = props.id;
   // default variables :: end
+
+  // form variables
+  const startTime =
+    props.selectedMode === "dateTime" || props.selectedMode === "dateTimeRange"
+      ? `${selectedHour}:${selectedMinute}`
+      : "";
+  const startTimeFormat = props.clockTimeFormat === "am-pm" ? timeFormat : "";
+  const startInputValue =
+    selectedStart &&
+    `${selectedStart.getDate()}/${
+      selectedStart.getMonth() + 1
+    }/${selectedStart.getFullYear()} ${startTime} ${startTimeFormat}`;
+
+  // ===============================================
+
+  const endTimeValue =
+    props.selectedMode === "dateTime" || props.selectedMode === "dateTimeRange"
+      ? `${selectedEndHour}:${selectedEndMinute}`
+      : "";
+  const endTimeFormatValue =
+    props.clockTimeFormat === "am-pm" ? endTimeFormat : "";
+  const endInputValue =
+    selectedEnd &&
+    `${selectedEnd.getDate()}/${
+      selectedEnd.getMonth() + 1
+    }/${selectedEnd.getFullYear()} ${endTimeValue} ${endTimeFormatValue}`;
+  // form variables
 
   // handle event listeners :: begin
   const handleFormatChange = () => {
@@ -924,12 +1028,12 @@ export default function ModifiedDatePicker(props) {
 
   // useEffect hook :: begin
   useEffect(() => {
-    props.onChange && props.onChange(selectedStart);
-  }, [selectedStart]);
+    props.onChange && props.onChange(startInputValue);
+  }, [selectedStart, selectedHour, selectedMinute, timeFormat]);
 
   useEffect(() => {
-    props.onEndChange && props.onEndChange(selectedEnd);
-  }, [selectedEnd]);
+    props.onEndChange && props.onEndChange(endInputValue);
+  }, [selectedEnd, selectedEndHour, selectedEndMinute, endTimeFormat]);
 
   useEffect(() => {
     if (
@@ -996,26 +1100,29 @@ export default function ModifiedDatePicker(props) {
 
   if (props.clockTimeFormat) {
     for (let i = 1; i <= 12; i++) {
+      const value = i < 10 ? `0${i}` : i.toString();
       hourOptions.push(
-        <option value={i} key={i}>
-          {i}
+        <option value={value} key={value}>
+          {value}
         </option>
       );
     }
   } else {
     for (let i = 0; i < 24; i++) {
+      const value = i < 10 ? `0${i}` : i.toString();
       hourOptions.push(
-        <option value={i} key={i}>
-          {i}
+        <option value={value} key={value}>
+          {value}
         </option>
       );
     }
   }
 
   for (let i = 0; i < 60; i++) {
+    const value = i < 10 ? `0${i}` : i.toString();
     minuteOptions.push(
-      <option value={i} key={i}>
-        {i}
+      <option value={value} key={value}>
+        {value}
       </option>
     );
   }
@@ -1149,21 +1256,16 @@ export default function ModifiedDatePicker(props) {
 
     const matches = value.match(timeRegex);
 
-    console.log(matches);
-
     if (matches && matches.length > 1) {
       var time = matches[0];
-      var hour = matches[1];
-      // var minute = matches[2];
-      console.log("Time: " + time); // Output: Time: 09:30
-      console.log("Hour: " + hour); // Output: Hour: 09
-      // console.log("Minute: " + minute); // Output: Minute: 30
+      var hour = value.substr(matches.index, 2);
+      var minute = value.substr(matches.index + 3, 2);
+      const amPm = value.substr(matches.index + 6, 2);
 
-      dispatch({ type: "SET_TIME", payload: time });
-    } else {
-      console.log("No time found in the input text.");
+      dispatch({ type: "SET_TIME", format: amPm, hour, minute });
     }
   };
+
   function handleFocus() {
     dispatch({ type: "FOCUS" });
     props.onFocus && props.onFocus();
@@ -1173,6 +1275,8 @@ export default function ModifiedDatePicker(props) {
     dispatch({ type: "BLUR" });
     props.onBlur && props.onBlur();
   }
+
+  //  =========================================================
 
   const handleEndDateChange = (event) => {
     const value = event.target.value;
@@ -1200,6 +1304,19 @@ export default function ModifiedDatePicker(props) {
         type: "SET_SELECTED_END",
         payload: new Date(rearrangedDateStr),
       });
+    }
+
+    const timeRegex = /(\d{2}:\d{2})/;
+
+    const matches = value.match(timeRegex);
+
+    if (matches && matches.length > 1) {
+      var time = matches[0];
+      var hour = value.substr(matches.index, 2);
+      var minute = value.substr(matches.index + 3, 2);
+      const amPm = value.substr(matches.index + 6, 2);
+
+      dispatch({ type: "SET_END_TIME", format: amPm, hour, minute });
     }
   };
   function handleEndFocus() {
@@ -1233,7 +1350,11 @@ export default function ModifiedDatePicker(props) {
                     onChange={handleMonthChange}
                   >
                     {months.map((month, index) => {
-                      return <option value={index}>{month}</option>;
+                      return (
+                        <option key={index} value={index}>
+                          {month}
+                        </option>
+                      );
                     })}
                   </select>
 
@@ -1371,7 +1492,7 @@ export default function ModifiedDatePicker(props) {
                           ? handleShowClock
                           : show === "show-end"
                           ? handleShowEndClock
-                          : ""
+                          : undefined
                       }
                     >
                       🕒
@@ -1478,11 +1599,13 @@ export default function ModifiedDatePicker(props) {
                 onBlur={handleBlur}
                 className={selectedStart ? "selected" : ""}
                 placeholder={props.format ? props.format : "DD/MM/YYYY"}
+                disabled={props.isDisabled || props.isReadOnly}
               />
             ) : (
               <input
                 style={{ padding: "12px" }}
                 type="text"
+                onChange={handleDateChange}
                 value={`${selectedStart ? startDate : ""}${
                   props.selectedMode ? (showClock !== "" ? ` ${time}` : "") : ""
                 }`}
@@ -1490,6 +1613,7 @@ export default function ModifiedDatePicker(props) {
                 onBlur={handleBlur}
                 className={selectedStart ? "selected" : ""}
                 placeholder={props.format ? props.format : "DD/MM/YYYY"}
+                disabled={props.isDisabled || props.isReadOnly}
               />
             )}
           </div>
@@ -1514,11 +1638,14 @@ export default function ModifiedDatePicker(props) {
                 onFocus={handleEndFocus}
                 className={selectedEnd ? "selected" : ""}
                 placeholder={props.format ? props.format : "DD/MM/YYYY"}
+                disabled={props.isDisabled || props.isReadOnly}
               />
             ) : (
               <input
                 style={{ padding: "12px" }}
                 type="text"
+                onChange={handleEndDateChange}
+                disabled={props.isDisabled || props.isReadOnly}
                 value={`${
                   selectedEnd >= selectedStart && selectedEnd
                     ? `${endDate}`
@@ -1555,283 +1682,6 @@ export default function ModifiedDatePicker(props) {
   );
 }
 
-const MonthOnly = (props) => {
-  const initialState = {
-    show: "",
-    presentYear: new Date().getFullYear(),
-    changedYear: new Date().getFullYear(),
-    showYear: "",
-    month: new Date().getMonth(),
-    selectedMonth: new Date().getMonth(),
-  };
-  const years = [];
-  const id = props.id;
-
-  const reducer = (state, action) => {
-    switch (action.type) {
-      case "MONTH_IN_MONTHONLY":
-        return {
-          ...state,
-          month: state.defaultMonth.getMonth(),
-          presentYear: state.defaultMonth.getFullYear(),
-          changedYear: state.defaultMonth.getFullYear(),
-        };
-      case "PREVIOUS_YEAR":
-        if (state.showYear === "show") {
-          return {
-            ...state,
-            presentYear: state.presentYear - 12,
-            changedYear: state.changedYear - 12,
-          };
-        } else {
-          if (state.changedYear === state.presentYear) {
-            return {
-              ...state,
-              presentYear: state.presentYear - 12,
-              changedYear: state.changedYear - 1,
-            };
-          } else {
-            return {
-              ...state,
-              changedYear: state.changedYear - 1,
-            };
-          }
-        }
-
-      case "NEXT_YEAR":
-        if (state.showYear === "show") {
-          return {
-            ...state,
-            presentYear: state.presentYear + 12,
-            changedYear: state.changedYear + 12,
-          };
-        } else {
-          if (state.changedYear === state.presentYear + 11) {
-            return {
-              ...state,
-              presentYear: state.presentYear + 12,
-              changedYear: state.changedYear + 1,
-            };
-          } else {
-            return {
-              ...state,
-              changedYear: state.changedYear + 1,
-            };
-          }
-        }
-
-      case "TOGGLE_SHOW":
-        return {
-          ...state,
-          show: state.show === "" ? "show" : "",
-        };
-
-      case "TOGGLE_YEAR":
-        return {
-          ...state,
-          showYear: state.showYear === "" ? "show" : "",
-        };
-
-      case "CHANGE_YEAR":
-        return {
-          ...state,
-          changedYear: action.payload,
-        };
-
-      case "SELECT_MONTH":
-        return {
-          ...state,
-          month: action.selectedMonth,
-          selectedMonth: action.selectedMonth,
-          show: "",
-        };
-
-      default:
-        return state;
-    }
-  };
-
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const { month, show, showYear, presentYear, changedYear, selectedMonth } =
-    state;
-
-  const handleShow = () => {
-    if (!props.isDisabled || !props.isReadOnly) {
-      dispatch({ type: "TOGGLE_SHOW" });
-    }
-  };
-
-  const handleSelectYear = (year) => {
-    dispatch({ type: "CHANGE_YEAR", payload: year });
-  };
-
-  const handleYearShow = () => {
-    dispatch({ type: "TOGGLE_YEAR" });
-  };
-
-  const handlePreviousYear = () => {
-    dispatch({ type: "PREVIOUS_YEAR" });
-  };
-
-  const handleNextYear = () => {
-    dispatch({ type: "NEXT_YEAR" });
-  };
-
-  const handleMonthClick = (selectedMonth) => {
-    dispatch({ type: "SELECT_MONTH", selectedMonth });
-  };
-
-  const handleDocumentClick = (e) => {
-    if (!e.target.closest(`#${id}`)) {
-      dispatch({ type: "HIDE_CALENDAR" });
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("click", handleDocumentClick);
-    return () => {
-      document.removeEventListener("click", handleDocumentClick);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (props.defaultSelectedMonth && props.monthOnly) {
-      dispatch({ type: "MONTH_IN_MONTHONLY" });
-    }
-  }, [props.defaultSelectedMonth, props.monthOnly]);
-
-  for (let i = 0; i < 12; i++) {
-    years.push(presentYear + i);
-  }
-
-  return (
-    <div className={props.className}>
-      <div className="calendar-wrap" id={id}>
-        <div className={`calendar ${show}`}>
-          {/* ===== month calendar :: begin ===== */}
-          <div className="calendar-header">
-            <button className="table-btn" onClick={handlePreviousYear}>
-              &#x276E;
-            </button>
-            <p className="year-display" onClick={handleYearShow}>
-              {`${showYear === "" ? "Year" : "Back"} ${changedYear}`}
-            </p>
-            <button className="table-btn" onClick={handleNextYear}>
-              &#x276F;
-            </button>
-          </div>
-
-          <table className={`year-table ${showYear}`}>
-            <tbody>
-              {years.map((year, index) => {
-                if (index % 3 === 0) {
-                  return (
-                    <tr key={index}>
-                      <td
-                        className={year === changedYear ? "selected" : ""}
-                        onClick={() => handleSelectYear(year)}
-                      >
-                        {year}
-                      </td>
-                      <td
-                        className={
-                          years[index + 1] === changedYear ? "selected" : ""
-                        }
-                        onClick={() => handleSelectYear(years[index + 1])}
-                      >
-                        {years[index + 1]}
-                      </td>
-                      <td
-                        className={
-                          years[index + 2] === changedYear ? "selected" : ""
-                        }
-                        onClick={() => handleSelectYear(years[index + 2])}
-                      >
-                        {years[index + 2]}
-                      </td>
-                    </tr>
-                  );
-                }
-                return null;
-              })}
-            </tbody>
-          </table>
-
-          <table className="month-table">
-            <tbody>
-              <tr>
-                {months.slice(0, 3).map((month, i) => (
-                  <td
-                    key={i}
-                    className={selectedMonth === i ? "selected" : ""}
-                    onClick={() => handleMonthClick(i)}
-                  >
-                    {month}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                {months.slice(3, 6).map((month, i) => (
-                  <td
-                    key={i}
-                    className={selectedMonth === i + 4 ? "selected" : ""}
-                    onClick={() => handleMonthClick(i + 4)}
-                  >
-                    {month}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                {months.slice(6, 9).map((month, i) => (
-                  <td
-                    key={i}
-                    className={selectedMonth === i + 6 ? "selected" : ""}
-                    onClick={() => handleMonthClick(i + 6)}
-                  >
-                    {month}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                {months.slice(9).map((month, i) => (
-                  <td
-                    key={i}
-                    className={selectedMonth === i + 9 ? "selected" : ""}
-                    onClick={() => handleMonthClick(i + 9)}
-                  >
-                    {month}
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-          {/* ===== month calendar :: end ===== */}
-        </div>
-        <div
-          className={`text-box ${props.isDisabled ? "disabled" : ""} ${
-            show !== "" ? "focus" : ""
-          } ${props.isReadOnly ? "read-only" : ""}`}
-          onClick={handleShow}
-          disabled={props.isDisabled || props.isReadOnly}
-        >
-          <input
-            type="text"
-            className={month ? "selected" : ""}
-            onChange={(e) => e.preventDefault}
-            onBlur={props.onBlur}
-            onFocus={props.onFocus}
-            value={
-              month < 10
-                ? ` 0${month + 1}/${changedYear}`
-                : ` ${month + 1}/${changedYear}`
-            }
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const months = [
   "January",
   "February",
@@ -1846,6 +1696,5 @@ const months = [
   "November",
   "December",
 ];
-const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export { MonthOnly };
+const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
