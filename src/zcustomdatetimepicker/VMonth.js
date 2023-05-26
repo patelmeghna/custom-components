@@ -223,6 +223,17 @@ const VMonth = (props) => {
     years.push(presentYear + i);
   }
 
+  let placeholderText = "";
+
+  if (props.placeholder) {
+    placeholderText = props.placeholder;
+  } else {
+    placeholderText =
+      month < 9
+        ? `0${month + 1}/${changedYear}`
+        : `${month + 1}/${changedYear}`;
+  }
+
   return (
     <div className={`month-year-picker ${props.className}`}>
       <div className="calendar-wrap" id={id}>
@@ -327,8 +338,9 @@ const VMonth = (props) => {
           {/* ===== month calendar :: end ===== */}
         </div>
         <div
-          className={`text-box ${props.isDisabled ? "disabled" : ""} ${show ? "focus" : ""
-            } ${props.isReadOnly ? "read-only" : ""}`}
+          className={`text-box ${props.isDisabled ? "disabled" : ""} ${
+            show ? "focus" : ""
+          } ${props.isReadOnly ? "read-only" : ""}`}
           onClick={handleShow}
           disabled={props.isDisabled || props.isReadOnly}
         >
@@ -341,6 +353,7 @@ const VMonth = (props) => {
               onFocus={handleFocus}
               disabled={props.isDisabled || props.isReadOnly}
               name={props.name}
+              placeholder={props.placeholder ? props.placeholder : "MM/YYYY"}
             />
           ) : (
             <input
@@ -350,12 +363,9 @@ const VMonth = (props) => {
               onFocus={handleFocus}
               onChange={handleMonthChange}
               disabled={props.isDisabled || props.isReadOnly}
-              value={
-                month < 9
-                  ? `0${month + 1}/${changedYear}`
-                  : `${month + 1}/${changedYear}`
-              }
+              value={placeholderText}
               name={props.name}
+              placeholder={props.placeholder ? props.placeholder : "MM/YYYY"}
             />
           )}
         </div>
