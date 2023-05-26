@@ -363,9 +363,19 @@ const VMonth = (props) => {
               onFocus={handleFocus}
               onChange={handleMonthChange}
               disabled={props.isDisabled || props.isReadOnly}
-              value={placeholderText}
+              value={
+                month < 9
+                  ? `0${month + 1}/${changedYear}`
+                  : `${month + 1}/${changedYear}`
+              }
               name={props.name}
-              placeholder={props.placeholder ? props.placeholder : "MM/YYYY"}
+              placeholder={
+                props.placeholder
+                  ? props.placeholder
+                  : props.placeholder
+                  ? props.placeholder
+                  : "MM/YYYY"
+              }
             />
           )}
         </div>
