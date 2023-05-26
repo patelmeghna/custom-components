@@ -327,9 +327,8 @@ const VMonth = (props) => {
           {/* ===== month calendar :: end ===== */}
         </div>
         <div
-          className={`text-box ${props.isDisabled ? "disabled" : ""} ${
-            show ? "focus" : ""
-          } ${props.isReadOnly ? "read-only" : ""}`}
+          className={`text-box ${props.isDisabled ? "disabled" : ""} ${show ? "focus" : ""
+            } ${props.isReadOnly ? "read-only" : ""}`}
           onClick={handleShow}
           disabled={props.isDisabled || props.isReadOnly}
         >
@@ -341,6 +340,7 @@ const VMonth = (props) => {
               onBlur={handleBlur}
               onFocus={handleFocus}
               disabled={props.isDisabled || props.isReadOnly}
+              name={props.name}
             />
           ) : (
             <input
@@ -355,6 +355,7 @@ const VMonth = (props) => {
                   ? `0${month + 1}/${changedYear}`
                   : `${month + 1}/${changedYear}`
               }
+              name={props.name}
             />
           )}
         </div>
