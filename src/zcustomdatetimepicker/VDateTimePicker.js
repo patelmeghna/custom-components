@@ -16,8 +16,8 @@ export default function VDateTimePicker(props) {
     selectedMinute: null,
     selectedEndHour: null,
     selectedEndMinute: null,
-    time: "hh:mm",
-    endTime: "hh:mm",
+    time: "00:00",
+    endTime: "00:00",
     showClock: "",
     showEndClock: "",
     presentYear: new Date().getFullYear(),
@@ -31,23 +31,60 @@ export default function VDateTimePicker(props) {
   };
   // initial value :: end
 
+  const maxDate = new Date(props.maxDate);
   let minDate;
-  const maxDate = new Date(props.maximumDate);
-  const defaultDate = new Date(props.defaultSelectedDate);
-  const defaultEnd = new Date(props.defaultEndDate);
-  const defaultMonth = new Date(props.defaultSelectedMonth);
 
-  if (typeof props.minimumDate !== "boolean") {
-    const date = `${new Date(props.minimumDate).getFullYear()}-${new Date(
-      props.minimumDate
-    ).getMonth()}-${new Date(props.minimumDate).getDate()}`;
+  let defaultDate,
+    defaultEnd,
+    defaultTime,
+    defaultEndTime,
+    defaultStartDate,
+    startDateTime,
+    defaultEndDate,
+    endDateTime;
+
+  const dateTimeRange = props.defaultValue;
+
+  if (props.defaultValue) {
+    if (dateTimeRange.includes(" To ")) {
+      [startDateTime, endDateTime] = dateTimeRange.split(" To ");
+
+      if (startDateTime.includes(" ")) {
+        [defaultStartDate, defaultTime] = startDateTime.split(" ");
+        defaultDate = new Date(defaultStartDate);
+      } else {
+        defaultDate = new Date(startDateTime);
+      }
+
+      if (endDateTime.includes(" ")) {
+        [defaultEndDate, defaultEndTime] = endDateTime.split(" ");
+        defaultEnd = new Date(defaultEndDate);
+      } else {
+        defaultEnd = new Date(endDateTime);
+      }
+    } else {
+      if (dateTimeRange.includes(" ")) {
+        [defaultStartDate, defaultTime] = dateTimeRange.split(" ");
+        defaultDate = new Date(defaultStartDate);
+      } else {
+        defaultDate = new Date(dateTimeRange);
+      }
+    }
+  }
+
+  if (typeof props.minDate !== "boolean") {
+    const date = `${new Date(props.minDate).getFullYear()}-${
+      new Date(props.minDate).getMonth() + 1
+    }-${new Date(props.minDate).getDate()}`;
     minDate = new Date(date);
   } else {
-    const date = `${new Date().getFullYear()}-${new Date().getMonth()}-${new Date().getDate()}`;
+    const date = `${new Date().getFullYear()}-${
+      new Date().getMonth() + 1
+    }-${new Date().getDate()}`;
     minDate = new Date(date);
   }
 
-  console.log(minDate);
+  // console.log(defaultDate);
 
   // reducer :: begin
   const reducer = (state, action) => {
@@ -67,43 +104,61 @@ export default function VDateTimePicker(props) {
           month: action.payload.getMonth(),
         };
 
-      case "DEFAULT_SELECTED_DATE":
+      case "DEFAULT_VALUES":
+        let hour,
+          endTimeHour,
+          minute,
+          endTimeMinute,
+          showStartClock,
+          showEndClock,
+          defaultStartTime,
+          defaultEndSelectedTime,
+          rangeEndDate;
+
+        if (defaultTime !== undefined) {
+          defaultStartTime = defaultTime;
+          [hour, minute] = defaultTime.split(":");
+          showStartClock = "show";
+        } else {
+          defaultStartTime = "";
+        }
+
+        if (defaultEndTime !== undefined) {
+          defaultEndSelectedTime = defaultEndTime;
+          [endTimeHour, endTimeMinute] = defaultEndTime.split(":");
+          showEndClock = "show";
+        } else {
+          defaultEndSelectedTime = "";
+        }
+
+        let defaultMonth = defaultDate.getMonth();
+        let defaultYear = defaultDate.getFullYear();
+        if (props.range && defaultEnd !== undefined) {
+          defaultMonth = defaultEnd.getMonth();
+          defaultYear = defaultEnd.getFullYear();
+        }
+
+        if (props.range) {
+          rangeEndDate = defaultEnd;
+        }
         return {
           ...state,
           selectedStart: defaultDate,
-          month: defaultDate.getMonth(),
-          year: defaultDate.getFullYear(),
-        };
-
-      case "MIN_DATE":
-        return {
-          ...state,
-          month: minDate.getMonth(),
-          year: minDate.getFullYear(),
-        };
-
-      case "DEFAULT_END":
-        return {
-          ...state,
-          selectedEnd: defaultEnd,
-        };
-
-      case "MONTH_IN_MONTHONLY":
-        return {
-          ...state,
-          month: defaultMonth.getMonth(),
-          presentYear: defaultMonth.getFullYear(),
-          changedYear: defaultMonth.getFullYear(),
-        };
-
-      case "DEFAULT_TIME":
-        return {
-          time: props.defaultSelectedTime,
-          selectedHour: state.hour,
-          selectedMinute: state.minute,
-          selectedStart: defaultDate,
-          month: defaultDate.getMonth(),
-          year: defaultDate.getFullYear(),
+          selectedEnd: rangeEndDate,
+          month: defaultMonth,
+          year: defaultYear,
+          time: defaultStartTime,
+          endTime: defaultEndSelectedTime,
+          hour: hour,
+          minute: minute,
+          endHour: endTimeHour,
+          endMinute: endTimeMinute,
+          showClock: showStartClock,
+          showEndClock: showEndClock,
+          selectedHour: hour,
+          selectedMinute: minute,
+          selectedEndHour: endTimeHour,
+          selectedEndMinute: endTimeMinute,
         };
 
       case "CHANGE_END_HOUR":
@@ -389,7 +444,7 @@ export default function VDateTimePicker(props) {
           newTimeFormat = "";
           newEndTimeFormat = "";
         }
-        if (props.selectedMode === "dateTime") {
+        if (!props.range) {
           toggleTime = "";
         } else {
           toggleTime = "show-end";
@@ -712,10 +767,7 @@ export default function VDateTimePicker(props) {
           toggle = "";
         }
         const selected = new Date(action.year, action.month, action.day);
-        if (
-          props.selectedMode === "range" ||
-          props.selectedMode === "dateTimeRange"
-        ) {
+        if (props.range) {
           if (state.show === "show") {
             return {
               ...state,
@@ -795,6 +847,7 @@ export default function VDateTimePicker(props) {
         let startTimeFormat = state.timeFormat;
         let startHour = state.selectedHour;
         let startMinute = state.selectedMinute;
+        let startTime;
         if (props.clockTimeFormat === "am-pm") {
           startTimeFormat = action.format;
           startMinute = action.minute;
@@ -803,17 +856,19 @@ export default function VDateTimePicker(props) {
           } else {
             startMinute = action.minute;
           }
+          startTime = `${startHour}:${startMinute} ${startTimeFormat}`;
         } else {
           startHour = action.hour;
           startMinute = action.minute;
           startTimeFormat = "";
+          startTime = `${startHour}:${startMinute}`;
         }
         return {
           ...state,
           selectedHour: startHour,
           selectedMinute: startMinute,
           timeFormat: startTimeFormat,
-          time: `${state.selectedHour}:${state.selectedMinute} ${state.timeFormat}`,
+          time: startTime,
           showClock: "show",
           show: "",
         };
@@ -911,10 +966,7 @@ export default function VDateTimePicker(props) {
   // default variables :: end
 
   // form variables
-  const startTime =
-    props.selectedMode === "dateTime" || props.selectedMode === "dateTimeRange"
-      ? `${selectedHour}:${selectedMinute}`
-      : "";
+  const startTime = props.range ? `${selectedHour}:${selectedMinute}` : "";
   const startTimeFormat = props.clockTimeFormat === "am-pm" ? timeFormat : "";
   const startInputValue =
     selectedStart &&
@@ -924,10 +976,9 @@ export default function VDateTimePicker(props) {
 
   // ===============================================
 
-  const endTimeValue =
-    props.selectedMode === "dateTime" || props.selectedMode === "dateTimeRange"
-      ? `${selectedEndHour}:${selectedEndMinute}`
-      : "";
+  const endTimeValue = props.range
+    ? `${selectedEndHour}:${selectedEndMinute}`
+    : "";
   const endTimeFormatValue =
     props.clockTimeFormat === "am-pm" ? endTimeFormat : "";
   const endInputValue =
@@ -1036,13 +1087,10 @@ export default function VDateTimePicker(props) {
   }, [selectedEnd, selectedEndHour, selectedEndMinute, endTimeFormat]);
 
   useEffect(() => {
-    if (
-      props.selectedMode !== "range" ||
-      props.selectedMode !== "dateTimeRange"
-    ) {
+    if (props.range) {
       dispatch({ type: "REMOVE_END_DATE" });
     }
-  }, [props.selectedMode]);
+  }, [props.range]);
 
   useEffect(() => {
     document.addEventListener("click", handleDocumentClick);
@@ -1058,35 +1106,17 @@ export default function VDateTimePicker(props) {
   );
 
   useEffect(() => {
-    if (props.defaultSelectedDate) {
-      dispatch({ type: "DEFAULT_SELECTED_DATE" });
+    if (props.defaultValue) {
+      dispatch({ type: "DEFAULT_VALUES" });
     }
-  }, [props.defaultSelectedDate]);
+  }, []);
 
   useEffect(() => {
-    if (props.minimumDate) {
-      dispatch({ type: "MIN_DATE" });
+    if (props.defaultValue) {
+      dispatch({ type: "DEFAULT_VALUES" });
     }
-  }, [props.minimumDate]);
+  }, [props.defaultValue]);
 
-  useEffect(() => {
-    if (props.defaultEndDate) {
-      dispatch({ type: "DEFAULT_END" });
-    }
-  }, [props.defaultEndDate]);
-
-  useEffect(() => {
-    if (props.defaultSelectedMonth && props.monthOnly) {
-      dispatch({ type: "MONTH_IN_MONTHONLY" });
-    }
-  }, [props.defaultSelectedMonth, props.monthOnly]);
-
-  useEffect(() => {
-    if (props.defaultSelectedTime) {
-      const [hour, minute] = props.defaultSelectedTime.split(":");
-      dispatch({ type: "DEFAULT_TIME" });
-    }
-  }, [props.defaultSelectedTime]);
   // useEffect hook :: end
 
   // logics for calendar :: begin
@@ -1260,7 +1290,10 @@ export default function VDateTimePicker(props) {
       var time = matches[0];
       var hour = value.substr(matches.index, 2);
       var minute = value.substr(matches.index + 3, 2);
-      const amPm = value.substr(matches.index + 6, 2);
+      let amPm;
+      if (props.clockTimeFormat === "am-pm") {
+        amPm = value.substr(matches.index + 6, 2);
+      }
 
       dispatch({ type: "SET_TIME", format: amPm, hour, minute });
     }
@@ -1335,14 +1368,26 @@ export default function VDateTimePicker(props) {
      =================================
      ================================= */
   return (
-    <div className={props.className} style={props.style}>
+    <div
+      className={`date-time-range-picker ${props.className}`}
+      style={props.style}
+    >
       <div className="calendar-wrap" id={id}>
         <div className={`calendar ${show}`}>
           <>
             {/* ===== calendar :: begin ===== */}
             <div className="calendar-header">
               <>
-                {prevBtn}
+                {month === minDate.getMonth() &&
+                year === minDate.getFullYear() ? (
+                  <button disabled className="table-btn" onClick={handleNext}>
+                    &#x276E;
+                  </button>
+                ) : (
+                  <button className="table-btn" onClick={handleNext}>
+                    &#x276E;
+                  </button>
+                )}
                 <div>
                   <select
                     className="table-select"
@@ -1482,8 +1527,7 @@ export default function VDateTimePicker(props) {
               }`}
             >
               <div className="time-wrap">
-                {(props.selectedMode === "dateTimeRange" ||
-                  props.selectedMode === "dateTime") && (
+                {props.selectedMode === "dateTime" && (
                   <div className="clock-wrap">
                     <button
                       className="clock-btn"
@@ -1572,21 +1616,11 @@ export default function VDateTimePicker(props) {
           </>
         </div>
         {/* ===== display value :: begin ===== */}
-        <div
-          className={
-            (props.selectedMode === "range" ||
-              props.selectedMode === "dateTimeRange") &&
-            "date-selection-input-wrap"
-          }
-        >
+        <div className={props.range && "date-selection-input-wrap"}>
           <div
-            className={
-              props.monthOnly
-                ? "d-none"
-                : `text-box ${props.isDisabled ? "disabled" : ""} ${
-                    show === "show" ? "focus" : ""
-                  } ${props.isReadOnly ? "read-only" : ""}`
-            }
+            className={`text-box ${props.isDisabled ? "disabled" : ""} ${
+              show === "show" ? "focus" : ""
+            } ${props.isReadOnly ? "read-only" : ""}`}
             onClick={handleShow}
             disabled={props.isDisabled || props.isReadOnly}
           >
@@ -1619,8 +1653,7 @@ export default function VDateTimePicker(props) {
           </div>
           <div
             className={
-              props.selectedMode === "range" ||
-              props.selectedMode === "dateTimeRange"
+              props.range
                 ? `text-box ${props.isDisabled ? "disabled" : ""} ${
                     show === "show-end" ? "focus" : ""
                   } ${props.isReadOnly ? "read-only" : ""}`

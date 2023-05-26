@@ -5,12 +5,18 @@ import VMonth from "./VMonth";
 
 function DatePicker() {
   const [isDisabled, setIsDisabled] = useState(false);
+
   return (
     <Container className="py-5">
       <VDateTimePicker
         id="date-picker-1"
         className="custom-date-picker"
-        minimumDate={"2020-02-12"}
+        defaultValue={"2022-02-12 To 2022-03-21"}
+        // minDate
+        // range
+        selectedMode="dateTime"
+        format="YYYY/MM/DD"
+        clockTimeFormat="am-pm"
       />
 
       <h4>Month only</h4>
@@ -20,7 +26,7 @@ function DatePicker() {
         id="month"
         disableControl
         setIsDisabled={setIsDisabled}
-        isDisabled={isDisabled}
+        // isDisabled={isDisabled}
         resetControl
       />
     </Container>

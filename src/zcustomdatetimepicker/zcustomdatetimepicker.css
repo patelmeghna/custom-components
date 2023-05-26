@@ -267,4 +267,10 @@ button svg {
   padding: 0;
   background: none;
   margin: 0;
+  width: 100%;
+}
+
+.date-time-range-picker,
+.month-year-picker {
+  position: relative;
 }
