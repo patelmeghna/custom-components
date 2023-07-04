@@ -2726,6 +2726,7 @@ export default function VDateTimePicker(props) {
                 }
                 disabled={props.isDisabled || props.isReadOnly}
                 name={props.name}
+                tabIndex={props.startTabIndex}
               />
             ) : (
               <input
@@ -2756,6 +2757,7 @@ export default function VDateTimePicker(props) {
                 }
                 disabled={props.isDisabled || props.isReadOnly}
                 name={props.name}
+                tabIndex={props.startTabIndex}
               />
             )}
 
@@ -2798,6 +2800,7 @@ export default function VDateTimePicker(props) {
                 }
                 disabled={props.isDisabled || props.isReadOnly}
                 name={props.eName}
+                tabIndex={props.endTabIndex}
               />
             ) : (
               <input
@@ -2826,6 +2829,7 @@ export default function VDateTimePicker(props) {
                     ? props.format
                     : "DD/MM/YYYY"
                 }
+                tabIndex={props.endTabIndex}
               />
             )}
 

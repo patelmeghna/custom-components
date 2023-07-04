@@ -25,6 +25,8 @@ function DatePicker() {
         // maxDate="2023-07-12"
         // onChange={(data) => alert(data)}
         // onEndChange={(end) => alert(end)}
+        // startTabIndex
+        // endTabIndex
       />
 
       <h4>Month only</h4>
