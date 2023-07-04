@@ -30,16 +30,16 @@ export default function VDateTimePicker(props) {
     isEndFocused: false,
     previousSelectedStartDate: [],
     previousSelectedEndDate: [],
-    undoDate: "",
+    undoDate: [],
     selectedSecond: null,
     selectedEndSecond: null,
     validateStart: true,
     validateEnd: true,
     hideError: true,
     hideErrorEnd: true,
+    undoOrder: [],
   };
   // initial value :: end
-  // hello
 
   const maximumDate = new Date(props.maxDate);
   let minCalDate = props.minDate;
@@ -308,7 +308,11 @@ export default function VDateTimePicker(props) {
       case "UNDO_STATE":
         return {
           ...state,
+          // undoDate: state.undoDate ? [...state.undoDate, action.payload] : [action.payload],
           undoDate: action.payload,
+          undoOrder: state.undoOrder
+            ? [...state.undoOrder, action.payload]
+            : [action.payload],
         };
 
       case "CHANGE_YEAR":
@@ -1883,12 +1887,13 @@ export default function VDateTimePicker(props) {
   };
   // changes //
   const handleStartUndo = () => {
-    let pervious =
-      previousSelectedStartDate[previousSelectedStartDate.length - 2];
+    // let pervious = previousSelectedStartDate[previousSelectedStartDate.length - 2];
+    let pervious = previousSelectedStartDate.pop();
     dispatch({ type: "UNDO_START", payload: pervious });
   };
   const handleEndUndo = () => {
-    let next = previousSelectedEndDate[previousSelectedEndDate.length - 2];
+    // let next = previousSelectedEndDate[previousSelectedEndDate.length - 2];
+    let next = previousSelectedEndDate.pop();
     dispatch({ type: "UNDO_END", payload: next });
   };
   const handleEnable = () => {
@@ -1957,6 +1962,8 @@ export default function VDateTimePicker(props) {
     endTimeFormat,
     selectedEndSecond,
   ]);
+
+  console.log(state.undoOrder[state.undoOrder.length - 1]);
 
   // useEffect(() => {
   //   if (props.range) {
@@ -2165,6 +2172,8 @@ export default function VDateTimePicker(props) {
         type: "SET_SELECTED_START",
         payload: new Date(rearrangedDateStr),
       });
+
+      previousSelectedStartDate.push(rearrangedDateStr);
     }
 
     let timeRegex;
@@ -2305,6 +2314,8 @@ export default function VDateTimePicker(props) {
 
       const dateArr = [yyyy, mm, dd];
       const rearrangedDateStr = dateArr.join("-");
+
+      previousSelectedEndDate.push(rearrangedDateStr);
 
       dispatch({
         type: "SET_SELECTED_END",
