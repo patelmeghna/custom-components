@@ -16,8 +16,8 @@ export default function VDateTimePicker(props) {
     selectedMinute: null,
     selectedEndHour: null,
     selectedEndMinute: null,
-    time: "00:00",
-    endTime: "00:00",
+    time: "",
+    endTime: "",
     showClock: "",
     showEndClock: "",
     presentYear: new Date().getFullYear(),
@@ -28,11 +28,17 @@ export default function VDateTimePicker(props) {
     value: "hi",
     isFocused: false,
     isEndFocused: false,
+    selectedSecond: null,
+    selectedEndSecond: null,
+    validateStart: true,
+    validateEnd: true,
+    hideError: true,
+    hideErrorEnd: true,
   };
   // initial value :: end
 
-  const maxDate = new Date(props.maxDate);
-  let minDate;
+  const maximumDate = new Date(props.maxDate);
+  let minCalDate = props.minDate;
 
   let defaultDate,
     defaultEnd,
@@ -76,15 +82,13 @@ export default function VDateTimePicker(props) {
     const date = `${new Date(props.minDate).getFullYear()}-${
       new Date(props.minDate).getMonth() + 1
     }-${new Date(props.minDate).getDate()}`;
-    minDate = new Date(date);
+    minCalDate = new Date(date);
   } else {
     const date = `${new Date().getFullYear()}-${
       new Date().getMonth() + 1
     }-${new Date().getDate()}`;
-    minDate = new Date(date);
+    minCalDate = new Date(date);
   }
-
-  // console.log(defaultDate);
 
   // reducer :: begin
   const reducer = (state, action) => {
@@ -173,6 +177,12 @@ export default function VDateTimePicker(props) {
           selectedEndMinute: action.payload,
         };
 
+      case "CHANGE_END_SECOND":
+        return {
+          ...state,
+          selectedEndSecond: action.payload,
+        };
+
       case "CHANGE_HOUR":
         return {
           ...state,
@@ -183,6 +193,12 @@ export default function VDateTimePicker(props) {
         return {
           ...state,
           selectedMinute: action.payload,
+        };
+
+      case "CHANGE_SECOND":
+        return {
+          ...state,
+          selectedSecond: action.payload,
         };
 
       case "PREVIOUS":
@@ -256,12 +272,14 @@ export default function VDateTimePicker(props) {
           selectedEnd: null,
           month: state.currentDate.getMonth(),
           year: state.currentDate.getFullYear(),
-          time: "hh:mm",
-          endTime: "hh:mm",
+          time: "",
+          endTime: "",
           selectedHour: null,
           selectedMinute: null,
           selectedEndHour: null,
           selectedEndMinute: null,
+          selectedSecond: null,
+          selectedEndSecond: null,
           show: "",
           showClock: "",
           showEndClock: "",
@@ -332,16 +350,16 @@ export default function VDateTimePicker(props) {
         let newChangeMonth = parseInt(action.payload);
         let newSelectedMonth = parseInt(action.payload);
 
-        if (minDate.getFullYear() === state.year) {
-          if (minDate.getMonth() > newChangeMonth) {
-            newChangeMonth = minDate.getMonth();
-            newSelectedMonth = minDate.getMonth();
+        if (minCalDate.getFullYear() === state.year) {
+          if (minCalDate.getMonth() > newChangeMonth) {
+            newChangeMonth = minCalDate.getMonth();
+            newSelectedMonth = minCalDate.getMonth();
           }
         }
-        if (maxDate.getFullYear() === state.year) {
-          if (maxDate.getMonth() < newChangeMonth) {
-            newChangeMonth = maxDate.getMonth();
-            newSelectedMonth = maxDate.getMonth();
+        if (maximumDate.getFullYear() === state.year) {
+          if (maximumDate.getMonth() < newChangeMonth) {
+            newChangeMonth = maximumDate.getMonth();
+            newSelectedMonth = maximumDate.getMonth();
           }
         }
         if (state.show === "show-end") {
@@ -365,24 +383,24 @@ export default function VDateTimePicker(props) {
         let setSelectedYear = parseInt(action.payload);
         let listChangeMonth = state.month;
         let listSelectedMonth = state.selectedMonth;
-        if (minDate.getFullYear() > setYear) {
-          setYear = minDate.getFullYear();
-          setSelectedYear = minDate.getFullYear();
+        if (minCalDate.getFullYear() > setYear) {
+          setYear = minCalDate.getFullYear();
+          setSelectedYear = minCalDate.getFullYear();
         }
-        if (maxDate.getFullYear() < setYear) {
-          setYear = maxDate.getFullYear();
-          setSelectedYear = maxDate.getFullYear();
+        if (maximumDate.getFullYear() < setYear) {
+          setYear = maximumDate.getFullYear();
+          setSelectedYear = maximumDate.getFullYear();
         }
-        if (setYear === maxDate.getFullYear()) {
-          if (state.month > maxDate.getMonth()) {
-            listChangeMonth = maxDate.getMonth();
-            listSelectedMonth = maxDate.getMonth();
+        if (setYear === maximumDate.getFullYear()) {
+          if (state.month > maximumDate.getMonth()) {
+            listChangeMonth = maximumDate.getMonth();
+            listSelectedMonth = maximumDate.getMonth();
           }
         }
-        if (setYear === minDate.getFullYear()) {
-          if (state.month < minDate.getMonth()) {
-            listChangeMonth = minDate.getMonth();
-            listSelectedMonth = minDate.getMonth();
+        if (setYear === minCalDate.getFullYear()) {
+          if (state.month < minCalDate.getMonth()) {
+            listChangeMonth = minCalDate.getMonth();
+            listSelectedMonth = minCalDate.getMonth();
           }
         }
         if (state.show === "show-end") {
@@ -412,7 +430,10 @@ export default function VDateTimePicker(props) {
         if (props.clockTimeFormat === "am-pm") {
           return {
             ...state,
-            timeFormat: state.timeFormat === "AM" ? "PM" : "AM",
+            timeFormat:
+              state.timeFormat === "AM" || state.timeFormat === ""
+                ? "PM"
+                : "AM",
           };
         } else {
           return {
@@ -440,6 +461,18 @@ export default function VDateTimePicker(props) {
         let toggleTime = state.show;
         let newTimeFormat = state.timeFormat;
         let newEndTimeFormat = state.endTimeFormat;
+        let hideSecond = "";
+        let singleLetterSecond = "";
+        let hideEndSecond = "";
+        let hideEndSingleSecond = "";
+
+        if (!props.isSecondHide) {
+          hideSecond = `:${state.selectedSecond}`;
+          singleLetterSecond = `:0${state.selectedSecond}`;
+          hideEndSecond = `:${state.selectedEndSecond}`;
+          hideEndSingleSecond = `:0${state.selectedEndSecond}`;
+        }
+
         if (props.clockTimeFormat !== "am-pm") {
           newTimeFormat = "";
           newEndTimeFormat = "";
@@ -451,11 +484,15 @@ export default function VDateTimePicker(props) {
         }
         if (state.show === "show") {
           // start date selection :: begin
-          if (state.selectedHour && state.selectedMinute) {
+          if (
+            state.selectedHour &&
+            state.selectedMinute &&
+            state.selectedSecond
+          ) {
             if (state.selectedHour < 10 && state.selectedHour.length === 1) {
               return {
                 ...state,
-                time: `0${state.selectedHour}:${state.selectedMinute} ${newTimeFormat}`,
+                time: `0${state.selectedHour}:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
                 show: toggleTime,
               };
             }
@@ -465,7 +502,17 @@ export default function VDateTimePicker(props) {
             ) {
               return {
                 ...state,
-                time: `${state.selectedHour}:0${state.selectedMinute} ${newTimeFormat}`,
+                time: `${state.selectedHour}:0${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
+                show: toggleTime,
+              };
+            }
+            if (
+              state.selectedSecond < 10 &&
+              state.selectedSecond.length === 1
+            ) {
+              return {
+                ...state,
+                time: `${state.selectedHour}:${state.selectedMinute}:${singleLetterSecond} ${newTimeFormat}`,
                 show: toggleTime,
               };
             }
@@ -477,40 +524,91 @@ export default function VDateTimePicker(props) {
             ) {
               return {
                 ...state,
-                time: `0${state.selectedHour}:0${state.selectedMinute} ${newTimeFormat}`,
+                time: `0${state.selectedHour}:0${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
                 show: toggleTime,
               };
             }
-
-            return {
-              ...state,
-              time: `${state.selectedHour}:${state.selectedMinute} ${newTimeFormat}`,
-              show: toggleTime,
-            };
-          }
-          if (state.selectedHour !== null && state.selectedMinute === null) {
-            if (state.selectedHour < 10 && state.selectedHour.length === 1) {
+            if (
+              state.selectedHour < 10 &&
+              state.selectedHour.length === 1 &&
+              state.selectedSecond < 10 &&
+              state.selectedSecond.length === 1
+            ) {
               return {
                 ...state,
-                time: `0${state.selectedHour}:00 ${newTimeFormat}`,
+                time: `0${state.selectedHour}:${state.selectedMinute}:${singleLetterSecond} ${newTimeFormat}`,
+                show: toggleTime,
+              };
+            }
+            if (
+              state.selectedSecond < 10 &&
+              state.selectedSecond.length === 1 &&
+              state.selectedMinute < 10 &&
+              state.selectedMinute.length === 1
+            ) {
+              return {
+                ...state,
+                time: `${state.selectedHour}:0${state.selectedMinute}:${singleLetterSecond} ${newTimeFormat}`,
+                show: toggleTime,
+              };
+            }
+            if (
+              state.selectedHour < 10 &&
+              state.selectedHour.length === 1 &&
+              state.selectedMinute < 10 &&
+              state.selectedMinute.length === 1 &&
+              state.selectedSecond < 10 &&
+              state.selectedSecond.length === 1
+            ) {
+              return {
+                ...state,
+                time: `0${state.selectedHour}:0${state.selectedMinute}:${singleLetterSecond} ${newTimeFormat}`,
                 show: toggleTime,
               };
             }
 
             return {
               ...state,
-              time: `${state.selectedHour}:00 ${newTimeFormat}`,
+              time: `${state.selectedHour}:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
               show: toggleTime,
             };
           }
-          if (state.selectedHour === null && state.selectedMinute !== null) {
+          if (
+            state.selectedHour === null &&
+            state.selectedMinute !== null &&
+            state.selectedSecond !== null
+          ) {
             if (
               state.selectedMinute < 10 &&
               state.selectedMinute.length === 1
             ) {
               return {
                 ...state,
-                time: `24:0${state.selectedMinute} ${newTimeFormat}`,
+                time: `24:0${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
+                show: toggleTime,
+                selectedHour: "24",
+              };
+            }
+            if (
+              state.selectedSecond < 10 &&
+              state.selectedSecond.length === 1
+            ) {
+              return {
+                ...state,
+                time: `24:${state.selectedMinute}:${singleLetterSecond} ${newTimeFormat}`,
+                show: toggleTime,
+                selectedHour: "24",
+              };
+            }
+            if (
+              state.selectedMinute < 10 &&
+              state.selectedMinute.length === 1 &&
+              state.selectedSecond < 10 &&
+              state.selectedSecond.length === 1
+            ) {
+              return {
+                ...state,
+                time: `24:0${state.selectedMinute}:${singleLetterSecond} ${newTimeFormat}`,
                 show: toggleTime,
                 selectedHour: "24",
               };
@@ -518,41 +616,208 @@ export default function VDateTimePicker(props) {
 
             return {
               ...state,
-              time: `24:${state.selectedMinute} ${newTimeFormat}`,
+              time: `24:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
+              show: toggleTime,
+              selectedHour: "24",
+            };
+          }
+          if (
+            state.selectedHour === null &&
+            state.selectedMinute === null &&
+            state.selectedSecond !== null
+          ) {
+            if (
+              state.selectedSecond < 10 &&
+              state.selectedSecond.length === 1
+            ) {
+              return {
+                ...state,
+                time: `24:00:${singleLetterSecond} ${newTimeFormat}`,
+                show: toggleTime,
+                selectedHour: "24",
+                selectedMinute: "00",
+              };
+            }
+
+            return {
+              ...state,
+              time: `24:00:${hideSecond} ${newTimeFormat}`,
+              show: toggleTime,
+              selectedHour: "24",
+              selectedMinute: "00",
+            };
+          }
+          if (
+            state.selectedHour === null &&
+            state.selectedMinute !== null &&
+            state.selectedSecond === null
+          ) {
+            if (
+              state.selectedMinute < 10 &&
+              state.selectedMinute.length === 1
+            ) {
+              return {
+                ...state,
+                time: `24:0${state.selectedMinute}:00 ${newTimeFormat}`,
+                show: toggleTime,
+                selectedHour: "24",
+                selectedMinute: "00",
+              };
+            }
+
+            return {
+              ...state,
+              time: `24:${state.selectedMinute}:00 ${newTimeFormat}`,
+              show: toggleTime,
+              selectedHour: "24",
+              selectedSecond: "00",
+            };
+          }
+          if (
+            state.selectedHour !== null &&
+            state.selectedMinute === null &&
+            state.selectedSecond === null
+          ) {
+            if (state.selectedHour < 10 && state.selectedHour.length === 1) {
+              return {
+                ...state,
+                time: `0${state.selectedHour}:00:00 ${newTimeFormat}`,
+                show: toggleTime,
+                selectedSecond: "00",
+                selectedMinute: "00",
+              };
+            }
+
+            return {
+              ...state,
+              time: `${state.selectedHour}:00:00 ${newTimeFormat}`,
+              show: toggleTime,
+              selectedSecond: "00",
+              selectedSecond: "00",
+            };
+          }
+          if (
+            state.selectedHour !== null &&
+            state.selectedMinute !== null &&
+            state.selectedSecond === null
+          ) {
+            if (
+              state.selectedMinute < 10 &&
+              state.selectedMinute.length === 1
+            ) {
+              return {
+                ...state,
+                time: `${state.selectedHour}:0${state.selectedMinute}:00 ${newTimeFormat}`,
+                show: toggleTime,
+                selectedSecond: "00",
+              };
+            }
+            if (state.selectedHour < 10 && state.selectedHour.length === 1) {
+              return {
+                ...state,
+                time: `0${state.selectedSecond}:${state.selectedMinute}:00 ${newTimeFormat}`,
+                show: toggleTime,
+                selectedSecond: "00",
+              };
+            }
+            if (
+              state.selectedHour < 10 &&
+              state.selectedHour.length === 1 &&
+              state.selectedMinute < 10 &&
+              state.selectedMinute.length === 1
+            ) {
+              return {
+                ...state,
+                time: `0${state.selectedHour}:0${state.selectedMinute}:00 ${newTimeFormat}`,
+                show: toggleTime,
+                selectedSecond: "00",
+              };
+            }
+
+            return {
+              ...state,
+              time: `24:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
+              show: toggleTime,
+              selectedHour: "24",
+            };
+          }
+          if (
+            state.selectedHour !== null &&
+            state.selectedMinute === null &&
+            state.selectedSecond !== null
+          ) {
+            if (state.selectedHour < 10 && state.selectedHour.length === 1) {
+              return {
+                ...state,
+                time: `0${state.selectedHour}:00:${hideSecond} ${newTimeFormat}`,
+                show: toggleTime,
+                selectedMinute: "00",
+              };
+            }
+            if (
+              state.selectedSecond < 10 &&
+              state.selectedSecond.length === 1
+            ) {
+              return {
+                ...state,
+                time: `${state.selectedHour}:00:${singleLetterSecond} ${newTimeFormat}`,
+                show: toggleTime,
+                selectedMinute: "00",
+              };
+            }
+            if (
+              state.selectedHour < 10 &&
+              state.selectedHour.length === 1 &&
+              state.selectedSecond < 10 &&
+              state.selectedSecond.length === 1
+            ) {
+              return {
+                ...state,
+                time: `0${state.selectedHour}:00:${singleLetterSecond} ${newTimeFormat}`,
+                show: toggleTime,
+                selectedMinute: "00",
+              };
+            }
+
+            return {
+              ...state,
+              time: `24:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
               show: toggleTime,
               selectedHour: "24",
             };
           }
           if (
             (state.time === null && state.selectedStart === null) ||
-            (state.time === "hh:mm" && state.selectedStart === null) ||
+            (state.time === "" && state.selectedStart === null) ||
             state.selectedStart === null
           ) {
-            if (props.clockTimeFormat === "am-pm") {
-              return {
-                ...state,
-                selectedStart: new Date(),
-                selectedHour: "12",
-                selectedMinute: "00",
-                time: `12:00 ${newTimeFormat}`,
-                show: toggleTime,
-              };
-            } else {
-              return {
-                ...state,
-                selectedStart: new Date(),
-                selectedHour: "00",
-                selectedMinute: "00",
-                time: `00:00 ${newTimeFormat}`,
-                show: toggleTime,
-              };
-            }
-          }
-          if (state.selectedStart !== null) {
-            if (state.time === null || state.time === "hh:mm") {
+            if (!props.isSecondHide) {
               if (props.clockTimeFormat === "am-pm") {
                 return {
                   ...state,
+                  selectedStart: new Date(),
+                  selectedHour: "12",
+                  selectedMinute: "00",
+                  selectedSecond: "00",
+                  time: `12:00:00 ${newTimeFormat}`,
+                  show: toggleTime,
+                };
+              } else {
+                return {
+                  ...state,
+                  selectedStart: new Date(),
+                  selectedHour: "00",
+                  selectedMinute: "00",
+                  selectedSecond: "00",
+                  time: `00:00:00 ${newTimeFormat}`,
+                  show: toggleTime,
+                };
+              }
+            } else {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  selectedStart: new Date(),
                   selectedHour: "12",
                   selectedMinute: "00",
                   time: `12:00 ${newTimeFormat}`,
@@ -561,6 +826,7 @@ export default function VDateTimePicker(props) {
               } else {
                 return {
                   ...state,
+                  selectedStart: new Date(),
                   selectedHour: "00",
                   selectedMinute: "00",
                   time: `00:00 ${newTimeFormat}`,
@@ -568,13 +834,61 @@ export default function VDateTimePicker(props) {
                 };
               }
             }
-            if (state.time !== null || state.time !== "hh:mm") {
+          }
+          if (state.selectedStart !== null) {
+            if (state.time === null || state.time === "") {
+              if (!props.isSecondHide) {
+                if (props.clockTimeFormat === "am-pm") {
+                  return {
+                    ...state,
+                    selectedStart: new Date(),
+                    selectedHour: "12",
+                    selectedMinute: "00",
+                    selectedSecond: "00",
+                    time: `12:00:00 ${newTimeFormat}`,
+                    show: toggleTime,
+                  };
+                } else {
+                  return {
+                    ...state,
+                    selectedStart: new Date(),
+                    selectedHour: "00",
+                    selectedMinute: "00",
+                    selectedSecond: "00",
+                    time: `00:00:00 ${newTimeFormat}`,
+                    show: toggleTime,
+                  };
+                }
+              } else {
+                if (props.clockTimeFormat === "am-pm") {
+                  return {
+                    ...state,
+                    selectedStart: new Date(),
+                    selectedHour: "12",
+                    selectedMinute: "00",
+                    time: `12:00 ${newTimeFormat}`,
+                    show: toggleTime,
+                  };
+                } else {
+                  return {
+                    ...state,
+                    selectedStart: new Date(),
+                    selectedHour: "00",
+                    selectedMinute: "00",
+                    time: `00:00 ${newTimeFormat}`,
+                    show: toggleTime,
+                  };
+                }
+              }
+            }
+            if (state.time !== null || state.time !== "") {
               if (props.clockTimeFormat === "am-pm") {
                 return {
                   ...state,
                   selectedHour: state.selectedHour,
                   selectedMinute: state.selectedMinute,
-                  time: `${state.selectedHour}:${state.selectedMinute} ${newTimeFormat}`,
+                  selectedSecond: state.selectedSecond,
+                  time: `${state.selectedHour}:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
                   show: toggleTime,
                 };
               } else {
@@ -582,7 +896,8 @@ export default function VDateTimePicker(props) {
                   ...state,
                   selectedHour: state.selectedHour,
                   selectedMinute: state.selectedMinute,
-                  time: `${state.selectedHour}:${state.selectedMinute} ${newTimeFormat}`,
+                  selectedSecond: state.selectedSecond,
+                  time: `${state.selectedHour}:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
                   show: toggleTime,
                 };
               }
@@ -591,14 +906,18 @@ export default function VDateTimePicker(props) {
           // start date selection :: end
         } else {
           // end date selection :: begin
-          if (state.selectedEndHour && state.selectedEndMinute) {
+          if (
+            state.selectedEndHour &&
+            state.selectedEndMinute &&
+            state.selectedSecond
+          ) {
             if (
               state.selectedEndHour < 10 &&
               state.selectedEndHour.length === 1
             ) {
               return {
                 ...state,
-                endTime: `0${state.selectedEndHour}:${state.selectedEndMinute} ${newEndTimeFormat}`,
+                endTime: `0${state.selectedEndHour}:${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
                 show: "",
               };
             }
@@ -608,7 +927,17 @@ export default function VDateTimePicker(props) {
             ) {
               return {
                 ...state,
-                endTime: `${state.selectedEndHour}:0${state.selectedEndMinute} ${newEndTimeFormat}`,
+                endTime: `${state.selectedEndHour}:0${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
+                show: "",
+              };
+            }
+            if (
+              state.selectedEndSecond < 10 &&
+              state.selectedEndSecond.length === 1
+            ) {
+              return {
+                ...state,
+                time: `${state.selectedEndHour}:${state.selectedMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
                 show: "",
               };
             }
@@ -620,40 +949,59 @@ export default function VDateTimePicker(props) {
             ) {
               return {
                 ...state,
-                endTime: `0${state.selectedEndHour}:0${state.selectedEndMinute} ${newEndTimeFormat}`,
+                endTime: `0${state.selectedEndHour}:0${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
+                show: "",
+              };
+            }
+            if (
+              state.selectedEndHour < 10 &&
+              state.selectedEndHour.length === 1 &&
+              state.selectedEndSecond < 10 &&
+              state.selectedEndSecond.length === 1
+            ) {
+              return {
+                ...state,
+                endTime: `0${state.selectedEndHour}:${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                show: "",
+              };
+            }
+            if (
+              state.selectedEndSecond < 10 &&
+              state.selectedEndSecond.length === 1 &&
+              state.selectedEndMinute < 10 &&
+              state.selectedEndMinute.length === 1
+            ) {
+              return {
+                ...state,
+                endTime: `${state.selectedEndHour}:0${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                show: "",
+              };
+            }
+            if (
+              state.selectedEndHour < 10 &&
+              state.selectedEndHour.length === 1 &&
+              state.selectedEndMinute < 10 &&
+              state.selectedEndMinute.length === 1 &&
+              state.selectedEndSecond < 10 &&
+              state.selectedEndSecond.length === 1
+            ) {
+              return {
+                ...state,
+                endTime: `0${state.selectedEndHour}:0${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
                 show: "",
               };
             }
 
             return {
               ...state,
-              endTime: `${state.selectedEndHour}:${state.selectedEndMinute} ${newEndTimeFormat}`,
-              show: "",
-            };
-          }
-          if (
-            state.selectedEndHour !== null &&
-            state.selectedEndMinute === null
-          ) {
-            if (
-              state.selectedEndHour < 10 &&
-              state.selectedEndHour.length === 1
-            ) {
-              return {
-                ...state,
-                endTime: `0${state.selectedEndHour}:00 ${newEndTimeFormat}`,
-                show: "",
-              };
-            }
-            return {
-              ...state,
-              endTime: `${state.selectedEndHour}:00 ${newEndTimeFormat}`,
+              endTime: `${state.selectedEndHour}:${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
               show: "",
             };
           }
           if (
             state.selectedEndHour === null &&
-            state.selectedEndMinute !== null
+            state.selectedEndMinute !== null &&
+            state.selectedEndSecond !== null
           ) {
             if (
               state.selectedEndMinute < 10 &&
@@ -662,15 +1010,57 @@ export default function VDateTimePicker(props) {
               if (props.clockTimeFormat === "am-pm") {
                 return {
                   ...state,
-                  endTime: `11:0${state.selectedEndMinute} ${newEndTimeFormat}`,
-                  selectedHour: "11",
+                  endTime: `11:0${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
+                  selectedEndHour: "11",
                   show: "",
                 };
               } else {
                 return {
                   ...state,
-                  endTime: `23:0${state.selectedEndMinute} ${newEndTimeFormat}`,
-                  selectedHour: "23",
+                  endTime: `23:0${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
+                  selectedEndHour: "23",
+                  show: "",
+                };
+              }
+            }
+            if (
+              state.selectedEndSecond < 10 &&
+              state.selectedEndSecond.length === 1
+            ) {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  endTime: `11:${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                  selectedEndHour: "11",
+                  show: "",
+                };
+              } else {
+                return {
+                  ...state,
+                  endTime: `23:${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                  selectedEndHour: "23",
+                  show: "",
+                };
+              }
+            }
+            if (
+              state.selectedEndSecond < 10 &&
+              state.selectedEndSecond.length === 1 &&
+              state.selectedEndMinute < 10 &&
+              state.selectedEndMinute.length === 1
+            ) {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  endTime: `11:0${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                  selectedEndHour: "11",
+                  show: "",
+                };
+              } else {
+                return {
+                  ...state,
+                  endTime: `23:0${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                  selectedEndHour: "23",
                   show: "",
                 };
               }
@@ -678,22 +1068,324 @@ export default function VDateTimePicker(props) {
             if (props.clockTimeFormat === "am-pm") {
               return {
                 ...state,
-                endTime: `11:${state.selectedEndMinute} ${newEndTimeFormat}`,
-                selectedHour: "11",
+                endTime: `11:0${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
+                selectedEndHour: "11",
                 show: "",
               };
             } else {
               return {
                 ...state,
-                endTime: `23:${state.selectedEndMinute} ${newEndTimeFormat}`,
-                selectedHour: "23",
+                endTime: `23:0${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
+                selectedEndHour: "23",
                 show: "",
               };
             }
           }
           if (
+            state.selectedEndHour === null &&
+            state.selectedEndMinute === null &&
+            state.selectedEndSecond !== null
+          ) {
+            if (
+              state.selectedEndSecond < 10 &&
+              state.selectedEndSecond.length === 1
+            ) {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  endTime: `11:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                  selectedEndHour: "11",
+                  selectedEndMinute: "00",
+                  show: "",
+                };
+              } else {
+                return {
+                  ...state,
+                  endTime: `23:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                  selectedEndHour: "23",
+                  selectedEndMinute: "00",
+                  show: "",
+                };
+              }
+            }
+            if (props.clockTimeFormat === "am-pm") {
+              return {
+                ...state,
+                endTime: `11:00${hideEndSecond} ${newEndTimeFormat}`,
+                selectedEndHour: "11",
+                selectedEndMinute: "00",
+                show: "",
+              };
+            } else {
+              return {
+                ...state,
+                endTime: `23:00${hideEndSecond} ${newEndTimeFormat}`,
+                selectedEndHour: "23",
+                selectedEndMinute: "00",
+                show: "",
+              };
+            }
+          }
+          if (
+            state.selectedEndHour === null &&
+            state.selectedEndMinute !== null &&
+            state.selectedEndSecond === null
+          ) {
+            if (
+              state.selectedEndMinute < 10 &&
+              state.selectedEndMinute.length === 1
+            ) {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  endTime: `11:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
+                  selectedEndHour: "11",
+                  selectedEndSecond: "00",
+                  show: "",
+                };
+              } else {
+                return {
+                  ...state,
+                  endTime: `23:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
+                  selectedEndHour: "23",
+                  selectedEndSecond: "00",
+                  show: "",
+                };
+              }
+            }
+            if (props.clockTimeFormat === "am-pm") {
+              return {
+                ...state,
+                endTime: `11:${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
+                selectedEndHour: "11",
+                selectedEndSecond: "00",
+                show: "",
+              };
+            } else {
+              return {
+                ...state,
+                endTime: `23:${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
+                selectedEndHour: "23",
+                selectedEndSecond: "00",
+                show: "",
+              };
+            }
+          }
+          if (
+            state.selectedEndHour !== null &&
+            state.selectedEndMinute !== null &&
+            state.selectedEndSecond === null
+          ) {
+            if (
+              state.selectedEndMinute < 10 &&
+              state.selectedEndMinute.length === 1
+            ) {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  endTime: `${state.selectedEndHour}:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
+                  selectedEndSecond: "00",
+                  show: "",
+                };
+              } else {
+                return {
+                  ...state,
+                  endTime: `${state.selectedEndHour}:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
+                  selectedEndSecond: "00",
+                  show: "",
+                };
+              }
+            }
+            if (
+              state.selectedEndHour < 10 &&
+              state.selectedEndHour.length === 1
+            ) {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  endTime: `0${state.selectedEndHour}:${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
+                  selectedEndSecond: "00",
+                  show: "",
+                };
+              } else {
+                return {
+                  ...state,
+                  endTime: `0${state.selectedEndHour}:${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
+                  selectedEndSecond: "00",
+                  show: "",
+                };
+              }
+            }
+            if (
+              state.selectedEndHour < 10 &&
+              state.selectedEndHour.length === 1 &&
+              state.selectedEndMinute < 10 &&
+              state.selectedEndMinute.length === 1
+            ) {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  endTime: `0${state.selectedEndHour}:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
+                  selectedEndSecond: "00",
+                  show: "",
+                };
+              } else {
+                return {
+                  ...state,
+                  endTime: `0${state.selectedEndHour}:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
+                  selectedEndSecond: "00",
+                  show: "",
+                };
+              }
+            }
+            if (props.clockTimeFormat === "am-pm") {
+              return {
+                ...state,
+                endTime: `${state.selectedEndHour}:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
+                selectedEndSecond: "00",
+                show: "",
+              };
+            } else {
+              return {
+                ...state,
+                endTime: `${state.selectedEndHour}:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
+                selectedEndSecond: "00",
+                show: "",
+              };
+            }
+          }
+          if (
+            state.selectedEndHour !== null &&
+            state.selectedEndMinute === null &&
+            state.selectedEndSecond !== null
+          ) {
+            if (
+              state.selectedEndSecond < 10 &&
+              state.selectedEndSecond.length === 1
+            ) {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  endTime: `${state.selectedEndHour}:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                  selectedEndMinute: "00",
+                  show: "",
+                };
+              } else {
+                return {
+                  ...state,
+                  endTime: `${state.selectedEndHour}:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                  selectedEndMinute: "00",
+                  show: "",
+                };
+              }
+            }
+            if (
+              state.selectedEndHour < 10 &&
+              state.selectedEndHour.length === 1
+            ) {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  endTime: `0${state.selectedEndHour}:00${hideEndSecond} ${newEndTimeFormat}`,
+                  selectedEndMinute: "00",
+                  show: "",
+                };
+              } else {
+                return {
+                  ...state,
+                  endTime: `0${state.selectedEndHour}:00${hideEndSecond} ${newEndTimeFormat}`,
+                  selectedEndMinute: "00",
+                  show: "",
+                };
+              }
+            }
+            if (
+              state.selectedEndHour < 10 &&
+              state.selectedEndHour.length === 1 &&
+              state.selectedEndSecond < 10 &&
+              state.selectedEndSecond.length === 1
+            ) {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  endTime: `0${state.selectedEndHour}:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                  selectedEndMinute: "00",
+                  show: "",
+                };
+              } else {
+                return {
+                  ...state,
+                  endTime: `0${state.selectedEndHour}:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                  selectedEndMinute: "00",
+                  show: "",
+                };
+              }
+            }
+            if (props.clockTimeFormat === "am-pm") {
+              return {
+                ...state,
+                endTime: `${state.selectedEndHour}:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                selectedEndMinute: "00",
+                show: "",
+              };
+            } else {
+              return {
+                ...state,
+                endTime: `${state.selectedEndHour}:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
+                selectedEndMinute: "00",
+                show: "",
+              };
+            }
+          }
+          if (
+            state.selectedEndHour !== null &&
+            state.selectedEndMinute === null &&
+            state.selectedEndSecond === null
+          ) {
+            if (
+              state.selectedEndHour < 10 &&
+              state.selectedEndHour.length === 1
+            ) {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  endTime: `0${state.selectedEndHour}:00:00 ${newEndTimeFormat}`,
+                  selectedEndMinute: "00",
+                  selectedEndSecond: "00",
+                  show: "",
+                };
+              } else {
+                return {
+                  ...state,
+                  endTime: `0${state.selectedEndHour}:00:00 ${newEndTimeFormat}`,
+                  selectedEndMinute: "00",
+                  selectedEndSecond: "00",
+                  show: "",
+                };
+              }
+            }
+            if (props.clockTimeFormat === "am-pm") {
+              return {
+                ...state,
+                endTime: `${state.selectedEndHour}:00:00 ${newEndTimeFormat}`,
+                selectedEndMinute: "00",
+                selectedEndSecond: "00",
+                show: "",
+              };
+            } else {
+              return {
+                ...state,
+                endTime: `${state.selectedEndHour}:00:00 ${newEndTimeFormat}`,
+                selectedEndMinute: "00",
+                selectedEndSecond: "00",
+                show: "",
+              };
+            }
+          }
+
+          if (
             (state.endTime === null && state.selectedEnd === null) ||
-            (state.endTime === "hh:mm" && state.selectedEnd === null) ||
+            (state.endTime === "" && state.selectedEnd === null) ||
             state.selectedEnd === null
           ) {
             if (props.clockTimeFormat === "am-pm") {
@@ -702,7 +1394,8 @@ export default function VDateTimePicker(props) {
                 selectedEnd: state.selectedStart,
                 selectedEndHour: "11",
                 selectedEndMinute: "59",
-                endTime: `11:59 ${newTimeFormat}`,
+                selectedEndSecond: "00",
+                endTime: `11:59:00 ${newTimeFormat}`,
                 show: "",
               };
             } else {
@@ -711,19 +1404,21 @@ export default function VDateTimePicker(props) {
                 selectedEnd: state.selectedStart,
                 selectedEndHour: "23",
                 selectedEndMinute: "59",
-                endTime: `23:59 ${newTimeFormat}`,
+                selectedEndSecond: "00",
+                endTime: `23:59:00 ${newTimeFormat}`,
                 show: "",
               };
             }
           }
           if (state.selectedEnd) {
-            if (state.endTime === null || state.endTime === "hh:mm") {
+            if (state.endTime === null || state.endTime === "") {
               if (props.clockTimeFormat === "am-pm") {
                 return {
                   ...state,
                   selectedEndHour: "11",
                   selectedEndMinute: "59",
-                  endTime: `11:59 ${newTimeFormat}`,
+                  selectedEndSecond: "00",
+                  endTime: `11:59:00 ${newTimeFormat}`,
                   show: "",
                 };
               } else {
@@ -731,19 +1426,21 @@ export default function VDateTimePicker(props) {
                   ...state,
                   selectedEndHour: "23",
                   selectedEndMinute: "59",
-                  endTime: `23:59 ${newTimeFormat}`,
+                  selectedEndSecond: "00",
+                  endTime: `23:59:00 ${newTimeFormat}`,
                   show: "",
                 };
               }
             }
           }
-          if (state.endTime !== null || state.endTime !== "hh:mm") {
+          if (state.endTime !== null || state.endTime !== "") {
             if (props.clockTimeFormat === "am-pm") {
               return {
                 ...state,
                 selectedEndHour: state.selectedEndHour,
                 selectedEndMinute: state.selectedEndMinute,
-                endTime: `${state.selectedEndHour}:${state.selectedEndMinute} ${newTimeFormat}`,
+                selectedEndSecond: state.selectedEndSecond,
+                endTime: `${state.selectedEndHour}:${state.selectedEndMinute}:${hideEndSecond} ${newTimeFormat}`,
                 show: "",
               };
             } else {
@@ -751,7 +1448,8 @@ export default function VDateTimePicker(props) {
                 ...state,
                 selectedEndHour: state.selectedEndHour,
                 selectedEndMinute: state.selectedEndMinute,
-                endTime: `${state.selectedEndHour}:${state.selectedEndMinute} ${newTimeFormat}`,
+                selectedEndSecond: state.selectedEndSecond,
+                endTime: `${state.selectedEndHour}:${state.selectedEndMinute}:${hideEndSecond} ${newTimeFormat}`,
                 show: "",
               };
             }
@@ -763,11 +1461,19 @@ export default function VDateTimePicker(props) {
       // date select :: begin
       case "SELECT_DATE":
         let toggle = state.show;
+        let selectedDate;
         if (state.showClock === "") {
           toggle = "";
         }
         const selected = new Date(action.year, action.month, action.day);
-        if (props.range) {
+        if (!props.range) {
+          return {
+            ...state,
+            selectedStart: selected,
+            selectedEnd: null,
+            show: toggle,
+          };
+        } else {
           if (state.show === "show") {
             return {
               ...state,
@@ -781,13 +1487,6 @@ export default function VDateTimePicker(props) {
               show: state.showEndClock === "" ? "" : state.show,
             };
           }
-        } else {
-          return {
-            ...state,
-            selectedStart: selected,
-            selectedEnd: null,
-            show: toggle,
-          };
         }
       // date select :: end
 
@@ -847,26 +1546,52 @@ export default function VDateTimePicker(props) {
         let startTimeFormat = state.timeFormat;
         let startHour = state.selectedHour;
         let startMinute = state.selectedMinute;
+        let startSecond = state.selectedSecond;
         let startTime;
-        if (props.clockTimeFormat === "am-pm") {
-          startTimeFormat = action.format;
-          startMinute = action.minute;
-          if (action.hour <= 12) {
-            startHour = action.hour;
-          } else {
+        if (!props.isSecondHide) {
+          if (props.clockTimeFormat === "am-pm") {
+            startTimeFormat = action.format;
             startMinute = action.minute;
+            startSecond = action.second;
+            if (action.hour <= 12) {
+              startHour = action.hour;
+            } else {
+              startMinute = action.minute;
+            }
+            startTime = `${startHour}:${startMinute}:${startSecond} ${startTimeFormat}`;
+          } else {
+            startHour = action.hour;
+            startMinute = action.minute;
+            startSecond = action.second;
+            startTimeFormat = "";
+            startTime = `${startHour}:${startMinute}:${startSecond}`;
           }
-          startTime = `${startHour}:${startMinute} ${startTimeFormat}`;
         } else {
-          startHour = action.hour;
-          startMinute = action.minute;
-          startTimeFormat = "";
-          startTime = `${startHour}:${startMinute}`;
+          if (props.clockTimeFormat === "am-pm") {
+            startTimeFormat = action.format;
+            startMinute = action.minute;
+            startSecond = action.second;
+
+            if (action.hour <= 12) {
+              startHour = action.hour;
+            } else {
+              startMinute = action.minute;
+            }
+            startTime = `${startHour}:${startMinute} ${startTimeFormat}`;
+          } else {
+            startHour = action.hour;
+            startMinute = action.minute;
+            startSecond = action.second;
+            startTimeFormat = "";
+            startTime = `${startHour}:${startMinute}`;
+          }
         }
+
         return {
           ...state,
           selectedHour: startHour,
           selectedMinute: startMinute,
+          selectedSecond: startSecond,
           timeFormat: startTimeFormat,
           time: startTime,
           showClock: "show",
@@ -879,18 +1604,45 @@ export default function VDateTimePicker(props) {
         let endTimeFormat = state.endTimeFormat;
         let endHour = state.selectedEndHour;
         let endMinute = state.selectedEndMinute;
-        if (props.clockTimeFormat === "am-pm") {
-          endTimeFormat = action.format;
-          endMinute = action.minute;
-          if (action.hour <= 12) {
-            endHour = action.hour;
-          } else {
+        let endSecond = state.selectedEndSecond;
+        let endTimeValue;
+
+        if (!props.isSecondHide) {
+          if (props.clockTimeFormat === "am-pm") {
+            endTimeFormat = action.format;
             endMinute = action.minute;
+            endSecond = action.second;
+            if (action.hour <= 12) {
+              endHour = action.hour;
+            } else {
+              endMinute = action.minute;
+            }
+            endTimeValue = `${endHour}:${endMinute}:${endSecond} ${state.endTimeFormat}`;
+          } else {
+            endHour = action.hour;
+            endMinute = action.minute;
+            endSecond = action.second;
+            endTimeFormat = "";
+            endTimeValue = `${endHour}:${endMinute}:${endSecond}`;
           }
         } else {
-          endHour = action.hour;
-          endMinute = action.minute;
-          endTimeFormat = "";
+          if (props.clockTimeFormat === "am-pm") {
+            endTimeFormat = action.format;
+            endMinute = action.minute;
+            endSecond = action.second;
+            if (action.hour <= 12) {
+              endHour = action.hour;
+            } else {
+              endMinute = action.minute;
+            }
+            endTimeValue = `${endHour}:${endMinute} ${state.endTimeFormat}`;
+          } else {
+            endHour = action.hour;
+            endMinute = action.minute;
+            endSecond = action.second;
+            endTimeFormat = "";
+            endTimeValue = `${endHour}:${endMinute}`;
+          }
         }
         return {
           ...state,
@@ -898,7 +1650,8 @@ export default function VDateTimePicker(props) {
           show: "",
           selectedEndHour: endHour,
           selectedEndMinute: endMinute,
-          endTime: `${state.selectedEndHour}:${state.selectedEndMinute} ${state.endTimeFormat}`,
+          selectedEndSecond: endSecond,
+          endTime: endTimeValue,
         };
       case "SET_END_HOUR":
         return {
@@ -917,6 +1670,39 @@ export default function VDateTimePicker(props) {
           show: "",
         };
       // find end time from input field text :: end
+      // validate start input field :: start
+      case "VALIDATE_START":
+        return {
+          ...state,
+          validateStart: action.payload,
+        };
+      // validate start input field :: end
+      // validate end input field :: start
+      case "VALIDATE_END":
+        return {
+          ...state,
+          validateEnd: action.payload,
+        };
+      // validate end input field :: end
+      case "SHOW_ERROR_MSG":
+        const errorToggle = !state.hideError;
+        return {
+          ...state,
+          hideError: errorToggle,
+        };
+      case "SHOW_END_ERROR_MSG":
+        const errorEndToggle = !state.hideErrorEnd;
+        return {
+          ...state,
+          hideErrorEnd: errorEndToggle,
+        };
+
+      case "HIDE_ERROR_MSG":
+        return {
+          ...state,
+          hideError: true,
+          hideErrorEnd: true,
+        };
       default:
         return state;
     }
@@ -935,16 +1721,24 @@ export default function VDateTimePicker(props) {
     selectedEnd,
     selectedHour,
     selectedMinute,
+    selectedSecond,
     selectedEndHour,
     selectedEndMinute,
+    selectedEndSecond,
     time,
     endTime,
     showEndClock,
     presentYear,
     timeFormat,
     endTimeFormat,
+    validateStart,
+    validateEnd,
+    hideError,
+    hideErrorEnd,
   } = state;
   // reducer hook :: end
+
+  console.log(validateStart);
 
   // default variables :: begin
   const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -966,7 +1760,11 @@ export default function VDateTimePicker(props) {
   // default variables :: end
 
   // form variables
-  const startTime = props.range ? `${selectedHour}:${selectedMinute}` : "";
+  const startTime = props.range
+    ? props.isSecondHide
+      ? `${selectedHour}:${selectedMinute}`
+      : `${selectedHour}:${selectedMinute}:${selectedSecond}`
+    : "";
   const startTimeFormat = props.clockTimeFormat === "am-pm" ? timeFormat : "";
   const startInputValue =
     selectedStart &&
@@ -977,7 +1775,9 @@ export default function VDateTimePicker(props) {
   // ===============================================
 
   const endTimeValue = props.range
-    ? `${selectedEndHour}:${selectedEndMinute}`
+    ? props.isSecondHide
+      ? `${selectedEndHour}:${selectedEndMinute}`
+      : `${selectedEndHour}:${selectedEndMinute}:${selectedEndSecond}`
     : "";
   const endTimeFormatValue =
     props.clockTimeFormat === "am-pm" ? endTimeFormat : "";
@@ -1011,6 +1811,14 @@ export default function VDateTimePicker(props) {
 
   const handleMinuteChange = (e) => {
     dispatch({ type: "CHANGE_MINUTE", payload: e.target.value });
+  };
+
+  const handleSecondChange = (e) => {
+    dispatch({ type: "CHANGE_SECOND", payload: e.target.value });
+  };
+
+  const handleEndSecondChange = (e) => {
+    dispatch({ type: "CHANGE_END_SECOND", payload: e.target.value });
   };
 
   const handlePrevious = () => {
@@ -1073,24 +1881,41 @@ export default function VDateTimePicker(props) {
   const handleDocumentClick = (e) => {
     if (!e.target.closest(`#${id}`)) {
       dispatch({ type: "HIDE_CALENDAR" });
+      dispatch({ type: "HIDE_ERROR_MSG" });
+      dispatch({ type: "VALIDATE_START", payload: true });
+      dispatch({ type: "VALIDATE_END", payload: true });
     }
+  };
+
+  const handleShowError = () => {
+    dispatch({ type: "SHOW_ERROR_MSG" });
+  };
+
+  const handleShowEndError = () => {
+    dispatch({ type: "SHOW_END_ERROR_MSG" });
   };
   // handle event listeners :: end
 
   // useEffect hook :: begin
   useEffect(() => {
     props.onChange && props.onChange(startInputValue);
-  }, [selectedStart, selectedHour, selectedMinute, timeFormat]);
+  }, [selectedStart, selectedHour, selectedMinute, timeFormat, selectedSecond]);
 
   useEffect(() => {
     props.onEndChange && props.onEndChange(endInputValue);
-  }, [selectedEnd, selectedEndHour, selectedEndMinute, endTimeFormat]);
+  }, [
+    selectedEnd,
+    selectedEndHour,
+    selectedEndMinute,
+    endTimeFormat,
+    selectedEndSecond,
+  ]);
 
-  useEffect(() => {
-    if (props.range) {
-      dispatch({ type: "REMOVE_END_DATE" });
-    }
-  }, [props.range]);
+  // useEffect(() => {
+  //   if (props.range) {
+  //     dispatch({ type: "REMOVE_END_DATE" });
+  //   }
+  // }, [props.range]);
 
   useEffect(() => {
     document.addEventListener("click", handleDocumentClick);
@@ -1227,7 +2052,7 @@ export default function VDateTimePicker(props) {
   endDate = endDateFormat(str, separator);
 
   if (show === "show") {
-    if (month === minDate.getMonth() && year === minDate.getFullYear()) {
+    if (month === minCalDate.getMonth() && year === minCalDate.getFullYear()) {
       prevBtn = (
         <button disabled className="table-btn" onClick={handlePrevious}>
           &#x276E;
@@ -1258,19 +2083,32 @@ export default function VDateTimePicker(props) {
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
 
-    const str = format
-      .replace("DD", "\\d{2}")
-      .replace("MM", "\\d{2}")
-      .replace("YYYY", "\\d{4}");
+    let isDateValid;
+    let isTimeValid;
+
+    const lowercaseFormat = format.toLowerCase();
+    const lowercaseValue = value.toLowerCase();
+
+    const str = lowercaseFormat
+      .replace("dd", "\\d{2}")
+      .replace("mm", "\\d{2}")
+      .replace("yyyy", "\\d{4}");
 
     const regex = new RegExp(`^${str}$`);
+    isDateValid = lowercaseValue.match(regex);
 
-    if (value.match(regex)) {
-      const dd = value.slice(format.indexOf("DD"), format.indexOf("DD") + 2);
-      const mm = value.slice(format.indexOf("MM"), format.indexOf("MM") + 2);
+    if (isDateValid) {
+      const dd = value.slice(
+        lowercaseFormat.indexOf("dd"),
+        lowercaseFormat.indexOf("dd") + 2
+      );
+      const mm = value.slice(
+        lowercaseFormat.indexOf("mm"),
+        lowercaseFormat.indexOf("mm") + 2
+      );
       const yyyy = value.slice(
-        format.indexOf("YYYY"),
-        format.indexOf("YYYY") + 4
+        lowercaseFormat.indexOf("yyyy"),
+        lowercaseFormat.indexOf("yyyy") + 4
       );
 
       const dateArr = [yyyy, mm, dd];
@@ -1282,20 +2120,100 @@ export default function VDateTimePicker(props) {
       });
     }
 
-    const timeRegex = /(\d{2}:\d{2})/;
+    let timeRegex;
+    let amPm = "";
+    let capitalMeridiem;
 
-    const matches = value.match(timeRegex);
+    if (props.isSecondHide) {
+      timeRegex = /(\d{2}:\d{2})/;
+    } else {
+      timeRegex = /(\d{2}:\d{2}:\d{2})/;
+    }
 
-    if (matches && matches.length > 1) {
+    const matches = lowercaseValue.match(timeRegex);
+    isTimeValid = matches && matches.length > 1;
+
+    if (isTimeValid) {
       var time = matches[0];
       var hour = value.substr(matches.index, 2);
       var minute = value.substr(matches.index + 3, 2);
-      let amPm;
-      if (props.clockTimeFormat === "am-pm") {
+      let second;
+
+      if (!props.isSecondHide) {
+        second = value.substr(matches.index + 6, 2);
+        amPm = value.substr(matches.index + 9, 2);
+        capitalMeridiem = amPm.toUpperCase();
+      } else {
         amPm = value.substr(matches.index + 6, 2);
+        capitalMeridiem = amPm.toUpperCase();
       }
 
-      dispatch({ type: "SET_TIME", format: amPm, hour, minute });
+      dispatch({
+        type: "SET_TIME",
+        format: capitalMeridiem,
+        hour,
+        minute,
+        second,
+      });
+    }
+
+    // check valitity of input text
+    if (!props.hideError) {
+      let dateTimeRegex = regex;
+
+      if (props.selectedMode === "dateTime") {
+        dateTimeRegex = new RegExp(`^${str} ${timeRegex.source}$`, "i");
+
+        if (props.clockTimeFormat === "am-pm") {
+          dateTimeRegex = new RegExp(
+            `^${str} ${timeRegex.source} (AM|PM)$`,
+            "i"
+          );
+        }
+      }
+
+      const validate = value.match(dateTimeRegex);
+
+      if (validate) {
+        const year = parseInt(validate[0].substring(6, 11));
+        const month = parseInt(validate[0].substring(3, 5)); // Months are zero-based (0-11)
+        const day = parseInt(validate[0].substring(0, 2));
+        let hour = parseInt("00");
+        let minute = parseInt("00");
+        let second = parseInt("00");
+        let meridiem;
+
+        if (props.selectedMode === "dateTime") {
+          hour = parseInt(validate[0].substring(11, 13));
+          minute = parseInt(validate[0].substring(14, 16));
+
+          if (props.clockTimeFormat === "am-pm") {
+            if (!props.isSecondHide) {
+              second = parseInt(validate[0].substring(17, 19));
+              meridiem = validate[0].substring(20, 23);
+            } else {
+              meridiem = validate[0].substring(17, 19);
+            }
+
+            if (meridiem === "PM") {
+              hour += 12; // Convert to 24-hour format
+            }
+          }
+        } else {
+          if (!props.isSecondHide) {
+            second = parseInt(validate[0].substring(17, 19));
+          }
+        }
+
+        const dateObject = new Date(year, month, day, hour, minute, second);
+        const isValidDateTime =
+          !isNaN(dateObject) && dateObject instanceof Date;
+
+        dispatch({ type: "VALIDATE_START", payload: isValidDateTime });
+      } else {
+        console.log(validate);
+        dispatch({ type: "VALIDATE_START", payload: false });
+      }
     }
   };
 
@@ -1315,19 +2233,28 @@ export default function VDateTimePicker(props) {
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
 
-    const str = format
-      .replace("DD", "\\d{2}")
-      .replace("MM", "\\d{2}")
-      .replace("YYYY", "\\d{4}");
+    const lowercaseFormat = format.toLowerCase();
+    const lowercaseValue = value.toLowerCase();
+
+    const str = lowercaseFormat
+      .replace("dd", "\\d{2}")
+      .replace("mm", "\\d{2}")
+      .replace("yyyy", "\\d{4}");
 
     const regex = new RegExp(`^${str}$`);
 
-    if (value.match(regex)) {
-      const dd = value.slice(format.indexOf("DD"), format.indexOf("DD") + 2);
-      const mm = value.slice(format.indexOf("MM"), format.indexOf("MM") + 2);
-      const yyyy = value.slice(
-        format.indexOf("YYYY"),
-        format.indexOf("YYYY") + 4
+    if (lowercaseValue.match(regex)) {
+      const dd = lowercaseValue.slice(
+        lowercaseFormat.indexOf("dd"),
+        lowercaseFormat.indexOf("dd") + 2
+      );
+      const mm = lowercaseValue.slice(
+        lowercaseFormat.indexOf("mm"),
+        lowercaseFormat.indexOf("mm") + 2
+      );
+      const yyyy = lowercaseValue.slice(
+        lowercaseFormat.indexOf("yyyy"),
+        lowercaseFormat.indexOf("yyyy") + 4
       );
 
       const dateArr = [yyyy, mm, dd];
@@ -1339,17 +2266,98 @@ export default function VDateTimePicker(props) {
       });
     }
 
-    const timeRegex = /(\d{2}:\d{2})/;
+    let timeRegex;
+    let amPm = "";
+    let capitalMeridiem;
 
-    const matches = value.match(timeRegex);
+    if (props.isSecondHide) {
+      timeRegex = /(\d{2}:\d{2})/;
+    } else {
+      timeRegex = /(\d{2}:\d{2}:\d{2})/;
+    }
+
+    const matches = lowercaseValue.match(timeRegex);
 
     if (matches && matches.length > 1) {
       var time = matches[0];
       var hour = value.substr(matches.index, 2);
       var minute = value.substr(matches.index + 3, 2);
-      const amPm = value.substr(matches.index + 6, 2);
+      let second;
 
-      dispatch({ type: "SET_END_TIME", format: amPm, hour, minute });
+      if (!props.isSecondHide) {
+        second = value.substr(matches.index + 6, 2);
+        amPm = value.substr(matches.index + 8, 2);
+        capitalMeridiem = amPm.toUpperCase();
+      } else {
+        amPm = value.substr(matches.index + 6, 2);
+        capitalMeridiem = amPm.toUpperCase();
+      }
+
+      dispatch({
+        type: "SET_END_TIME",
+        format: capitalMeridiem,
+        hour,
+        minute,
+        second,
+      });
+    }
+
+    // check valitity of input text
+    if (!props.hideError) {
+      let dateTimeRegex = regex;
+
+      if (props.selectedMode === "dateTime") {
+        dateTimeRegex = new RegExp(`^${str} ${timeRegex.source}$`, "i");
+
+        if (props.clockTimeFormat === "am-pm") {
+          dateTimeRegex = new RegExp(
+            `^${str} ${timeRegex.source} (AM|PM)$`,
+            "i"
+          );
+        }
+      }
+
+      const validate = value.match(dateTimeRegex);
+
+      if (validate) {
+        const year = parseInt(validate[0].substring(6, 11));
+        const month = parseInt(validate[0].substring(3, 5)); // Months are zero-based (0-11)
+        const day = parseInt(validate[0].substring(0, 2));
+        let hour = parseInt("00");
+        let minute = parseInt("00");
+        let second = parseInt("00");
+        let meridiem;
+
+        if (props.selectedMode === "dateTime") {
+          hour = parseInt(validate[0].substring(11, 13));
+          minute = parseInt(validate[0].substring(14, 16));
+
+          if (props.clockTimeFormat === "am-pm") {
+            if (!props.isSecondHide) {
+              second = parseInt(validate[0].substring(17, 19));
+              meridiem = validate[0].substring(20, 23);
+            } else {
+              meridiem = validate[0].substring(17, 19);
+            }
+
+            if (meridiem === "PM") {
+              hour += 12; // Convert to 24-hour format
+            }
+          }
+        } else {
+          if (!props.isSecondHide) {
+            second = parseInt(validate[0].substring(17, 19));
+          }
+        }
+
+        const dateObject = new Date(year, month, day, hour, minute, second);
+        const isValidDateTime =
+          !isNaN(dateObject) && dateObject instanceof Date;
+
+        dispatch({ type: "VALIDATE_END", payload: isValidDateTime });
+      } else {
+        dispatch({ type: "VALIDATE_END", payload: false });
+      }
     }
   };
   function handleEndFocus() {
@@ -1378,8 +2386,8 @@ export default function VDateTimePicker(props) {
             {/* ===== calendar :: begin ===== */}
             <div className="calendar-header">
               <>
-                {month === minDate.getMonth() &&
-                year === minDate.getFullYear() ? (
+                {month === minCalDate.getMonth() &&
+                year === minCalDate.getFullYear() ? (
                   <button disabled className="table-btn" onClick={handleNext}>
                     &#x276E;
                   </button>
@@ -1411,8 +2419,8 @@ export default function VDateTimePicker(props) {
                     {yearOptions}
                   </select>
                 </div>
-                {month === maxDate.getMonth() &&
-                year === maxDate.getFullYear() ? (
+                {month === maximumDate.getMonth() &&
+                year === maximumDate.getFullYear() ? (
                   <button disabled className="table-btn" onClick={handleNext}>
                     &#x276F;
                   </button>
@@ -1466,7 +2474,10 @@ export default function VDateTimePicker(props) {
                             <td
                               key={j}
                               className={`day ${
-                                day < 1 || day > lastDayOfMonth
+                                day < 1 ||
+                                day > lastDayOfMonth ||
+                                currentDate < minCalDate ||
+                                currentDate > maximumDate
                                   ? "disabled"
                                   : selectedStart &&
                                     selectedEnd &&
@@ -1496,8 +2507,8 @@ export default function VDateTimePicker(props) {
                                     year === currentDate.getFullYear()
                                   ? "current"
                                   : ""
-                              } ${currentDate < minDate ? "disabled" : ""} ${
-                                currentDate > maxDate ? "disabled" : ""
+                              } ${currentDate < minCalDate ? "disabled" : ""} ${
+                                currentDate > maximumDate ? "disabled" : ""
                               }${
                                 selectedStart &&
                                 new Date(year, month, day) < selectedStart
@@ -1558,6 +2569,18 @@ export default function VDateTimePicker(props) {
                         >
                           {minuteOptions}
                         </select>
+                        {!props.isSecondHide && (
+                          <>
+                            <span>:</span>
+                            <select
+                              className="table-select"
+                              value={selectedSecond}
+                              onChange={handleSecondChange}
+                            >
+                              {minuteOptions}
+                            </select>
+                          </>
+                        )}
                         {props.clockTimeFormat === "am-pm" && (
                           <button
                             className="format-btn"
@@ -1582,11 +2605,23 @@ export default function VDateTimePicker(props) {
                         <span>:</span>
                         <select
                           className="table-select"
-                          value={selectedEndMinute}
-                          onChange={handleEndMinuteChange}
+                          value={selectedEndSecond}
+                          onChange={handleEndSecondChange}
                         >
                           {minuteOptions}
                         </select>
+                        {!props.isSecondHide && (
+                          <>
+                            <span>:</span>
+                            <select
+                              className="table-select"
+                              value={selectedEndMinute}
+                              onChange={handleEndMinuteChange}
+                            >
+                              {minuteOptions}
+                            </select>
+                          </>
+                        )}
 
                         {props.clockTimeFormat === "am-pm" && (
                           <button
@@ -1620,8 +2655,9 @@ export default function VDateTimePicker(props) {
           <div
             className={`text-box ${props.isDisabled ? "disabled" : ""} ${
               show === "show" ? "focus" : ""
-            } ${props.isReadOnly ? "read-only" : ""}`}
-            onClick={handleShow}
+            } ${props.isReadOnly ? "read-only" : ""} ${
+              validateStart ? "" : "error"
+            }`}
             disabled={props.isDisabled || props.isReadOnly}
           >
             {state.isFocused ? (
@@ -1631,7 +2667,10 @@ export default function VDateTimePicker(props) {
                 onChange={handleDateChange}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                className={selectedStart ? "selected" : ""}
+                onClick={handleShow}
+                className={`${selectedStart ? "selected" : ""} ${
+                  validateStart ? "error" : ""
+                }`}
                 placeholder={
                   props.placeholder
                     ? props.placeholder
@@ -1646,13 +2685,22 @@ export default function VDateTimePicker(props) {
               <input
                 style={{ padding: "12px" }}
                 type="text"
+                onClick={handleShow}
                 onChange={handleDateChange}
                 value={`${selectedStart ? startDate : ""}${
-                  props.selectedMode ? (showClock !== "" ? ` ${time}` : "") : ""
+                  props.selectedMode
+                    ? showClock !== ""
+                      ? time !== ""
+                        ? ` ${time}`
+                        : ""
+                      : ""
+                    : ""
                 }`}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                className={selectedStart ? "selected" : ""}
+                className={`${selectedStart ? "selected" : ""} ${
+                  validateStart ? "error" : ""
+                }`}
                 placeholder={
                   props.placeholder
                     ? props.placeholder
@@ -1664,22 +2712,33 @@ export default function VDateTimePicker(props) {
                 name={props.name}
               />
             )}
+
+            {!validateStart && (
+              <button onClick={handleShowError} className="error-icon">
+                &#x274C;
+              </button>
+            )}
+            <p className={`error-msg-wrap${hideError ? " hide" : ""}`}>
+              {props.errorMsg ? props.errorMsg : "Invalid value in input"}
+            </p>
           </div>
           <div
             className={
               props.range
                 ? `text-box ${props.isDisabled ? "disabled" : ""} ${
                     show === "show-end" ? "focus" : ""
-                  } ${props.isReadOnly ? "read-only" : ""}`
+                  } ${props.isReadOnly ? "read-only" : ""} ${
+                    validateEnd ? "" : "error"
+                  }`
                 : "d-none"
             }
-            onClick={handleShowEnd}
             disabled={props.isDisabled || props.isReadOnly}
           >
             {state.isEndFocused ? (
               <input
                 style={{ padding: "12px" }}
                 type="text"
+                onClick={handleShowEnd}
                 onChange={handleEndDateChange}
                 onBlur={handleEndBlur}
                 onFocus={handleEndFocus}
@@ -1698,17 +2757,16 @@ export default function VDateTimePicker(props) {
               <input
                 style={{ padding: "12px" }}
                 type="text"
+                onClick={handleShowEnd}
                 onChange={handleEndDateChange}
                 disabled={props.isDisabled || props.isReadOnly}
                 name={props.eName}
-                value={`${
-                  selectedEnd >= selectedStart && selectedEnd
-                    ? `${endDate}`
-                    : ""
-                }${
+                value={`${selectedEnd ? endDate : ""}${
                   props.selectedMode
                     ? showEndClock !== ""
-                      ? ` ${endTime}`
+                      ? endTime !== ""
+                        ? ` ${endTime}`
+                        : ""
                       : ""
                     : ""
                 }`}
@@ -1724,6 +2782,15 @@ export default function VDateTimePicker(props) {
                 }
               />
             )}
+
+            {!validateEnd && (
+              <button onClick={handleShowEndError} className="error-icon">
+                &#x274C;
+              </button>
+            )}
+            <p className={`error-msg-wrap${hideErrorEnd ? " hide" : ""}`}>
+              {props.errorMsg ? props.errorMsg : "Invalid value in input"}
+            </p>
           </div>
         </div>
         {/* ===== display value :: end ===== */}

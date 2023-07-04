@@ -210,6 +210,29 @@ button svg {
 .calendar-wrap .text-box {
   display: flex;
   align-items: center;
+  outline: none;
+  padding-right: 12px;
+  position: relative;
+}
+
+.calendar-wrap .text-box p.error-msg-wrap {
+  position: absolute;
+  right: 1%;
+  bottom: -56%;
+  background: #fff;
+  padding: 5px 10px;
+  border: 1px solid #d62929;
+  color: #d62929;
+}
+
+.calendar-wrap .text-box p.error-msg-wrap.hide {
+  display: none;
+}
+
+.error-icon {
+  color: #d62929;
+  background: none;
+  border: none;
 }
 
 .calendar-wrap .text-box p {
@@ -225,6 +248,14 @@ button svg {
   box-shadow: 0 0 4px rgb(41 145 214 / 30%);
   -webkit-box-shadow: 0 0 4px rgb(41 145 214 / 30%);
   -moz-box-shadow: 0 0 4px rgba(41, 145, 214, 0.3);
+  outline: 0;
+}
+
+.calendar-wrap .text-box.error {
+  border: 1px solid #d62929;
+  box-shadow: 0 0 4px rgba(214, 41, 41, 0.3);
+  -webkit-box-shadow: 0 0 4px rgba(214, 41, 41, 0.3);
+  -moz-box-shadow: 0 0 4px rgba(214, 41, 41, 0.3);
   outline: 0;
 }
 
@@ -268,6 +299,7 @@ button svg {
   background: none;
   margin: 0;
   width: 100%;
+  outline: none;
 }
 
 .date-time-range-picker,
