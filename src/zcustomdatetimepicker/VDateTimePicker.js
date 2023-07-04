@@ -39,7 +39,7 @@ export default function VDateTimePicker(props) {
     hideErrorEnd: true,
   };
   // initial value :: end
-  // hello  
+  // hello
 
   const maximumDate = new Date(props.maxDate);
   let minCalDate = props.minDate;
@@ -97,7 +97,6 @@ export default function VDateTimePicker(props) {
 
   // reducer :: begin
   const reducer = (state, action) => {
-    console.log('date',action)
     switch (action.type) {
       // basic functions :: begin
       case "SET_CURRENT_DATE":
@@ -107,8 +106,8 @@ export default function VDateTimePicker(props) {
           month: action.payload.getMonth(),
           year: action.payload.getFullYear(),
         };
-        
-        case "SET_MONTH":
+
+      case "SET_MONTH":
         return {
           ...state,
           month: action.payload.getMonth(),
@@ -175,9 +174,8 @@ export default function VDateTimePicker(props) {
         return {
           ...state,
           selectedEndHour: action.payload,
-          
         };
-        
+
       case "CHANGE_END_MINUTE":
         return {
           ...state,
@@ -293,16 +291,15 @@ export default function VDateTimePicker(props) {
           showEndClock: "",
           showYear: "",
         };
-        
 
-        // changes //    
-      case "UNDO_START":  
+      // changes //
+      case "UNDO_START":
         return {
           ...state,
           selectedStart: new Date(action.payload),
         };
 
-        case "UNDO_END":  
+      case "UNDO_END":
         return {
           ...state,
           selectedEnd: new Date(action.payload),
@@ -311,8 +308,8 @@ export default function VDateTimePicker(props) {
       case "UNDO_STATE":
         return {
           ...state,
-          undoDate: action.payload
-        }
+          undoDate: action.payload,
+        };
 
       case "CHANGE_YEAR":
         return {
@@ -377,7 +374,6 @@ export default function VDateTimePicker(props) {
       case "CHANGE_MONTH":
         let newChangeMonth = parseInt(action.payload);
         let newSelectedMonth = parseInt(action.payload);
-        console.log('new',newSelectedMonth);
 
         if (minCalDate.getFullYear() === state.year) {
           if (minCalDate.getMonth() > newChangeMonth) {
@@ -409,10 +405,8 @@ export default function VDateTimePicker(props) {
       // year change :: begin
       case "CHANGE_YEAR_LIST":
         let setYear = parseInt(action.payload);
-        console.log('sets',setYear);
 
         let setSelectedYear = parseInt(action.payload);
-        console.log('set',setSelectedYear);
         let listChangeMonth = state.month;
         let listSelectedMonth = state.selectedMonth;
         if (minCalDate.getFullYear() > setYear) {
@@ -1767,17 +1761,13 @@ export default function VDateTimePicker(props) {
     previousSelectedEndDate,
     undoDate,
 
-
     validateStart,
     validateEnd,
     hideError,
     hideErrorEnd,
   } = state;
 
-   
   // reducer hook :: end
-
-  console.log(validateStart);
 
   // default variables :: begin
   const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -1807,7 +1797,8 @@ export default function VDateTimePicker(props) {
   const startTimeFormat = props.clockTimeFormat === "am-pm" ? timeFormat : "";
   const startInputValue =
     selectedStart &&
-    `${selectedStart.getDate()}/${selectedStart.getMonth() + 1
+    `${selectedStart.getDate()}/${
+      selectedStart.getMonth() + 1
     }/${selectedStart.getFullYear()} ${startTime} ${startTimeFormat}`;
 
   // ===============================================
@@ -1821,7 +1812,8 @@ export default function VDateTimePicker(props) {
     props.clockTimeFormat === "am-pm" ? endTimeFormat : "";
   const endInputValue =
     selectedEnd &&
-    `${selectedEnd.getDate()}/${selectedEnd.getMonth() + 1
+    `${selectedEnd.getDate()}/${
+      selectedEnd.getMonth() + 1
     }/${selectedEnd.getFullYear()} ${endTimeValue} ${endTimeFormatValue}`;
   // form variables
 
@@ -1891,15 +1883,14 @@ export default function VDateTimePicker(props) {
   };
   // changes //
   const handleStartUndo = () => {
-    let pervious = previousSelectedStartDate[previousSelectedStartDate.length-2]
-    dispatch({ type: "UNDO_START",payload:pervious });
-    console.log('dateCheckstart', pervious)
-  }
+    let pervious =
+      previousSelectedStartDate[previousSelectedStartDate.length - 2];
+    dispatch({ type: "UNDO_START", payload: pervious });
+  };
   const handleEndUndo = () => {
-    let next = previousSelectedEndDate[previousSelectedEndDate.length-2]
-    dispatch({ type: "UNDO_END",payload:next });
-    console.log('dateCheckend', next)
-  }
+    let next = previousSelectedEndDate[previousSelectedEndDate.length - 2];
+    dispatch({ type: "UNDO_END", payload: next });
+  };
   const handleEnable = () => {
     props.setIsDisabled(!props.isDisabled);
   };
@@ -1916,23 +1907,16 @@ export default function VDateTimePicker(props) {
     dispatch({ type: "APPLY" });
   };
 
-
   // changes //
   const handleDayClick = (day) => {
-
     if (show === "show") {
-      console.log('start')
       previousSelectedStartDate.push(`${year}-${month + 1}-${day}`);
-      dispatch({ type: "UNDO_STATE", payload: "start"})
+      dispatch({ type: "UNDO_STATE", payload: "start" });
     } else {
-      // undoDate === "show-end";
-      console.log(`${year}-${month + 1}-${day}`)
-
       previousSelectedEndDate.push(`${year}-${month + 1}-${day}`);
-      dispatch({ type: "UNDO_STATE", payload: "end"})
-
+      dispatch({ type: "UNDO_STATE", payload: "end" });
     }
-  
+
     dispatch({
       type: "SELECT_DATE",
       year,
@@ -1940,8 +1924,6 @@ export default function VDateTimePicker(props) {
       day,
     });
   };
-  console.log("pre",previousSelectedEndDate)
-
 
   const handleDocumentClick = (e) => {
     if (!e.target.closest(`#${id}`)) {
@@ -2051,10 +2033,10 @@ export default function VDateTimePicker(props) {
   const separator = str.includes("/")
     ? "/"
     : str.includes("-")
-      ? "-"
-      : str.includes(".")
-        ? "."
-        : "";
+    ? "-"
+    : str.includes(".")
+    ? "."
+    : "";
 
   let startDateNumber;
   if (selectedStart?.getDate() < 10) {
@@ -2276,7 +2258,6 @@ export default function VDateTimePicker(props) {
 
         dispatch({ type: "VALIDATE_START", payload: isValidDateTime });
       } else {
-        console.log(validate);
         dispatch({ type: "VALIDATE_START", payload: false });
       }
     }
@@ -2345,7 +2326,6 @@ export default function VDateTimePicker(props) {
 
     if (matches && matches.length > 1) {
       var time = matches[0];
-      console.log('time' ,time)
       var hour = value.substr(matches.index, 2);
       var minute = value.substr(matches.index + 3, 2);
       let second;
@@ -2548,7 +2528,7 @@ export default function VDateTimePicker(props) {
                                   : selectedStart &&
                                     selectedEnd &&
                                     selectedStart <=
-                                    new Date(year, month, day) &&
+                                      new Date(year, month, day) &&
                                     selectedEnd >= new Date(year, month, day)
                                   ? day === selectedStart.getDate() &&
                                     month === selectedStart.getMonth() &&
@@ -2580,7 +2560,7 @@ export default function VDateTimePicker(props) {
                                 new Date(year, month, day) < selectedStart
                                   ? show === "show-end" && "disabled"
                                   : ""
-                                }`}
+                              }`}
                               onClick={() => handleDayClick(day)}
                             >
                               {day > 0 && day <= lastDayOfMonth ? day : ""}
@@ -2595,12 +2575,13 @@ export default function VDateTimePicker(props) {
 
             {/* ===== display value :: begin ===== */}
             <div
-              className={`time-range-wrap ${show === "show"
+              className={`time-range-wrap ${
+                show === "show"
                   ? showClock === "show" && "show"
                   : show === "show-end"
-                    ? showEndClock === "show" && "show-end"
-                    : ""
-                }`}
+                  ? showEndClock === "show" && "show-end"
+                  : ""
+              }`}
             >
               <div className="time-wrap">
                 {props.selectedMode === "dateTime" && (
@@ -2611,8 +2592,8 @@ export default function VDateTimePicker(props) {
                         show === "show"
                           ? handleShowClock
                           : show === "show-end"
-                            ? handleShowEndClock
-                            : undefined
+                          ? handleShowEndClock
+                          : undefined
                       }
                     >
                       🕒
@@ -2740,8 +2721,8 @@ export default function VDateTimePicker(props) {
                   props.placeholder
                     ? props.placeholder
                     : props.format
-                      ? props.format
-                      : "DD/MM/YYYY"
+                    ? props.format
+                    : "DD/MM/YYYY"
                 }
                 disabled={props.isDisabled || props.isReadOnly}
                 name={props.name}
@@ -2770,8 +2751,8 @@ export default function VDateTimePicker(props) {
                   props.placeholder
                     ? props.placeholder
                     : props.format
-                      ? props.format
-                      : "DD/MM/YYYY"
+                    ? props.format
+                    : "DD/MM/YYYY"
                 }
                 disabled={props.isDisabled || props.isReadOnly}
                 name={props.name}
@@ -2812,9 +2793,8 @@ export default function VDateTimePicker(props) {
                   props.placeholder
                     ? props.placeholder
                     : props.format
-                    
-                      ? props.format
-                      : "DD/MM/YYYY"
+                    ? props.format
+                    : "DD/MM/YYYY"
                 }
                 disabled={props.isDisabled || props.isReadOnly}
                 name={props.eName}
@@ -2835,7 +2815,7 @@ export default function VDateTimePicker(props) {
                         : ""
                       : ""
                     : ""
-                  }`}
+                }`}
                 onBlur={handleEndBlur}
                 onFocus={handleEndFocus}
                 className={selectedEnd ? "selected" : ""}
@@ -2843,8 +2823,8 @@ export default function VDateTimePicker(props) {
                   props.placeholder
                     ? props.placeholder
                     : props.format
-                      ? props.format
-                      : "DD/MM/YYYY"
+                    ? props.format
+                    : "DD/MM/YYYY"
                 }
               />
             )}
@@ -2867,20 +2847,23 @@ export default function VDateTimePicker(props) {
         </button>
       )}
 
-      {undoDate === "start" ? (<button className="table-btn" onClick={handleStartUndo}>
-      StartUndo
-    </button>) : undoDate === "end" ? (<button className="table-btn" onClick={handleEndUndo}>
-    EndUndo
-  </button>) : ''}
+      {undoDate === "start" ? (
+        <button className="table-btn" onClick={handleStartUndo}>
+          Undo
+        </button>
+      ) : undoDate === "end" ? (
+        <button className="table-btn" onClick={handleEndUndo}>
+          Undo
+        </button>
+      ) : (
+        ""
+      )}
 
       {props.resetControl && (
         <button className="table-btn" onClick={handleReset}>
-          Reset      
+          Reset
         </button>
-        
-        )}
-
-
+      )}
     </div>
   );
 }
