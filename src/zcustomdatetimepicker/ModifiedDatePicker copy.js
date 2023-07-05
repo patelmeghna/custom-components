@@ -28,6 +28,7 @@ export default function ModifiedDatePicker(props) {
     value: "hi",
     isFocused: false,
     isEndFocused: false,
+  
   };
   // initial value :: end
 
@@ -208,6 +209,7 @@ export default function ModifiedDatePicker(props) {
           ...state,
           selectedStart: null,
           selectedEnd: null,
+         
           month: state.currentDate.getMonth(),
           year: state.currentDate.getFullYear(),
           time: "hh:mm",
@@ -221,7 +223,7 @@ export default function ModifiedDatePicker(props) {
           showEndClock: "",
           showYear: "",
         };
-
+    
       case "CHANGE_YEAR":
         return {
           ...state,
@@ -824,6 +826,7 @@ export default function ModifiedDatePicker(props) {
     presentYear,
     timeFormat,
     endTimeFormat,
+   
   } = state;
   // reducer hook :: end
 
@@ -883,6 +886,8 @@ export default function ModifiedDatePicker(props) {
   const handleReset = () => {
     dispatch({ type: "RESET" });
   };
+
+ 
 
   const handleEnable = () => {
     props.setIsDisabled(!props.isDisabled);
