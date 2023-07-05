@@ -12,12 +12,13 @@ function DatePicker() {
         id="date-picker-1"
         className="custom-date-picker"
         // defaultValue={"2022-02-12 12:12"}
-        // minDate
+        minDate
         // range
+        isMinTime
         selectedMode="dateTime"
         // hideError
         // errorMsg="Dummy error msg"
-        isSecondHide
+        // isSecondHide
         format="dd-mm-yyyy"
         // clockTimeFormat="am-pm"
         placeholder="Add date"
