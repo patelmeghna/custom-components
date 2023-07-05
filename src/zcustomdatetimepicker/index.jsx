@@ -11,7 +11,7 @@ function DatePicker() {
       <VDateTimePicker
         id="date-picker-1"
         className="custom-date-picker"
-        // defaultValue={"2022-02-12 12:12 To 2022-03-23 12:20"}
+        defaultValue={"2022-02-12 12:12:00 To 2022-01-23 12:20:10"}
         // minDate
         range
         isMinTime

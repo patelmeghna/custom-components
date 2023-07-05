@@ -117,23 +117,38 @@ export default function VDateTimePicker(props) {
           endTimeHour,
           minute,
           endTimeMinute,
+          second,
+          endTimeSecond,
           showStartClock,
           showEndClock,
           defaultStartTime,
           defaultEndSelectedTime,
-          rangeEndDate;
+          rangeEndDate,
+          rangeStartDate;
 
         if (defaultTime !== undefined) {
-          defaultStartTime = defaultTime;
-          [hour, minute] = defaultTime.split(":");
+          [hour, minute, second] = defaultTime.split(":");
+
+          if (!props.isSecondHide) {
+            defaultStartTime = defaultTime;
+          } else {
+            defaultStartTime = `${hour}:${minute}`;
+          }
           showStartClock = "show";
         } else {
           defaultStartTime = "";
         }
 
         if (defaultEndTime !== undefined) {
-          defaultEndSelectedTime = defaultEndTime;
-          [endTimeHour, endTimeMinute] = defaultEndTime.split(":");
+          [endTimeHour, endTimeMinute, endTimeSecond] =
+            defaultEndTime.split(":");
+
+          if (!props.isSecondHide) {
+            defaultEndSelectedTime = defaultEndTime;
+          } else {
+            defaultEndSelectedTime = `${endTimeHour}:${endTimeMinute}`;
+          }
+
           showEndClock = "show";
         } else {
           defaultEndSelectedTime = "";
@@ -141,17 +156,28 @@ export default function VDateTimePicker(props) {
 
         let defaultMonth = defaultDate.getMonth();
         let defaultYear = defaultDate.getFullYear();
-        if (props.range && defaultEnd !== undefined) {
-          defaultMonth = defaultEnd.getMonth();
-          defaultYear = defaultEnd.getFullYear();
+
+        if (props.minDate && defaultDate > props.minDate) {
+          rangeStartDate = defaultDate;
+        } else {
+          rangeStartDate = new Date();
         }
 
-        if (props.range) {
-          rangeEndDate = defaultEnd;
+        if (props.range && defaultEnd !== undefined) {
+          if (defaultEnd > defaultDate) {
+            defaultMonth = defaultEnd.getMonth();
+            defaultYear = defaultEnd.getFullYear();
+            rangeEndDate = defaultEnd;
+          } else {
+            defaultMonth = rangeStartDate.getMonth();
+            defaultYear = rangeStartDate.getFullYear();
+            rangeEndDate = rangeStartDate;
+          }
         }
+
         return {
           ...state,
-          selectedStart: defaultDate,
+          selectedStart: rangeStartDate,
           selectedEnd: rangeEndDate,
           month: defaultMonth,
           year: defaultYear,
@@ -167,6 +193,8 @@ export default function VDateTimePicker(props) {
           selectedMinute: minute,
           selectedEndHour: endTimeHour,
           selectedEndMinute: endTimeMinute,
+          selectedSecond: second,
+          selectedEndSecond: endTimeSecond,
         };
 
       case "CHANGE_END_HOUR":
@@ -1840,13 +1868,41 @@ export default function VDateTimePicker(props) {
     previousSelectedStartDate,
     previousSelectedEndDate,
     undoDate,
-
     validateStart,
     validateEnd,
     hideError,
     hideErrorEnd,
   } = state;
   // reducer hook :: end
+
+  let day;
+
+  if (selectedStart === null) {
+    day = new Date().getDate();
+  } else {
+    day = selectedStart.getDate();
+  }
+
+  const fullDateFormat = new Date(
+    year,
+    month,
+    day,
+    selectedHour,
+    selectedMinute,
+    selectedSecond
+  );
+
+  const endDay = selectedEnd && selectedEnd.getDate();
+  const fullEndDateFormat =
+    endDay &&
+    new Date(
+      year,
+      month,
+      endDay,
+      selectedEndHour,
+      selectedEndMinute,
+      selectedEndSecond
+    );
 
   // default variables :: begin
   const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -1966,7 +2022,6 @@ export default function VDateTimePicker(props) {
       previousSelectedStartDate[previousSelectedStartDate.length - 2];
     previousSelectedStartDate.pop();
     dispatch({ type: "UNDO_START", payload: pervious });
-    console.log(selectedStart);
   };
   const handleEndUndo = () => {
     let next = previousSelectedEndDate[previousSelectedEndDate.length - 2];
@@ -2063,7 +2118,7 @@ export default function VDateTimePicker(props) {
     if (props.defaultValue) {
       dispatch({ type: "DEFAULT_VALUES" });
     }
-  }, [props.defaultValue, props.range]);
+  }, [props.defaultValue, props.range, props.isSecondHide]);
 
   useEffect(() => {
     dispatch({ type: "TOGGLE_SHOW" });
@@ -2755,7 +2810,7 @@ export default function VDateTimePicker(props) {
                         <span>:</span>
                         <select
                           className="table-select"
-                          value={selectedEndSecond}
+                          value={selectedEndMinute}
                           onChange={handleEndSecondChange}
                         >
                           {minuteOptions}
@@ -2765,7 +2820,7 @@ export default function VDateTimePicker(props) {
                             <span>:</span>
                             <select
                               className="table-select"
-                              value={selectedEndMinute}
+                              value={selectedEndSecond}
                               onChange={handleEndMinuteChange}
                             >
                               {minuteOptions}
