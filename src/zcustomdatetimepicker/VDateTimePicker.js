@@ -502,10 +502,10 @@ export default function VDateTimePicker(props) {
         let hideEndSingleSecond = "";
 
         if (!props.isSecondHide) {
-          hideSecond = `:${state.selectedSecond}`;
-          singleLetterSecond = `:0${state.selectedSecond}`;
-          hideEndSecond = `:${state.selectedEndSecond}`;
-          hideEndSingleSecond = `:0${state.selectedEndSecond}`;
+          hideSecond = `${state.selectedSecond}`;
+          singleLetterSecond = `0${state.selectedSecond}`;
+          hideEndSecond = `${state.selectedEndSecond}`;
+          hideEndSingleSecond = `0${state.selectedEndSecond}`;
         }
 
         if (props.clockTimeFormat !== "am-pm") {
@@ -771,9 +771,9 @@ export default function VDateTimePicker(props) {
 
             return {
               ...state,
-              time: `24:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
+              time: `${state.selectedHour}:${state.selectedMinute}:00 ${newTimeFormat}`,
               show: toggleTime,
-              selectedHour: "24",
+              selectedSecond: "00",
             };
           }
           if (
@@ -870,7 +870,7 @@ export default function VDateTimePicker(props) {
               }
             }
           }
-          if (state.selectedStart !== null) {
+          if (state.selectedStart === null) {
             if (state.time === null || state.time === "") {
               if (!props.isSecondHide) {
                 if (props.clockTimeFormat === "am-pm") {
@@ -908,6 +908,69 @@ export default function VDateTimePicker(props) {
                   return {
                     ...state,
                     selectedStart: new Date(),
+                    selectedHour: "00",
+                    selectedMinute: "00",
+                    time: `00:00 ${newTimeFormat}`,
+                    show: toggleTime,
+                  };
+                }
+              }
+            }
+            if (state.time !== null || state.time !== "") {
+              if (props.clockTimeFormat === "am-pm") {
+                return {
+                  ...state,
+                  selectedHour: state.selectedHour,
+                  selectedMinute: state.selectedMinute,
+                  selectedSecond: state.selectedSecond,
+                  time: `${state.selectedHour}:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
+                  show: toggleTime,
+                };
+              } else {
+                return {
+                  ...state,
+                  selectedHour: state.selectedHour,
+                  selectedMinute: state.selectedMinute,
+                  selectedSecond: state.selectedSecond,
+                  time: `${state.selectedHour}:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
+                  show: toggleTime,
+                };
+              }
+            }
+          } else {
+            if (state.time === null || state.time === "") {
+              if (!props.isSecondHide) {
+                if (props.clockTimeFormat === "am-pm") {
+                  return {
+                    ...state,
+                    selectedHour: "12",
+                    selectedMinute: "00",
+                    selectedSecond: "00",
+                    time: `12:00:00 ${newTimeFormat}`,
+                    show: toggleTime,
+                  };
+                } else {
+                  return {
+                    ...state,
+                    selectedHour: "00",
+                    selectedMinute: "00",
+                    selectedSecond: "00",
+                    time: `00:00:00 ${newTimeFormat}`,
+                    show: toggleTime,
+                  };
+                }
+              } else {
+                if (props.clockTimeFormat === "am-pm") {
+                  return {
+                    ...state,
+                    selectedHour: "12",
+                    selectedMinute: "00",
+                    time: `12:00 ${newTimeFormat}`,
+                    show: toggleTime,
+                  };
+                } else {
+                  return {
+                    ...state,
                     selectedHour: "00",
                     selectedMinute: "00",
                     time: `00:00 ${newTimeFormat}`,
@@ -1516,11 +1579,19 @@ export default function VDateTimePicker(props) {
               show: state.showClock === "" ? "show-end" : "show",
             };
           } else {
-            return {
-              ...state,
-              selectedEnd: selected,
-              show: state.showEndClock === "" ? "" : state.show,
-            };
+            if (selected < state.selectedStart) {
+              return {
+                ...state,
+                selectedStart: selected,
+                show: "show",
+              };
+            } else {
+              return {
+                ...state,
+                selectedEnd: selected,
+                show: state.showEndClock === "" ? "" : state.show,
+              };
+            }
           }
         }
       // date select :: end
@@ -2321,12 +2392,19 @@ export default function VDateTimePicker(props) {
       const dateArr = [yyyy, mm, dd];
       const rearrangedDateStr = dateArr.join("-");
 
-      previousSelectedEndDate.push(rearrangedDateStr);
+      if (new Date(rearrangedDateStr) > selectedStart) {
+        dispatch({
+          type: "SET_SELECTED_END",
+          payload: new Date(rearrangedDateStr),
+        });
+      } else {
+        dispatch({
+          type: "SET_SELECTED_END",
+          payload: selectedStart,
+        });
+      }
 
-      dispatch({
-        type: "SET_SELECTED_END",
-        payload: new Date(rearrangedDateStr),
-      });
+      previousSelectedEndDate.push(rearrangedDateStr);
     }
 
     let timeRegex;
