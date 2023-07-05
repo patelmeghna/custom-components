@@ -235,6 +235,15 @@ button svg {
   border: none;
 }
 
+.clear-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-right: 5px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
 .calendar-wrap .text-box p {
   color: #d8d8d8;
 }

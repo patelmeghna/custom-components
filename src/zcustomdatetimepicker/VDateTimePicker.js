@@ -239,6 +239,12 @@ export default function VDateTimePicker(props) {
           showStart =
             state.show === "" || state.show === "show-end" ? "show" : "";
         }
+
+        if (!props.range) {
+          if (state.show === "show-end") {
+            showStart = "";
+          }
+        }
         return {
           ...state,
           show: showStart,
@@ -1765,7 +1771,6 @@ export default function VDateTimePicker(props) {
     hideError,
     hideErrorEnd,
   } = state;
-
   // reducer hook :: end
 
   // default variables :: begin
@@ -1983,7 +1988,11 @@ export default function VDateTimePicker(props) {
     if (props.defaultValue) {
       dispatch({ type: "DEFAULT_VALUES" });
     }
-  }, [props.defaultValue]);
+  }, [props.defaultValue, props.range]);
+
+  useEffect(() => {
+    dispatch({ type: "TOGGLE_SHOW" });
+  }, [props.range]);
 
   // useEffect hook :: end
 
@@ -2271,6 +2280,10 @@ export default function VDateTimePicker(props) {
     props.onBlur && props.onBlur();
   }
 
+  function handleClearClick() {
+    props.clearClick && props.clearClick();
+  }
+
   //  =========================================================
 
   const handleEndDateChange = (event) => {
@@ -2416,6 +2429,10 @@ export default function VDateTimePicker(props) {
     props.onEndBlur && props.onEndBlur();
   }
 
+  function handleClearClickEnd() {
+    props.clearClickEnd && props.clearClickEnd();
+  }
+
   /* =================================
      =================================
      function for input value :: end
@@ -2434,11 +2451,15 @@ export default function VDateTimePicker(props) {
               <>
                 {month === minCalDate.getMonth() &&
                 year === minCalDate.getFullYear() ? (
-                  <button disabled className="table-btn" onClick={handleNext}>
+                  <button
+                    disabled
+                    className="table-btn"
+                    onClick={handlePrevious}
+                  >
                     &#x276E;
                   </button>
                 ) : (
-                  <button className="table-btn" onClick={handleNext}>
+                  <button className="table-btn" onClick={handlePrevious}>
                     &#x276E;
                   </button>
                 )}
@@ -2536,9 +2557,10 @@ export default function VDateTimePicker(props) {
                                     ? "first-date"
                                     : day === selectedEnd.getDate() &&
                                       month === selectedEnd.getMonth() &&
-                                      year === selectedEnd.getFullYear()
+                                      year === selectedEnd.getFullYear() &&
+                                      props.range
                                     ? "last-date"
-                                    : "in-range"
+                                    : props.range && "in-range"
                                   : selectedStart &&
                                     selectedStart.getDate() === day &&
                                     selectedStart.getMonth() === month &&
@@ -2761,6 +2783,11 @@ export default function VDateTimePicker(props) {
               />
             )}
 
+            {props.isClear && (
+              <button onClick={handleClearClick} className="clear-btn">
+                &#x232B;
+              </button>
+            )}
             {!validateStart && (
               <button onClick={handleShowError} className="error-icon">
                 &#x274C;
@@ -2833,6 +2860,11 @@ export default function VDateTimePicker(props) {
               />
             )}
 
+            {props.isClear && (
+              <button onClick={handleClearClickEnd} className="clear-btn">
+                &#x232B;
+              </button>
+            )}
             {!validateEnd && (
               <button onClick={handleShowEndError} className="error-icon">
                 &#x274C;
