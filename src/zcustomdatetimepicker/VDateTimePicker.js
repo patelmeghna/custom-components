@@ -30,14 +30,13 @@ export default function VDateTimePicker(props) {
     isEndFocused: false,
     previousSelectedStartDate: [],
     previousSelectedEndDate: [],
-    undoDate: [],
+    undoDate: "",
     selectedSecond: null,
     selectedEndSecond: null,
     validateStart: true,
     validateEnd: true,
     hideError: true,
     hideErrorEnd: true,
-    undoOrder: [],
   };
   // initial value :: end
 
@@ -308,11 +307,7 @@ export default function VDateTimePicker(props) {
       case "UNDO_STATE":
         return {
           ...state,
-          // undoDate: state.undoDate ? [...state.undoDate, action.payload] : [action.payload],
           undoDate: action.payload,
-          undoOrder: state.undoOrder
-            ? [...state.undoOrder, action.payload]
-            : [action.payload],
         };
 
       case "CHANGE_YEAR":
@@ -1887,13 +1882,15 @@ export default function VDateTimePicker(props) {
   };
   // changes //
   const handleStartUndo = () => {
-    // let pervious = previousSelectedStartDate[previousSelectedStartDate.length - 2];
-    let pervious = previousSelectedStartDate.pop();
+    let pervious =
+      previousSelectedStartDate[previousSelectedStartDate.length - 2];
+    previousSelectedStartDate.pop();
     dispatch({ type: "UNDO_START", payload: pervious });
+    console.log(selectedStart);
   };
   const handleEndUndo = () => {
-    // let next = previousSelectedEndDate[previousSelectedEndDate.length - 2];
-    let next = previousSelectedEndDate.pop();
+    let next = previousSelectedEndDate[previousSelectedEndDate.length - 2];
+    previousSelectedEndDate.pop();
     dispatch({ type: "UNDO_END", payload: next });
   };
   const handleEnable = () => {
@@ -1962,14 +1959,6 @@ export default function VDateTimePicker(props) {
     endTimeFormat,
     selectedEndSecond,
   ]);
-
-  console.log(state.undoOrder[state.undoOrder.length - 1]);
-
-  // useEffect(() => {
-  //   if (props.range) {
-  //     dispatch({ type: "REMOVE_END_DATE" });
-  //   }
-  // }, [props.range]);
 
   useEffect(() => {
     document.addEventListener("click", handleDocumentClick);
@@ -2862,14 +2851,18 @@ export default function VDateTimePicker(props) {
         </button>
       )}
 
-      {undoDate === "start" ? (
-        <button className="table-btn" onClick={handleStartUndo}>
-          Undo
-        </button>
-      ) : undoDate === "end" ? (
-        <button className="table-btn" onClick={handleEndUndo}>
-          Undo
-        </button>
+      {!props.range ? (
+        undoDate === "start" && previousSelectedStartDate.length > 0 ? (
+          <button className="table-btn" onClick={handleStartUndo}>
+            Undo
+          </button>
+        ) : undoDate === "end" && previousSelectedEndDate.length > 0 ? (
+          <button className="table-btn" onClick={handleEndUndo}>
+            Undo
+          </button>
+        ) : (
+          ""
+        )
       ) : (
         ""
       )}

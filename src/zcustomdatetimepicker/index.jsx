@@ -13,8 +13,8 @@ function DatePicker() {
         className="custom-date-picker"
         // defaultValue={"2022-02-12 12:12"}
         // minDate
-        range
-        // selectedMode="dateTime"
+        // range
+        selectedMode="dateTime"
         // hideError
         // errorMsg="Dummy error msg"
         isSecondHide
@@ -36,7 +36,7 @@ function DatePicker() {
         id="month"
         disableControl
         setIsDisabled={setIsDisabled}
-        // isDisabled={isDisabled}
+        isDisabled={isDisabled}
         resetControl
         // placeholder="Add month"
       />
