@@ -255,8 +255,12 @@ export default function VDateTimePicker(props) {
         if (props.isDisabled || props.isReadOnly) {
           showEnd = "";
         } else {
-          showEnd =
-            state.show === "" || state.show === "show" ? "show-end" : "";
+          if (state.selectedStart === null) {
+            showEnd = "show";
+          } else {
+            showEnd =
+              state.show === "" || state.show === "show" ? "show-end" : "";
+          }
         }
         return {
           ...state,
@@ -2826,6 +2830,7 @@ export default function VDateTimePicker(props) {
                     : "DD/MM/YYYY"
                 }
                 disabled={props.isDisabled || props.isReadOnly}
+                readOnly={selectedStart === null ? true : false}
                 name={props.eName}
                 tabIndex={props.endTabIndex}
               />
@@ -2836,6 +2841,7 @@ export default function VDateTimePicker(props) {
                 onClick={handleShowEnd}
                 onChange={handleEndDateChange}
                 disabled={props.isDisabled || props.isReadOnly}
+                readOnly={selectedStart === null ? true : false}
                 name={props.eName}
                 value={`${selectedEnd ? endDate : ""}${
                   props.selectedMode
