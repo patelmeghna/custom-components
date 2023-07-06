@@ -1,5 +1,8 @@
 import "./zcustomdatetimepicker.css";
 import { useReducer, useEffect } from "react";
+import error from "./error.svg";
+import clear from "./clear.svg";
+import undo from "./undo.svg";
 
 export default function VDateTimePicker(props) {
   // initial value :: begin
@@ -195,6 +198,12 @@ export default function VDateTimePicker(props) {
           selectedEndMinute: endTimeMinute,
           selectedSecond: second,
           selectedEndSecond: endTimeSecond,
+          previousSelectedStartDate: state.previousSelectedStartDate
+            ? [...state.previousSelectedStartDate, rangeStartDate]
+            : [rangeStartDate],
+          previousSelectedEndDate: state.previousSelectedEndDate
+            ? [...state.previousSelectedEndDate, rangeEndDate]
+            : [rangeEndDate],
         };
 
       case "CHANGE_END_HOUR":
@@ -1892,6 +1901,10 @@ export default function VDateTimePicker(props) {
     selectedSecond
   );
 
+  const dateWithTime = `${year}-${
+    month + 1
+  }-${day} ${selectedHour}:${selectedMinute}:${selectedSecond}`;
+
   const endDay = selectedEnd && selectedEnd.getDate();
   const fullEndDateFormat =
     endDay &&
@@ -1932,9 +1945,9 @@ export default function VDateTimePicker(props) {
   const startTimeFormat = props.clockTimeFormat === "am-pm" ? timeFormat : "";
   const startInputValue =
     selectedStart &&
-    `${selectedStart.getDate()}/${
+    `${selectedStart.getDate()}-${
       selectedStart.getMonth() + 1
-    }/${selectedStart.getFullYear()} ${startTime} ${startTimeFormat}`;
+    }-${selectedStart.getFullYear()} ${startTime} ${startTimeFormat}`;
 
   // ===============================================
 
@@ -2020,13 +2033,18 @@ export default function VDateTimePicker(props) {
   const handleStartUndo = () => {
     let pervious =
       previousSelectedStartDate[previousSelectedStartDate.length - 2];
-    previousSelectedStartDate.pop();
-    dispatch({ type: "UNDO_START", payload: pervious });
+    if (previousSelectedStartDate.length > 1) {
+      dispatch({ type: "UNDO_START", payload: pervious });
+      previousSelectedStartDate.pop();
+    }
   };
   const handleEndUndo = () => {
     let next = previousSelectedEndDate[previousSelectedEndDate.length - 2];
-    previousSelectedEndDate.pop();
-    dispatch({ type: "UNDO_END", payload: next });
+
+    if (previousSelectedEndDate.length > 1) {
+      previousSelectedEndDate.pop();
+      dispatch({ type: "UNDO_END", payload: next });
+    }
   };
   const handleEnable = () => {
     props.setIsDisabled(!props.isDisabled);
@@ -2920,14 +2938,51 @@ export default function VDateTimePicker(props) {
               />
             )}
 
+            {props.isUndo && (
+              <button className="icon-btn" onClick={handleStartUndo}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 512 512"
+                  id="undo"
+                >
+                  <path d="M447.9 368.2c0-16.8 3.6-83.1-48.7-135.7-35.2-35.4-80.3-53.4-143.3-56.2V96L64 224l192 128v-79.8c40 1.1 62.4 9.1 86.7 20 30.9 13.8 55.3 44 75.8 76.6l19.2 31.2H448c0-10.1-.1-22.9-.1-31.8z"></path>
+                </svg>
+              </button>
+            )}
+
             {props.isClear && (
               <button onClick={handleClearClick} className="clear-btn">
-                &#x232B;
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="64"
+                  height="64"
+                  viewBox="0 0 16.933 16.933"
+                  id="eraser-rubber"
+                >
+                  <path
+                    d="m 11.113018,281.82981 c -0.338971,0 -0.677844,0.12749 -0.935342,0.38499 l -5.9443407,5.94434 5.1366367,5.13664 5.944341,-5.94434 c 0.515001,-0.515 0.515001,-1.35621 0,-1.8712 l -3.265435,-3.26544 c -0.2575,-0.2575 -0.596887,-0.38499 -0.93586,-0.38499 z m -0.0036,1.67587 a 0.26460982,0.26460982 0 0 1 0.189135,0.078 l 2.646868,2.64687 a 0.26460982,0.26460982 0 0 1 0,0.3731 l -4.7619843,4.76354 a 0.26460982,0.26460982 0 0 1 -0.3751686,0 l -2.646377,-2.64633 a 0.26460982,0.26460982 0 0 1 0,-0.37516 l 4.7635349,-4.76199 a 0.26460982,0.26460982 0 0 1 0.183967,-0.078 z m 0.0036,0.63872 -4.3883607,4.38888 2.271178,2.27118 4.3888787,-4.38836 z m -7.2538194,4.38888 -2.2809984,2.281 c -0.514975,0.51497 -0.514975,1.35622 0,1.8712 l 2.6499678,2.65049 a 0.26460982,0.26460982 0 0 0 0.1875842,0.076 h 2.7285157 a 0.26460982,0.26460982 0 0 0 0.1855179,-0.076 l 1.6660495,-1.66605 z"
+                    color="#000"
+                    font-family="sans-serif"
+                    font-weight="400"
+                    overflow="visible"
+                    transform="translate(0 -280.067)"
+                  ></path>
+                </svg>
               </button>
             )}
             {!validateStart && (
               <button onClick={handleShowError} className="error-icon">
-                &#x274C;
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="32.002"
+                  height="32"
+                  viewBox="0 0 32.002 32"
+                  id="error"
+                >
+                  <path d="M2.062 32h27.812a2 2 0 0 0 1.766-2.942l-13.876-26A1.997 1.997 0 0 0 16.002 2H16c-.738 0-1.414.406-1.762 1.056L.3 29.056a2.004 2.004 0 0 0 .046 1.972A2.005 2.005 0 0 0 2.062 32zM16 24a2 2 0 1 1-.001 4.001A2 2 0 0 1 16 24zm-2-3.968v-8a2 2 0 0 1 4 0v8a2 2 0 0 1-4 0z"></path>
+                </svg>
               </button>
             )}
             <p className={`error-msg-wrap${hideError ? " hide" : ""}`}>
@@ -2999,14 +3054,51 @@ export default function VDateTimePicker(props) {
               />
             )}
 
+            {props.isUndo && (
+              <button className="icon-btn" onClick={handleEndUndo}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 512 512"
+                  id="undo"
+                >
+                  <path d="M447.9 368.2c0-16.8 3.6-83.1-48.7-135.7-35.2-35.4-80.3-53.4-143.3-56.2V96L64 224l192 128v-79.8c40 1.1 62.4 9.1 86.7 20 30.9 13.8 55.3 44 75.8 76.6l19.2 31.2H448c0-10.1-.1-22.9-.1-31.8z"></path>
+                </svg>
+              </button>
+            )}
+
             {props.isClear && (
               <button onClick={handleClearClickEnd} className="clear-btn">
-                &#x232B;
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="64"
+                  height="64"
+                  viewBox="0 0 16.933 16.933"
+                  id="eraser-rubber"
+                >
+                  <path
+                    d="m 11.113018,281.82981 c -0.338971,0 -0.677844,0.12749 -0.935342,0.38499 l -5.9443407,5.94434 5.1366367,5.13664 5.944341,-5.94434 c 0.515001,-0.515 0.515001,-1.35621 0,-1.8712 l -3.265435,-3.26544 c -0.2575,-0.2575 -0.596887,-0.38499 -0.93586,-0.38499 z m -0.0036,1.67587 a 0.26460982,0.26460982 0 0 1 0.189135,0.078 l 2.646868,2.64687 a 0.26460982,0.26460982 0 0 1 0,0.3731 l -4.7619843,4.76354 a 0.26460982,0.26460982 0 0 1 -0.3751686,0 l -2.646377,-2.64633 a 0.26460982,0.26460982 0 0 1 0,-0.37516 l 4.7635349,-4.76199 a 0.26460982,0.26460982 0 0 1 0.183967,-0.078 z m 0.0036,0.63872 -4.3883607,4.38888 2.271178,2.27118 4.3888787,-4.38836 z m -7.2538194,4.38888 -2.2809984,2.281 c -0.514975,0.51497 -0.514975,1.35622 0,1.8712 l 2.6499678,2.65049 a 0.26460982,0.26460982 0 0 0 0.1875842,0.076 h 2.7285157 a 0.26460982,0.26460982 0 0 0 0.1855179,-0.076 l 1.6660495,-1.66605 z"
+                    color="#000"
+                    font-family="sans-serif"
+                    font-weight="400"
+                    overflow="visible"
+                    transform="translate(0 -280.067)"
+                  ></path>
+                </svg>
               </button>
             )}
             {!validateEnd && (
               <button onClick={handleShowEndError} className="error-icon">
-                &#x274C;
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="32.002"
+                  height="32"
+                  viewBox="0 0 32.002 32"
+                  id="error"
+                >
+                  <path d="M2.062 32h27.812a2 2 0 0 0 1.766-2.942l-13.876-26A1.997 1.997 0 0 0 16.002 2H16c-.738 0-1.414.406-1.762 1.056L.3 29.056a2.004 2.004 0 0 0 .046 1.972A2.005 2.005 0 0 0 2.062 32zM16 24a2 2 0 1 1-.001 4.001A2 2 0 0 1 16 24zm-2-3.968v-8a2 2 0 0 1 4 0v8a2 2 0 0 1-4 0z"></path>
+                </svg>
               </button>
             )}
             <p className={`error-msg-wrap${hideErrorEnd ? " hide" : ""}`}>
@@ -3020,22 +3112,6 @@ export default function VDateTimePicker(props) {
         <button className="table-btn" onClick={handleEnable}>
           {!props.isDisabled ? "Disable" : "Enable"}
         </button>
-      )}
-
-      {!props.range ? (
-        undoDate === "start" && previousSelectedStartDate.length > 0 ? (
-          <button className="table-btn" onClick={handleStartUndo}>
-            Undo
-          </button>
-        ) : undoDate === "end" && previousSelectedEndDate.length > 0 ? (
-          <button className="table-btn" onClick={handleEndUndo}>
-            Undo
-          </button>
-        ) : (
-          ""
-        )
-      ) : (
-        ""
       )}
 
       {props.resetControl && (

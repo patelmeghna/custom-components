@@ -16,8 +16,10 @@ function DatePicker() {
         range
         isMinTime
         // isClear
+        // clearClick
+        isUndo
         selectedMode="dateTime"
-        hideError
+        // hideError
         // errorMsg="Dummy error msg"
         // isSecondHide
         format="dd-mm-yyyy"
@@ -25,7 +27,7 @@ function DatePicker() {
         placeholder="Add date"
         // isDisabled
         // maxDate="2023-07-12"
-        // onChange={(data) => alert(data)}
+        // onChange={(data) => console.log(data)}
         // onEndChange={(end) => alert(end)}
         // startTabIndex
         // endTabIndex
@@ -36,6 +38,7 @@ function DatePicker() {
       <VMonth
         // defaultSelectedMonth={"2023-07"}
         id="month"
+        isUndo
         disableControl
         setIsDisabled={setIsDisabled}
         isDisabled={isDisabled}
