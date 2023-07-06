@@ -13,7 +13,7 @@ function DatePicker() {
         className="custom-date-picker"
         // defaultValue={"2022-02-12 12:12"}
         minDate
-        // range
+        range
         isMinTime
         selectedMode="dateTime"
         // hideError
