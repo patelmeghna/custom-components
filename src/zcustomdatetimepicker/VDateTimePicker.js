@@ -15,10 +15,10 @@ export default function VDateTimePicker(props) {
     selectedMonth: new Date().getMonth(),
     selectedYear: new Date().getFullYear(),
     show: "",
-    selectedHour: null,
-    selectedMinute: null,
-    selectedEndHour: null,
-    selectedEndMinute: null,
+    selectedHour: new Date().getHours(),
+    selectedMinute: new Date().getMinutes(),
+    selectedEndHour: new Date().getHours(),
+    selectedEndMinute: new Date().getMinutes(),
     time: "",
     endTime: "",
     showClock: "",
@@ -34,8 +34,8 @@ export default function VDateTimePicker(props) {
     previousSelectedStartDate: [],
     previousSelectedEndDate: [],
     undoDate: "",
-    selectedSecond: null,
-    selectedEndSecond: null,
+    selectedSecond: new Date().getSeconds(),
+    selectedEndSecond: new Date().getSeconds(),
     validateStart: true,
     validateEnd: true,
     hideError: true,
@@ -1931,6 +1931,7 @@ export default function VDateTimePicker(props) {
   const yearOptions = [];
   const hourOptions = [];
   const minuteOptions = [];
+  const secondsOptions = [];
   let startDate = "";
   let endDate = "";
   const id = props.id;
@@ -2061,6 +2062,7 @@ export default function VDateTimePicker(props) {
   const handleApply = () => {
     dispatch({ type: "APPLY" });
   };
+  // let isStartDateSelected = false
 
   // changes //
   const handleDayClick = (day) => {
@@ -2152,12 +2154,33 @@ export default function VDateTimePicker(props) {
       </option>
     );
   }
+  console.log("se", selectedStart);
+  // changes
+  let currentHour = currentDate.getHours();
+  let currentMinute = currentDate.getMinutes();
+  let currentSecond = currentDate.getSeconds();
+
+  // Check if selected date is greater than current date
+  const isStartDateSelected = selectedStart > currentDate;
+  console.log(currentDate);
 
   if (props.clockTimeFormat) {
     for (let i = 1; i <= 12; i++) {
       const value = i < 10 ? `0${i}` : i.toString();
+      let disabled = false;
+
+      if (isStartDateSelected) {
+        disabled = false; // Enable all options if selected date is greater than current date
+      } else {
+        if (selectedStart === currentDate) {
+          disabled = i < currentHour || i < selectedHour;
+        } else {
+          disabled = false;
+        }
+      }
+
       hourOptions.push(
-        <option value={value} key={value}>
+        <option value={value} key={value} disabled={disabled}>
           {value}
         </option>
       );
@@ -2165,8 +2188,18 @@ export default function VDateTimePicker(props) {
   } else {
     for (let i = 0; i < 24; i++) {
       const value = i < 10 ? `0${i}` : i.toString();
+      let disabled = false;
+
+      if (isStartDateSelected) {
+        disabled = false; // Enable all options if selected date is greater than current date
+      } else if (selectedStart === currentDate) {
+        disabled = i < currentHour || i < selectedHour;
+      } else {
+        disabled = true; // Disable all options for previous dates
+      }
+
       hourOptions.push(
-        <option value={value} key={value}>
+        <option value={value} key={value} disabled={disabled}>
           {value}
         </option>
       );
@@ -2175,8 +2208,43 @@ export default function VDateTimePicker(props) {
 
   for (let i = 0; i < 60; i++) {
     const value = i < 10 ? `0${i}` : i.toString();
+    let disabled = false;
+
+    if (isStartDateSelected) {
+      disabled = false; // Enable all options if selected date is greater than current date
+    } else if (selectedStart === currentDate && currentHour === selectedHour) {
+      disabled =
+        (currentHour === selectedHour && i < currentMinute) ||
+        i < selectedMinute;
+    } else {
+      disabled = true; // Disable all options for previous dates or hours
+    }
+
     minuteOptions.push(
-      <option value={value} key={value}>
+      <option value={value} key={value} disabled={disabled}>
+        {value}
+      </option>
+    );
+  }
+
+  for (let i = 0; i < 60; i++) {
+    const value = i < 10 ? `0${i}` : i.toString();
+    let disabled = false;
+
+    if (isStartDateSelected) {
+      disabled = false; // Enable all options if selected date is greater than current date
+    } else if (
+      selectedStart === currentDate &&
+      currentHour === selectedHour &&
+      currentMinute === selectedMinute
+    ) {
+      disabled = i < currentSecond;
+    } else {
+      disabled = true; // Disable all options for previous dates, hours, or minutes
+    }
+
+    secondsOptions.push(
+      <option value={value} key={value} disabled={disabled}>
         {value}
       </option>
     );
@@ -2775,12 +2843,14 @@ export default function VDateTimePicker(props) {
                     >
                       🕒
                     </button>
+
                     {showClock === "show" ? (
                       <div className="show-clock">
                         <select
                           className="table-select"
                           value={selectedHour}
                           onChange={handleHourChange}
+                          isMinTime={selectedHour}
                         >
                           {hourOptions}
                         </select>
@@ -2800,7 +2870,7 @@ export default function VDateTimePicker(props) {
                               value={selectedSecond}
                               onChange={handleSecondChange}
                             >
-                              {minuteOptions}
+                              {secondsOptions}
                             </select>
                           </>
                         )}
@@ -2820,7 +2890,7 @@ export default function VDateTimePicker(props) {
                       <div className="show-end-clock">
                         <select
                           className="table-select"
-                          value={selectedEndHour}
+                          value={selectedHour}
                           onChange={handleEndHourChange}
                         >
                           {hourOptions}
@@ -2831,7 +2901,7 @@ export default function VDateTimePicker(props) {
                           value={selectedEndMinute}
                           onChange={handleEndSecondChange}
                         >
-                          {minuteOptions}
+                          {secondsOptions}
                         </select>
                         {!props.isSecondHide && (
                           <>
