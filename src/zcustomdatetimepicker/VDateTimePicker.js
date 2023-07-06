@@ -2184,41 +2184,53 @@ export default function VDateTimePicker(props) {
         eveHour = selectedHour + 12;
       }
 
-      if (isStartDateSelected) {
-        disabled = false; // Enable all options if selected date is greater than current date
-      } else {
-        if (show === "show") {
-          if (
-            selectedStart &&
-            selectedStart.toDateString() === currentDate.toDateString()
-          ) {
-            if (currentHour > 12 && currentHour !== 12 && timeFormat === "PM") {
-              currentHour -= 12;
-              disabled = i < currentHour;
-            } else if (
-              (currentHour > 12 && timeFormat === "AM") ||
-              (currentHour <= 12 && timeFormat === "PM")
-            ) {
-              disabled = false;
-            } else {
-              disabled = i < currentHour;
-            }
+      if (currentHour <= 12) {
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString()
+        ) {
+          if (timeFormat === "AM") {
+            disabled = i < currentHour;
           }
-        } else if (show === "show-end") {
-          console.log("second calendar");
-          if (selectedEnd && selectedEnd > selectedStart) {
+        }
+      }
+
+      if (currentHour > 12) {
+        currentHour -= 12;
+      }
+
+      if (show === "show") {
+        if (isStartDateSelected) {
+          disabled = false; // Enable all options if selected date is greater than current date
+        }
+
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString()
+        ) {
+          if (timeFormat === "PM") {
+            disabled = i < currentHour;
+          } else if (timeFormat === "AM") {
+            disabled = true;
+          } else {
+            disabled = i < currentHour;
+          }
+        }
+      }
+
+      if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        } else {
+          if (eveHour > 12 && eveHour !== 12 && timeFormat === "PM") {
+            disabled = i < selectedHour;
+          } else if (
+            (eveHour > 12 && timeFormat === "AM") ||
+            (eveHour <= 12 && timeFormat === "PM")
+          ) {
             disabled = false;
           } else {
-            if (eveHour > 12 && eveHour !== 12 && timeFormat === "PM") {
-              disabled = i < selectedHour;
-            } else if (
-              (eveHour > 12 && timeFormat === "AM") ||
-              (eveHour <= 12 && timeFormat === "PM")
-            ) {
-              disabled = false;
-            } else {
-              disabled = i < selectedHour;
-            }
+            disabled = i < selectedHour;
           }
         }
       }
