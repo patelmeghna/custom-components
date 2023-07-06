@@ -32,6 +32,7 @@ function DatePicker() {
         // startTabIndex
         // endTabIndex
       />
+      <br />
 
       <h4>Month only</h4>
 
@@ -39,10 +40,10 @@ function DatePicker() {
         // defaultSelectedMonth={"2023-07"}
         id="month"
         isUndo
-        disableControl
-        setIsDisabled={setIsDisabled}
-        isDisabled={isDisabled}
-        resetControl
+        // disableControl
+        // setIsDisabled={setIsDisabled}
+        // isDisabled={isDisabled}
+        // resetControl
         // placeholder="Add month"
       />
     </Container>
