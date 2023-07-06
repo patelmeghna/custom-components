@@ -1934,8 +1934,20 @@ export default function VDateTimePicker(props) {
   const secondsOptions = [];
   let startDate = "";
   let endDate = "";
+  let disableSelect = true;
   const id = props.id;
   // default variables :: end
+
+  // disable select dropodwn :: begin
+  if (props.isMinTime && selectedStart) {
+    if (
+      selectedStart > currentDate ||
+      selectedStart.toDateString() === currentDate.toDateString()
+    ) {
+      disableSelect = false;
+    }
+  }
+  // disable select dropodwn :: end
 
   // form variables
   const startTime = props.range
@@ -2154,7 +2166,6 @@ export default function VDateTimePicker(props) {
       </option>
     );
   }
-  console.log("se", selectedStart);
   // changes
   let currentHour = currentDate.getHours();
   let currentMinute = currentDate.getMinutes();
@@ -2162,20 +2173,52 @@ export default function VDateTimePicker(props) {
 
   // Check if selected date is greater than current date
   const isStartDateSelected = selectedStart > currentDate;
-  console.log(currentDate);
 
   if (props.clockTimeFormat) {
     for (let i = 1; i <= 12; i++) {
       const value = i < 10 ? `0${i}` : i.toString();
-      let disabled = false;
+      let disabled = true;
+      let eveHour;
+
+      if (timeFormat === "PM") {
+        eveHour = selectedHour + 12;
+      }
 
       if (isStartDateSelected) {
         disabled = false; // Enable all options if selected date is greater than current date
       } else {
-        if (selectedStart === currentDate) {
-          disabled = i < currentHour || i < selectedHour;
-        } else {
-          disabled = false;
+        if (show === "show") {
+          if (
+            selectedStart &&
+            selectedStart.toDateString() === currentDate.toDateString()
+          ) {
+            if (currentHour > 12 && currentHour !== 12 && timeFormat === "PM") {
+              currentHour -= 12;
+              disabled = i < currentHour;
+            } else if (
+              (currentHour > 12 && timeFormat === "AM") ||
+              (currentHour <= 12 && timeFormat === "PM")
+            ) {
+              disabled = false;
+            } else {
+              disabled = i < currentHour;
+            }
+          }
+        } else if (show === "show-end") {
+          if (selectedEnd && selectedEnd > selectedStart) {
+            disabled = false;
+          } else {
+            if (eveHour > 12 && eveHour !== 12 && timeFormat === "PM") {
+              disabled = i < selectedHour;
+            } else if (
+              (eveHour > 12 && timeFormat === "AM") ||
+              (eveHour <= 12 && timeFormat === "PM")
+            ) {
+              disabled = false;
+            } else {
+              disabled = i < selectedHour;
+            }
+          }
         }
       }
 
@@ -2188,14 +2231,25 @@ export default function VDateTimePicker(props) {
   } else {
     for (let i = 0; i < 24; i++) {
       const value = i < 10 ? `0${i}` : i.toString();
-      let disabled = false;
+      let disabled = true;
 
       if (isStartDateSelected) {
         disabled = false; // Enable all options if selected date is greater than current date
-      } else if (selectedStart === currentDate) {
-        disabled = i < currentHour || i < selectedHour;
       } else {
-        disabled = true; // Disable all options for previous dates
+        if (show === "show") {
+          if (
+            selectedStart &&
+            selectedStart.toDateString() === currentDate.toDateString()
+          ) {
+            disabled = i < currentHour;
+          }
+        } else if (show === "show-end") {
+          if (selectedEnd && selectedEnd > selectedStart) {
+            disabled = false;
+          } else {
+            disabled = i < selectedHour;
+          }
+        }
       }
 
       hourOptions.push(
@@ -2212,12 +2266,27 @@ export default function VDateTimePicker(props) {
 
     if (isStartDateSelected) {
       disabled = false; // Enable all options if selected date is greater than current date
-    } else if (selectedStart === currentDate && currentHour === selectedHour) {
-      disabled =
-        (currentHour === selectedHour && i < currentMinute) ||
-        i < selectedMinute;
     } else {
-      disabled = true; // Disable all options for previous dates or hours
+      if (show === "show") {
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour
+        ) {
+          disabled = i < currentMinute;
+        }
+      } else if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString() &&
+          currentHour === selectedHour
+        ) {
+          disabled = i < selectedMinute;
+        }
+      }
     }
 
     minuteOptions.push(
@@ -2234,13 +2303,12 @@ export default function VDateTimePicker(props) {
     if (isStartDateSelected) {
       disabled = false; // Enable all options if selected date is greater than current date
     } else if (
-      selectedStart === currentDate &&
+      selectedStart &&
+      selectedStart.toDateString() === currentDate.toDateString() &&
       currentHour === selectedHour &&
       currentMinute === selectedMinute
     ) {
       disabled = i < currentSecond;
-    } else {
-      disabled = true; // Disable all options for previous dates, hours, or minutes
     }
 
     secondsOptions.push(
@@ -2847,6 +2915,7 @@ export default function VDateTimePicker(props) {
                     {showClock === "show" ? (
                       <div className="show-clock">
                         <select
+                          disabled={disableSelect}
                           className="table-select"
                           value={selectedHour}
                           onChange={handleHourChange}
@@ -2856,6 +2925,7 @@ export default function VDateTimePicker(props) {
                         </select>
                         <span>:</span>
                         <select
+                          disabled={disableSelect}
                           className="table-select"
                           value={selectedMinute}
                           onChange={handleMinuteChange}
@@ -2866,6 +2936,7 @@ export default function VDateTimePicker(props) {
                           <>
                             <span>:</span>
                             <select
+                              disabled={disableSelect}
                               className="table-select"
                               value={selectedSecond}
                               onChange={handleSecondChange}
@@ -2876,6 +2947,7 @@ export default function VDateTimePicker(props) {
                         )}
                         {props.clockTimeFormat === "am-pm" && (
                           <button
+                            disabled={disableSelect}
                             className="format-btn"
                             onClick={handleFormatChange}
                           >
@@ -2889,6 +2961,7 @@ export default function VDateTimePicker(props) {
                     {showEndClock === "show" ? (
                       <div className="show-end-clock">
                         <select
+                          disabled={disableSelect}
                           className="table-select"
                           value={selectedHour}
                           onChange={handleEndHourChange}
@@ -2897,6 +2970,7 @@ export default function VDateTimePicker(props) {
                         </select>
                         <span>:</span>
                         <select
+                          disabled={disableSelect}
                           className="table-select"
                           value={selectedEndMinute}
                           onChange={handleEndSecondChange}
@@ -2907,6 +2981,7 @@ export default function VDateTimePicker(props) {
                           <>
                             <span>:</span>
                             <select
+                              disabled={disableSelect}
                               className="table-select"
                               value={selectedEndSecond}
                               onChange={handleEndMinuteChange}
