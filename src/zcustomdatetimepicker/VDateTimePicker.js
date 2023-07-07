@@ -514,7 +514,7 @@ export default function VDateTimePicker(props) {
           };
         }
 
-      case "FORMAT_END_CHANGE":
+      case "END_FORMAT_CHANGE":
         if (props.clockTimeFormat === "am-pm") {
           return {
             ...state,
@@ -2175,15 +2175,16 @@ export default function VDateTimePicker(props) {
   const isStartDateSelected = selectedStart > currentDate;
 
   if (props.clockTimeFormat) {
+    let eveHour;
     for (let i = 1; i <= 12; i++) {
       const value = i < 10 ? `0${i}` : i.toString();
       let disabled = true;
-      let eveHour;
 
       if (timeFormat === "PM") {
-        eveHour = selectedHour + 12;
+        eveHour = parseInt(selectedHour) + 12;
       }
 
+      // not working
       if (currentHour <= 12) {
         if (
           selectedStart &&
@@ -2221,14 +2222,27 @@ export default function VDateTimePicker(props) {
       if (show === "show-end") {
         if (selectedEnd && selectedEnd > selectedStart) {
           disabled = false;
-        } else {
-          if (eveHour > 12 && eveHour !== 12 && timeFormat === "PM") {
-            disabled = i < selectedHour;
-          } else if (
-            (eveHour > 12 && timeFormat === "AM") ||
-            (eveHour <= 12 && timeFormat === "PM")
+        }
+
+        if (eveHour <= 12) {
+          if (
+            selectedEnd &&
+            selectedEnd.toDateString() === selectedStart.toDateString()
           ) {
-            disabled = false;
+            if (endTimeFormat === "AM") {
+              disabled = i < eveHour;
+            }
+          }
+        }
+
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          if (endTimeFormat === "PM") {
+            disabled = i < selectedHour;
+          } else if (endTimeFormat === "AM") {
+            disabled = true;
           } else {
             disabled = i < selectedHour;
           }
@@ -2241,6 +2255,8 @@ export default function VDateTimePicker(props) {
         </option>
       );
     }
+
+    console.log(eveHour);
   } else {
     for (let i = 0; i < 24; i++) {
       const value = i < 10 ? `0${i}` : i.toString();
