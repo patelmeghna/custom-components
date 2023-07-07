@@ -2168,8 +2168,11 @@ export default function VDateTimePicker(props) {
   }
   // changes
   let currentHour = currentDate.getHours();
+  // let currentHour = 18;
   let currentMinute = currentDate.getMinutes();
   let currentSecond = currentDate.getSeconds();
+  let currentPmHour = null;
+  let currentPmEndHour = null;
 
   // Check if selected date is greater than current date
   const isStartDateSelected = selectedStart > currentDate;
@@ -2182,25 +2185,13 @@ export default function VDateTimePicker(props) {
 
       if (timeFormat === "PM") {
         eveHour = parseInt(selectedHour) + 12;
+      } else {
+        eveHour = parseInt(selectedHour);
       }
 
-      // not working
-      if (currentHour <= 12) {
-        if (
-          selectedStart &&
-          selectedStart.toDateString() === currentDate.toDateString()
-        ) {
-          if (timeFormat === "AM") {
-            disabled = i < currentHour;
-          }
-        }
-      }
+      if (currentHour > 12 && show === "show") {
+        currentPmHour = currentHour - 12;
 
-      if (currentHour > 12) {
-        currentHour -= 12;
-      }
-
-      if (show === "show") {
         if (isStartDateSelected) {
           disabled = false; // Enable all options if selected date is greater than current date
         }
@@ -2210,11 +2201,22 @@ export default function VDateTimePicker(props) {
           selectedStart.toDateString() === currentDate.toDateString()
         ) {
           if (timeFormat === "PM") {
-            disabled = i < currentHour;
+            disabled = i < currentPmHour;
           } else if (timeFormat === "AM") {
             disabled = true;
           } else {
+            disabled = i < currentPmHour;
+          }
+        }
+      } else {
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString()
+        ) {
+          if (timeFormat === "AM") {
             disabled = i < currentHour;
+          } else {
+            disabled = false;
           }
         }
       }
@@ -2231,6 +2233,8 @@ export default function VDateTimePicker(props) {
           ) {
             if (endTimeFormat === "AM") {
               disabled = i < eveHour;
+            } else {
+              disabled = false;
             }
           }
         }
@@ -2239,12 +2243,14 @@ export default function VDateTimePicker(props) {
           selectedEnd &&
           selectedEnd.toDateString() === selectedStart.toDateString()
         ) {
-          if (endTimeFormat === "PM") {
-            disabled = i < selectedHour;
-          } else if (endTimeFormat === "AM") {
-            disabled = true;
-          } else {
-            disabled = i < selectedHour;
+          if (eveHour > 12) {
+            if (endTimeFormat === "PM") {
+              disabled = i < selectedHour;
+            } else if (endTimeFormat === "AM") {
+              disabled = true;
+            } else {
+              disabled = i < selectedHour;
+            }
           }
         }
       }
@@ -2255,8 +2261,6 @@ export default function VDateTimePicker(props) {
         </option>
       );
     }
-
-    console.log(eveHour);
   } else {
     for (let i = 0; i < 24; i++) {
       const value = i < 10 ? `0${i}` : i.toString();
