@@ -18,6 +18,7 @@ function DatePicker() {
         // isClear
         // clearClick
         isUndo
+        undoClick
         selectedMode="dateTime"
         // hideError
         // errorMsg="Dummy error msg"

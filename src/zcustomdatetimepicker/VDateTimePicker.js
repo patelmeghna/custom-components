@@ -2044,12 +2044,14 @@ export default function VDateTimePicker(props) {
   };
   // changes //
   const handleStartUndo = () => {
-    let pervious =
-      previousSelectedStartDate[previousSelectedStartDate.length - 2];
-    if (previousSelectedStartDate.length > 1) {
-      dispatch({ type: "UNDO_START", payload: pervious });
-      previousSelectedStartDate.pop();
-    }
+    // let pervious =
+    //   previousSelectedStartDate[previousSelectedStartDate.length - 2];
+    // if (previousSelectedStartDate.length > 1) {
+    //   dispatch({ type: "UNDO_START", payload: pervious });
+    //   previousSelectedStartDate.pop();
+    // }
+
+    props.undoClick && props.undoClick();
   };
   const handleEndUndo = () => {
     let next = previousSelectedEndDate[previousSelectedEndDate.length - 2];
@@ -3260,7 +3262,7 @@ export default function VDateTimePicker(props) {
               />
             )}
 
-            {props.isUndo && (
+            {props.isUndo && props.undoClick && !props.range && (
               <button className="icon-btn" onClick={handleStartUndo}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -3376,7 +3378,7 @@ export default function VDateTimePicker(props) {
               />
             )}
 
-            {props.isUndo && (
+            {/* {props.isUndo && (
               <button className="icon-btn" onClick={handleEndUndo}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -3388,7 +3390,7 @@ export default function VDateTimePicker(props) {
                   <path d="M447.9 368.2c0-16.8 3.6-83.1-48.7-135.7-35.2-35.4-80.3-53.4-143.3-56.2V96L64 224l192 128v-79.8c40 1.1 62.4 9.1 86.7 20 30.9 13.8 55.3 44 75.8 76.6l19.2 31.2H448c0-10.1-.1-22.9-.1-31.8z"></path>
                 </svg>
               </button>
-            )}
+            )} */}
 
             {props.isClear && (
               <button onClick={handleClearClickEnd} className="clear-btn">
