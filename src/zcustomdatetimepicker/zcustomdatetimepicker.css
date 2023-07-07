@@ -1,3 +1,5 @@
+
+
 .calendar-wrap h2 {
   margin-bottom: 0;
 }
@@ -334,3 +336,36 @@ button svg {
 .month-year-picker {
   position: relative;
 }
+/* 
+@media (max-width > 600px) {
+  .date-selection-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
+
+ .text-box {
+    margin-bottom: 40%;
+  }
+
+  .table-btn {
+    margin-top: 10px;
+  }
+} */
+@media (max-width:700px) {
+  .date-selection-input-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+  .calendar.show{
+    width:320px;
+  }
+  .calendar.show-end {
+    display: block;
+    left: calc(0% + 6px);
+    top: 91px;
+    width:320px;
+    /* height:10%; */
+  
+  }
+}
+
