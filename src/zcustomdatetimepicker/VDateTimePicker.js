@@ -2172,13 +2172,12 @@ export default function VDateTimePicker(props) {
   let currentMinute = currentDate.getMinutes();
   let currentSecond = currentDate.getSeconds();
   let currentPmHour = null;
-  let currentPmEndHour = null;
+  let eveHour;
 
   // Check if selected date is greater than current date
   const isStartDateSelected = selectedStart > currentDate;
 
   if (props.clockTimeFormat) {
-    let eveHour;
     for (let i = 1; i <= 12; i++) {
       const value = i < 10 ? `0${i}` : i.toString();
       let disabled = true;
@@ -2304,31 +2303,86 @@ export default function VDateTimePicker(props) {
     const value = i < 10 ? `0${i}` : i.toString();
     let disabled = false;
 
-    if (show === "show") {
-      if (isStartDateSelected) {
-        disabled = false; // Enable all options if selected date is greater than current date
+    if (props.clockTimeFormat) {
+      if (currentHour > 12 && show === "show") {
+        if (isStartDateSelected) {
+          disabled = false; // Enable all options if selected date is greater than current date
+        }
+
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour
+        ) {
+          if (timeFormat === "PM") {
+            disabled = i < currentMinute;
+          } else if (timeFormat === "AM") {
+            disabled = true;
+          }
+        }
+      } else if (currentHour <= 12 && show === "show") {
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour
+        ) {
+          if (timeFormat === "AM") {
+            disabled = i < currentMinute;
+          } else {
+            disabled = false;
+          }
+        }
+      } else if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
+
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          if (timeFormat === "PM" && endTimeFormat === "PM") {
+            disabled = i < selectedMinute;
+          } else if (timeFormat === "PM" && endTimeFormat === "AM") {
+            disabled = true;
+          }
+
+          if (timeFormat === "AM") {
+            if (endTimeFormat === "AM") {
+              disabled = i < selectedMinute;
+            } else {
+              disabled = false;
+            }
+          }
+        }
+      }
+    } else {
+      if (show === "show") {
+        if (isStartDateSelected) {
+          disabled = false; // Enable all options if selected date is greater than current date
+        }
+
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour
+        ) {
+          disabled = i < currentMinute;
+        }
       }
 
-      if (
-        selectedStart &&
-        selectedStart.toDateString() === currentDate.toDateString() &&
-        currentHour === selectedHour
-      ) {
-        disabled = i < currentMinute;
-      }
-    }
+      if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
 
-    if (show === "show-end") {
-      if (selectedEnd && selectedEnd > selectedStart) {
-        disabled = false;
-      }
-
-      if (
-        selectedEnd &&
-        selectedEnd.toDateString() === selectedStart.toDateString()
-      ) {
-        if (selectedEndHour === selectedHour) {
-          disabled = i < selectedMinute;
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          if (selectedEndHour === selectedHour) {
+            disabled = i < selectedMinute;
+          }
         }
       }
     }
@@ -2344,33 +2398,91 @@ export default function VDateTimePicker(props) {
     const value = i < 10 ? `0${i}` : i.toString();
     let disabled = false;
 
-    if (show === "show") {
-      if (isStartDateSelected) {
-        disabled = false; // Enable all options if selected date is greater than current date
-      }
+    if (props.clockTimeFormat) {
+      if (currentHour > 12 && show === "show") {
+        if (isStartDateSelected) {
+          disabled = false;
+        }
 
-      if (
-        selectedStart &&
-        selectedStart.toDateString() === currentDate.toDateString() &&
-        currentHour === selectedHour &&
-        currentMinute === selectedMinute
-      ) {
-        disabled = i < currentSecond;
-      }
-    }
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour &&
+          currentMinute === selectedMinute
+        ) {
+          if (timeFormat === "PM") {
+            disabled = i < currentSecond;
+          } else if (timeFormat === "AM") {
+            disabled = true;
+          }
+        }
+      } else if (currentHour <= 12 && show === "show") {
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour &&
+          currentMinute === selectedMinute
+        ) {
+          if (timeFormat === "AM") {
+            disabled = i < currentSecond;
+          } else {
+            disabled = false;
+          }
+        }
+      } else if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
 
-    if (show === "show-end") {
-      if (selectedEnd && selectedEnd > selectedStart) {
-        disabled = false;
-      }
-
-      if (
-        selectedEnd &&
-        selectedEnd.toDateString() === selectedStart.toDateString()
-      ) {
-        if (selectedEndHour === selectedHour) {
-          if (selectedEndMinute === selectedMinute) {
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString() &&
+          selectedMinute === selectedEndMinute
+        ) {
+          if (timeFormat === "PM" && endTimeFormat === "PM") {
             disabled = i < selectedSecond;
+          } else if (timeFormat === "PM" && endTimeFormat === "AM") {
+            disabled = true;
+          }
+
+          if (timeFormat === "AM") {
+            if (endTimeFormat === "AM") {
+              disabled = i < selectedSecond;
+            } else {
+              disabled = false;
+            }
+          }
+        }
+      }
+    } else {
+      if (show === "show") {
+        if (isStartDateSelected) {
+          disabled = false; // Enable all options if selected date is greater than current date
+        }
+
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour &&
+          currentMinute === selectedMinute
+        ) {
+          disabled = i < currentSecond;
+        }
+      }
+
+      if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
+
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          if (selectedEndHour === selectedHour) {
+            if (selectedEndMinute === selectedMinute) {
+              disabled = i < selectedSecond;
+            }
           }
         }
       }
