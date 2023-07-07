@@ -275,11 +275,13 @@ const VMonth = (props) => {
   }
 
   const handleUndo = () => {
-    let pervious = previousMonth[previousMonth.length - 2];
-    if (previousMonth.length > 1) {
-      dispatch({ type: "UNDO", payload: pervious });
-      previousMonth.pop();
-    }
+    // let pervious = previousMonth[previousMonth.length - 2];
+    // if (previousMonth.length > 1) {
+    //   dispatch({ type: "UNDO", payload: pervious });
+    //   previousMonth.pop();
+    // }
+
+    props.undoClick && props.undoClick();
   };
 
   useEffect(() => {
@@ -467,7 +469,7 @@ const VMonth = (props) => {
             />
           )}
 
-          {props.isUndo && (
+          {props.isUndo && props.undoClick && (
             <button className="icon-btn" onClick={handleUndo}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"

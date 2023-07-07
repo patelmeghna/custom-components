@@ -2044,12 +2044,14 @@ export default function VDateTimePicker(props) {
   };
   // changes //
   const handleStartUndo = () => {
-    let pervious =
-      previousSelectedStartDate[previousSelectedStartDate.length - 2];
-    if (previousSelectedStartDate.length > 1) {
-      dispatch({ type: "UNDO_START", payload: pervious });
-      previousSelectedStartDate.pop();
-    }
+    // let pervious =
+    //   previousSelectedStartDate[previousSelectedStartDate.length - 2];
+    // if (previousSelectedStartDate.length > 1) {
+    //   dispatch({ type: "UNDO_START", payload: pervious });
+    //   previousSelectedStartDate.pop();
+    // }
+
+    props.undoClick && props.undoClick();
   };
   const handleEndUndo = () => {
     let next = previousSelectedEndDate[previousSelectedEndDate.length - 2];
@@ -2168,8 +2170,11 @@ export default function VDateTimePicker(props) {
   }
   // changes
   let currentHour = currentDate.getHours();
+  // let currentHour = 18;
   let currentMinute = currentDate.getMinutes();
   let currentSecond = currentDate.getSeconds();
+  let currentPmHour = null;
+  let eveHour;
 
   // Check if selected date is greater than current date
   const isStartDateSelected = selectedStart > currentDate;
@@ -2180,24 +2185,14 @@ export default function VDateTimePicker(props) {
       let disabled = true;
       let eveHour;
       if (timeFormat === "PM") {
-        eveHour = selectedHour + 12;
-      }
-      if (currentHour <= 12) {
-        if (
-          selectedStart &&
-          selectedStart.toDateString() === currentDate.toDateString()
-        ) {
-          if (timeFormat === "AM") {
-            disabled = i < currentMinute;
-          }
-        }
+        eveHour = parseInt(selectedHour) + 12;
+      } else {
+        eveHour = parseInt(selectedHour);
       }
 
-      if (currentHour > 12) {
-        currentHour -= 12;
-      }
+      if (currentHour > 12 && show === "show") {
+        currentPmHour = currentHour - 12;
 
-      if (show === "show") {
         if (isStartDateSelected) {
           disabled = false; // Enable all options if selected date is greater than current date
         }
@@ -2207,11 +2202,22 @@ export default function VDateTimePicker(props) {
           selectedStart.toDateString() === currentDate.toDateString()
         ) {
           if (timeFormat === "PM") {
-            disabled = i < currentHour;
+            disabled = i < currentPmHour;
           } else if (timeFormat === "AM") {
             disabled = true;
           } else {
+            disabled = i < currentPmHour;
+          }
+        }
+      } else {
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString()
+        ) {
+          if (timeFormat === "AM") {
             disabled = i < currentHour;
+          } else {
+            disabled = false;
           }
         }
       }
@@ -2219,16 +2225,33 @@ export default function VDateTimePicker(props) {
       if (show === "show-end") {
         if (selectedEnd && selectedEnd > selectedStart) {
           disabled = false;
-        } else {
-          if (eveHour > 12 && eveHour !== 12 && timeFormat === "PM") {
-            disabled = i < selectedHour;
-          } else if (
-            (eveHour > 12 && timeFormat === "AM") ||
-            (eveHour <= 12 && timeFormat === "PM")
+        }
+
+        if (eveHour <= 12) {
+          if (
+            selectedEnd &&
+            selectedEnd.toDateString() === selectedStart.toDateString()
           ) {
-            disabled = false;
-          } else {
-            disabled = i < selectedHour;
+            if (endTimeFormat === "AM") {
+              disabled = i < eveHour;
+            } else {
+              disabled = false;
+            }
+          }
+        }
+
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          if (eveHour > 12) {
+            if (endTimeFormat === "PM") {
+              disabled = i < selectedHour;
+            } else if (endTimeFormat === "AM") {
+              disabled = true;
+            } else {
+              disabled = i < selectedHour;
+            }
           }
         }
       }
@@ -2282,31 +2305,86 @@ export default function VDateTimePicker(props) {
     const value = i < 10 ? `0${i}` : i.toString();
     let disabled = false;
 
-    if (show === "show") {
-      if (isStartDateSelected) {
-        disabled = false; // Enable all options if selected date is greater than current date
+    if (props.clockTimeFormat) {
+      if (currentHour > 12 && show === "show") {
+        if (isStartDateSelected) {
+          disabled = false; // Enable all options if selected date is greater than current date
+        }
+
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour
+        ) {
+          if (timeFormat === "PM") {
+            disabled = i < currentMinute;
+          } else if (timeFormat === "AM") {
+            disabled = true;
+          }
+        }
+      } else if (currentHour <= 12 && show === "show") {
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour
+        ) {
+          if (timeFormat === "AM") {
+            disabled = i < currentMinute;
+          } else {
+            disabled = false;
+          }
+        }
+      } else if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
+
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          if (timeFormat === "PM" && endTimeFormat === "PM") {
+            disabled = i < selectedMinute;
+          } else if (timeFormat === "PM" && endTimeFormat === "AM") {
+            disabled = true;
+          }
+
+          if (timeFormat === "AM") {
+            if (endTimeFormat === "AM") {
+              disabled = i < selectedMinute;
+            } else {
+              disabled = false;
+            }
+          }
+        }
+      }
+    } else {
+      if (show === "show") {
+        if (isStartDateSelected) {
+          disabled = false; // Enable all options if selected date is greater than current date
+        }
+
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour
+        ) {
+          disabled = i < currentMinute;
+        }
       }
 
-      if (
-        selectedStart &&
-        selectedStart.toDateString() === currentDate.toDateString() &&
-        currentHour === selectedHour
-      ) {
-        disabled = i < currentMinute;
-      }
-    }
+      if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
 
-    if (show === "show-end") {
-      if (selectedEnd && selectedEnd > selectedStart) {
-        disabled = false;
-      }
-
-      if (
-        selectedEnd &&
-        selectedEnd.toDateString() === selectedStart.toDateString()
-      ) {
-        if (selectedEndHour === selectedHour) {
-          disabled = i < selectedMinute;
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          if (selectedEndHour === selectedHour) {
+            disabled = i < selectedMinute;
+          }
         }
       }
     }
@@ -2322,33 +2400,91 @@ export default function VDateTimePicker(props) {
     const value = i < 10 ? `0${i}` : i.toString();
     let disabled = false;
 
-    if (show === "show") {
-      if (isStartDateSelected) {
-        disabled = false; // Enable all options if selected date is greater than current date
-      }
+    if (props.clockTimeFormat) {
+      if (currentHour > 12 && show === "show") {
+        if (isStartDateSelected) {
+          disabled = false;
+        }
 
-      if (
-        selectedStart &&
-        selectedStart.toDateString() === currentDate.toDateString() &&
-        currentHour === selectedHour &&
-        currentMinute === selectedMinute
-      ) {
-        disabled = i < currentSecond;
-      }
-    }
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour &&
+          currentMinute === selectedMinute
+        ) {
+          if (timeFormat === "PM") {
+            disabled = i < currentSecond;
+          } else if (timeFormat === "AM") {
+            disabled = true;
+          }
+        }
+      } else if (currentHour <= 12 && show === "show") {
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour &&
+          currentMinute === selectedMinute
+        ) {
+          if (timeFormat === "AM") {
+            disabled = i < currentSecond;
+          } else {
+            disabled = false;
+          }
+        }
+      } else if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
 
-    if (show === "show-end") {
-      if (selectedEnd && selectedEnd > selectedStart) {
-        disabled = false;
-      }
-
-      if (
-        selectedEnd &&
-        selectedEnd.toDateString() === selectedStart.toDateString()
-      ) {
-        if (selectedEndHour === selectedHour) {
-          if (selectedEndMinute === selectedMinute) {
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString() &&
+          selectedMinute === selectedEndMinute
+        ) {
+          if (timeFormat === "PM" && endTimeFormat === "PM") {
             disabled = i < selectedSecond;
+          } else if (timeFormat === "PM" && endTimeFormat === "AM") {
+            disabled = true;
+          }
+
+          if (timeFormat === "AM") {
+            if (endTimeFormat === "AM") {
+              disabled = i < selectedSecond;
+            } else {
+              disabled = false;
+            }
+          }
+        }
+      }
+    } else {
+      if (show === "show") {
+        if (isStartDateSelected) {
+          disabled = false; // Enable all options if selected date is greater than current date
+        }
+
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour &&
+          currentMinute === selectedMinute
+        ) {
+          disabled = i < currentSecond;
+        }
+      }
+
+      if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
+
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          if (selectedEndHour === selectedHour) {
+            if (selectedEndMinute === selectedMinute) {
+              disabled = i < selectedSecond;
+            }
           }
         }
       }
@@ -3126,7 +3262,7 @@ export default function VDateTimePicker(props) {
               />
             )}
 
-            {props.isUndo && (
+            {props.isUndo && props.undoClick && !props.range && (
               <button className="icon-btn" onClick={handleStartUndo}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -3242,7 +3378,7 @@ export default function VDateTimePicker(props) {
               />
             )}
 
-            {props.isUndo && (
+            {/* {props.isUndo && (
               <button className="icon-btn" onClick={handleEndUndo}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -3254,7 +3390,7 @@ export default function VDateTimePicker(props) {
                   <path d="M447.9 368.2c0-16.8 3.6-83.1-48.7-135.7-35.2-35.4-80.3-53.4-143.3-56.2V96L64 224l192 128v-79.8c40 1.1 62.4 9.1 86.7 20 30.9 13.8 55.3 44 75.8 76.6l19.2 31.2H448c0-10.1-.1-22.9-.1-31.8z"></path>
                 </svg>
               </button>
-            )}
+            )} */}
 
             {props.isClear && (
               <button onClick={handleClearClickEnd} className="clear-btn">
