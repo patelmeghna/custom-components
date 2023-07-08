@@ -1940,13 +1940,37 @@ export default function VDateTimePicker(props) {
 
   // disable select dropodwn :: begin
   if (props.isMinTime && selectedStart) {
+    // Extract the year, month, and day components from the dates
+    var currentYear2 = currentDate.getFullYear();
+    var currentMonth = currentDate.getMonth();
+    var currentDay = currentDate.getDate();
+
+    var selectedYear = selectedStart.getFullYear();
+    var selectedMonth = selectedStart.getMonth();
+    var selectedDay = selectedStart.getDate();
+
+    // Compare the dates
     if (
-      selectedStart > currentDate ||
-      selectedStart.toDateString() === currentDate.toDateString()
+      selectedYear > currentYear2 ||
+      (selectedYear === currentYear2 && selectedMonth > currentMonth) ||
+      (selectedYear === currentYear2 &&
+        selectedMonth === currentMonth &&
+        selectedDay > currentDay)
     ) {
+      disableSelect = false;
+    } else if (
+      selectedYear < currentYear2 ||
+      (selectedYear === currentYear2 && selectedMonth < currentMonth) ||
+      (selectedYear === currentYear2 &&
+        selectedMonth === currentMonth &&
+        selectedDay < currentDay)
+    ) {
+      disableSelect = true;
+    } else {
       disableSelect = false;
     }
   }
+
   // disable select dropodwn :: end
 
   // form variables
@@ -2612,6 +2636,15 @@ export default function VDateTimePicker(props) {
     const regex = new RegExp(`^${str}$`);
     isDateValid = lowercaseValue.match(regex);
 
+    if (showClock === "show") {
+      let dateValue;
+      if (lowercaseValue.includes(" ")) {
+        [dateValue] = lowercaseValue.split(" ");
+
+        isDateValid = dateValue.match(regex);
+      }
+    }
+
     if (isDateValid) {
       const dd = value.slice(
         lowercaseFormat.indexOf("dd"),
@@ -2753,6 +2786,8 @@ export default function VDateTimePicker(props) {
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
 
+    let isDateValid;
+
     const lowercaseFormat = format.toLowerCase();
     const lowercaseValue = value.toLowerCase();
 
@@ -2762,8 +2797,18 @@ export default function VDateTimePicker(props) {
       .replace("yyyy", "\\d{4}");
 
     const regex = new RegExp(`^${str}$`);
+    isDateValid = lowercaseValue.match(regex);
 
-    if (lowercaseValue.match(regex)) {
+    if (showClock === "show") {
+      let dateValue;
+      if (lowercaseValue.includes(" ")) {
+        [dateValue] = lowercaseValue.split(" ");
+
+        isDateValid = dateValue.match(regex);
+      }
+    }
+
+    if (isDateValid) {
       const dd = lowercaseValue.slice(
         lowercaseFormat.indexOf("dd"),
         lowercaseFormat.indexOf("dd") + 2
