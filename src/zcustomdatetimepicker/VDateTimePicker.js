@@ -3222,7 +3222,7 @@ export default function VDateTimePicker(props) {
         capitalMeridiem = amPm.toUpperCase();
       }
 
-      if (minute <= 60 && second <= 60) {
+      if (minute <= 60 && second <= 60 && hour >= selectedHour) {
         dispatch({
           type: "SET_END_TIME",
           format: capitalMeridiem,
