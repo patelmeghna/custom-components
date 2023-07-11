@@ -436,6 +436,7 @@ const VMonth = (props) => {
         >
           {state.isFocused ? (
             <input
+              tabIndex={props.tabIndex}
               onClick={handleShow}
               style={{ padding: "12px" }}
               type="text"

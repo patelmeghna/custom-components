@@ -17,6 +17,7 @@ function DatePicker() {
         // isMinCurrentTime
         // isClear
         // clearClick
+        // clearClickEnd
         isUndo
         undoClick
         selectedMode="dateTime"
@@ -46,6 +47,11 @@ function DatePicker() {
         // isDisabled={isDisabled}
         // resetControl
         // placeholder="Add month"
+        // tabIndex
+        // hideError
+        // errorMsg
+        // isClear
+        // clearClick
       />
     </Container>
   );
