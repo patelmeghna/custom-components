@@ -267,7 +267,7 @@ export default function VDateTimePicker(props) {
           month: nextMonth,
           year: nextYear,
         };
-
+       // Toggle the showStart value based on various conditions
       case "TOGGLE_SHOW":
         let showStart = !state.show;
         if (props.isDisabled || props.isReadOnly) {
@@ -286,7 +286,7 @@ export default function VDateTimePicker(props) {
           ...state,
           show: showStart,
         };
-
+      // Toggle the showEnd value based on various conditions
       case "TOGGLE_SHOW_END":
         let showEnd = !state.show;
         if (props.isDisabled || props.isReadOnly) {
@@ -338,7 +338,6 @@ export default function VDateTimePicker(props) {
           showYear: "",
         };
 
-      // changes //
       case "UNDO_START":
         return {
           ...state,
@@ -514,7 +513,7 @@ export default function VDateTimePicker(props) {
           };
         }
 
-      case "END_FORMAT_CHANGE":
+      case "FORMAT_END_CHANGE":
         if (props.clockTimeFormat === "am-pm") {
           return {
             ...state,
@@ -1886,11 +1885,15 @@ export default function VDateTimePicker(props) {
 
   let day;
 
+
+  // Determine the day value based on the selectedStart date or the current date
   if (selectedStart === null) {
     day = new Date().getDate();
   } else {
     day = selectedStart.getDate();
   }
+
+  // Create a new Date object with the full date and time information
 
   const fullDateFormat = new Date(
     year,
@@ -1905,7 +1908,9 @@ export default function VDateTimePicker(props) {
     month + 1
   }-${day} ${selectedHour}:${selectedMinute}:${selectedSecond}`;
 
+
   const endDay = selectedEnd && selectedEnd.getDate();
+  // Create a new Date object with the full end date and time information if endDay is available
   const fullEndDateFormat =
     endDay &&
     new Date(
@@ -1974,6 +1979,7 @@ export default function VDateTimePicker(props) {
   // disable select dropodwn :: end
 
   // form variables
+  // Assign the start time based on selected hour, minute, and second
   const startTime = props.range
     ? props.isSecondHide
       ? `${selectedHour}:${selectedMinute}`
@@ -2066,17 +2072,11 @@ export default function VDateTimePicker(props) {
   const handleReset = () => {
     dispatch({ type: "RESET" });
   };
-  // changes //
-  const handleStartUndo = () => {
-    // let pervious =
-    //   previousSelectedStartDate[previousSelectedStartDate.length - 2];
-    // if (previousSelectedStartDate.length > 1) {
-    //   dispatch({ type: "UNDO_START", payload: pervious });
-    //   previousSelectedStartDate.pop();
-    // }
 
-    props.undoClick && props.undoClick();
+  const handleStartUndo = () => {
+   props.undoClick && props.undoClick();
   };
+
   const handleEndUndo = () => {
     let next = previousSelectedEndDate[previousSelectedEndDate.length - 2];
 
@@ -2098,11 +2098,14 @@ export default function VDateTimePicker(props) {
   };
 
   const handleApply = () => {
+    // if(selectedDay === currentDay && timeFormat === "AM"){
+    //   if(currentHour >= selectedHour){
+    //     dispatch({type: "FORMAT_CHANGE" ,payload:"AM"})
+    //   }
+    // }
     dispatch({ type: "APPLY" });
   };
-  // let isStartDateSelected = false
 
-  // changes //
   const handleDayClick = (day) => {
     if (show === "show") {
       previousSelectedStartDate.push(`${year}-${month + 1}-${day}`);
@@ -2192,7 +2195,9 @@ export default function VDateTimePicker(props) {
       </option>
     );
   }
-  // changes
+
+
+
   let currentHour = currentDate.getHours();
   let currentMinute = currentDate.getMinutes();
   let currentSecond = currentDate.getSeconds();
@@ -2202,11 +2207,12 @@ export default function VDateTimePicker(props) {
   // Check if selected date is greater than current date
   const isStartDateSelected = selectedStart > currentDate;
 
+  // Generate options for hour selection based on condition
   if (props.clockTimeFormat) {
     for (let i = 1; i <= 12; i++) {
       const value = i < 10 ? `0${i}` : i.toString();
       let disabled = true;
-
+      let eveHour;
       if (timeFormat === "PM") {
         eveHour = parseInt(selectedHour) + 12;
       } else {
@@ -2217,7 +2223,7 @@ export default function VDateTimePicker(props) {
         currentPmHour = currentHour - 12;
 
         if (isStartDateSelected) {
-          disabled = false; // Enable all options if selected date is greater than current date
+          disabled = false; 
         }
 
         if (
@@ -2255,6 +2261,7 @@ export default function VDateTimePicker(props) {
             selectedEnd &&
             selectedEnd.toDateString() === selectedStart.toDateString()
           ) {
+            console.log('enddate',endDateFormat)
             if (endTimeFormat === "AM") {
               disabled = i < eveHour;
             } else {
@@ -2324,6 +2331,7 @@ export default function VDateTimePicker(props) {
     }
   }
 
+  // Generate options for minutes selection based on condition
   for (let i = 0; i < 60; i++) {
     const value = i < 10 ? `0${i}` : i.toString();
     let disabled = false;
@@ -2384,7 +2392,7 @@ export default function VDateTimePicker(props) {
     } else {
       if (show === "show") {
         if (isStartDateSelected) {
-          disabled = false; // Enable all options if selected date is greater than current date
+          disabled = false; 
         }
 
         if (
@@ -2419,6 +2427,8 @@ export default function VDateTimePicker(props) {
     );
   }
 
+
+  // Generate options for seconds selection based on condition
   for (let i = 0; i < 60; i++) {
     const value = i < 10 ? `0${i}` : i.toString();
     let disabled = false;
@@ -2482,7 +2492,7 @@ export default function VDateTimePicker(props) {
     } else {
       if (show === "show") {
         if (isStartDateSelected) {
-          disabled = false; // Enable all options if selected date is greater than current date
+          disabled = false; 
         }
 
         if (
@@ -2520,7 +2530,12 @@ export default function VDateTimePicker(props) {
     );
   }
 
+
+  // Determine the date format based on the props or use default "DD/MM/YYYY"
   const str = props.format || "DD/MM/YYYY";
+
+
+  // Determine the separator based on the date format
   const separator = str.includes("/")
     ? "/"
     : str.includes("-")
@@ -2543,6 +2558,7 @@ export default function VDateTimePicker(props) {
     startMonthNumber = selectedStart?.getMonth() + 1;
   }
 
+  // Format the start date based on the given date format
   const startDateFormat = (str, separator) => {
     const stringMap = {
       DD: startDateNumber || "DD",
@@ -2559,6 +2575,7 @@ export default function VDateTimePicker(props) {
 
   startDate = startDateFormat(str, separator);
 
+  // Format the end date based on the given date format
   let endDateNumber;
   if (selectedEnd?.getDate() < 10) {
     endDateNumber = `0${selectedEnd?.getDate()}`;
@@ -2589,6 +2606,8 @@ export default function VDateTimePicker(props) {
 
   endDate = endDateFormat(str, separator);
 
+
+  // Determine the previous button state based on the "show" value and current month/year
   if (show === "show") {
     if (month === minCalDate.getMonth() && year === minCalDate.getFullYear()) {
       prevBtn = (
@@ -2607,6 +2626,7 @@ export default function VDateTimePicker(props) {
     }
   }
 
+  // Generate an array of years for selection
   for (let i = 0; i < 12; i++) {
     years.push(presentYear + i);
   }
@@ -2617,6 +2637,9 @@ export default function VDateTimePicker(props) {
      function for input value :: begin
      =================================
      ================================= */
+
+ // Handle the change event of the date input
+
   const handleDateChange = (event) => {
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
@@ -2680,6 +2703,7 @@ export default function VDateTimePicker(props) {
       }
     }
 
+    // Handle the change event of the time input
     let timeRegex;
     let amPm = "";
     let capitalMeridiem;
@@ -2732,7 +2756,7 @@ export default function VDateTimePicker(props) {
       }
     }
 
-    // check valitity of input text
+    // check validity of input text
     if (!props.hideError) {
       let dateTimeRegex = regex;
 
@@ -2807,6 +2831,8 @@ export default function VDateTimePicker(props) {
 
   //  =========================================================
 
+  // Handle the change event of the EndDate input
+
   const handleEndDateChange = (event) => {
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
@@ -2865,6 +2891,8 @@ export default function VDateTimePicker(props) {
       previousSelectedEndDate.push(rearrangedDateStr);
     }
 
+    // Handle the change event of the Endtime input
+
     let timeRegex;
     let amPm = "";
     let capitalMeridiem;
@@ -2903,7 +2931,7 @@ export default function VDateTimePicker(props) {
       }
     }
 
-    // check valitity of input text
+    // check validity of input text
     if (!props.hideError) {
       let dateTimeRegex = regex;
 
