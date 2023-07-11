@@ -2194,7 +2194,6 @@ export default function VDateTimePicker(props) {
   }
   // changes
   let currentHour = currentDate.getHours();
-  // let currentHour = 18;
   let currentMinute = currentDate.getMinutes();
   let currentSecond = currentDate.getSeconds();
   let currentPmHour = null;
@@ -2662,12 +2661,23 @@ export default function VDateTimePicker(props) {
       const dateArr = [yyyy, mm, dd];
       const rearrangedDateStr = dateArr.join("-");
 
-      dispatch({
-        type: "SET_SELECTED_START",
-        payload: new Date(rearrangedDateStr),
-      });
-
-      previousSelectedStartDate.push(rearrangedDateStr);
+      if (parseInt(dd) <= 31 && parseInt(mm) <= 12 && yyyy.length === 4) {
+        if (props.minDate) {
+          if (new Date(rearrangedDateStr) > currentDate) {
+            dispatch({
+              type: "SET_SELECTED_START",
+              payload: new Date(rearrangedDateStr),
+            });
+            previousSelectedStartDate.push(rearrangedDateStr);
+          }
+        } else {
+          dispatch({
+            type: "SET_SELECTED_START",
+            payload: new Date(rearrangedDateStr),
+          });
+          previousSelectedStartDate.push(rearrangedDateStr);
+        }
+      }
     }
 
     let timeRegex;
@@ -2698,13 +2708,28 @@ export default function VDateTimePicker(props) {
         capitalMeridiem = amPm.toUpperCase();
       }
 
-      dispatch({
-        type: "SET_TIME",
-        format: capitalMeridiem,
-        hour,
-        minute,
-        second,
-      });
+      if (minute <= 60 && second <= 60) {
+        dispatch({
+          type: "SET_TIME",
+          format: capitalMeridiem,
+          hour,
+          minute,
+          second,
+        });
+      } else if (props.clockTimeFormat === "am-pm") {
+        if (hour > 12) {
+          hour -= 12;
+          capitalMeridiem = "PM";
+
+          dispatch({
+            type: "SET_TIME",
+            format: capitalMeridiem,
+            hour,
+            minute,
+            second,
+          });
+        }
+      }
     }
 
     // check valitity of input text
@@ -2867,13 +2892,15 @@ export default function VDateTimePicker(props) {
         capitalMeridiem = amPm.toUpperCase();
       }
 
-      dispatch({
-        type: "SET_END_TIME",
-        format: capitalMeridiem,
-        hour,
-        minute,
-        second,
-      });
+      if (minute <= 60 && second <= 60) {
+        dispatch({
+          type: "SET_END_TIME",
+          format: capitalMeridiem,
+          hour,
+          minute,
+          second,
+        });
+      }
     }
 
     // check valitity of input text
