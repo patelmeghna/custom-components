@@ -267,7 +267,7 @@ export default function VDateTimePicker(props) {
           month: nextMonth,
           year: nextYear,
         };
-       // Toggle the showStart value based on various conditions
+      // Toggle the showStart value based on various conditions
       case "TOGGLE_SHOW":
         let showStart = !state.show;
         if (props.isDisabled || props.isReadOnly) {
@@ -513,7 +513,7 @@ export default function VDateTimePicker(props) {
           };
         }
 
-      case "FORMAT_END_CHANGE":
+      case "END_FORMAT_CHANGE":
         if (props.clockTimeFormat === "am-pm") {
           return {
             ...state,
@@ -1743,7 +1743,7 @@ export default function VDateTimePicker(props) {
 
       // find end time from input field text :: begin
       case "SET_END_TIME":
-        let endTimeFormat = state.endTimeFormat;
+        let inputEndTimeFormat = state.endTimeFormat;
         let endHour = state.selectedEndHour;
         let endMinute = state.selectedEndMinute;
         let endSecond = state.selectedEndSecond;
@@ -1751,7 +1751,7 @@ export default function VDateTimePicker(props) {
 
         if (!props.isSecondHide) {
           if (props.clockTimeFormat === "am-pm") {
-            endTimeFormat = action.format;
+            inputEndTimeFormat = action.format;
             endMinute = action.minute;
             endSecond = action.second;
             if (action.hour <= 12) {
@@ -1759,17 +1759,17 @@ export default function VDateTimePicker(props) {
             } else {
               endMinute = action.minute;
             }
-            endTimeValue = `${endHour}:${endMinute}:${endSecond} ${state.endTimeFormat}`;
+            endTimeValue = `${endHour}:${endMinute}:${endSecond} ${inputEndTimeFormat}`;
           } else {
             endHour = action.hour;
             endMinute = action.minute;
             endSecond = action.second;
-            endTimeFormat = "";
+            inputEndTimeFormat = "";
             endTimeValue = `${endHour}:${endMinute}:${endSecond}`;
           }
         } else {
           if (props.clockTimeFormat === "am-pm") {
-            endTimeFormat = action.format;
+            inputEndTimeFormat = action.format;
             endMinute = action.minute;
             endSecond = action.second;
             if (action.hour <= 12) {
@@ -1777,12 +1777,12 @@ export default function VDateTimePicker(props) {
             } else {
               endMinute = action.minute;
             }
-            endTimeValue = `${endHour}:${endMinute} ${state.endTimeFormat}`;
+            endTimeValue = `${endHour}:${endMinute} ${inputEndTimeFormat}`;
           } else {
             endHour = action.hour;
             endMinute = action.minute;
             endSecond = action.second;
-            endTimeFormat = "";
+            inputEndTimeFormat = "";
             endTimeValue = `${endHour}:${endMinute}`;
           }
         }
@@ -1794,6 +1794,7 @@ export default function VDateTimePicker(props) {
           selectedEndMinute: endMinute,
           selectedEndSecond: endSecond,
           endTime: endTimeValue,
+          endTimeFormat: inputEndTimeFormat,
         };
       case "SET_END_HOUR":
         return {
@@ -1885,7 +1886,6 @@ export default function VDateTimePicker(props) {
 
   let day;
 
-
   // Determine the day value based on the selectedStart date or the current date
   if (selectedStart === null) {
     day = new Date().getDate();
@@ -1907,7 +1907,6 @@ export default function VDateTimePicker(props) {
   const dateWithTime = `${year}-${
     month + 1
   }-${day} ${selectedHour}:${selectedMinute}:${selectedSecond}`;
-
 
   const endDay = selectedEnd && selectedEnd.getDate();
   // Create a new Date object with the full end date and time information if endDay is available
@@ -1944,7 +1943,7 @@ export default function VDateTimePicker(props) {
   // default variables :: end
 
   // disable select dropodwn :: begin
-  if (props.isMinTime && selectedStart) {
+  if (props.isMinCurrentTime && selectedStart) {
     // Extract the year, month, and day components from the dates
     var currentYear2 = currentDate.getFullYear();
     var currentMonth = currentDate.getMonth();
@@ -1955,23 +1954,32 @@ export default function VDateTimePicker(props) {
     var selectedDay = selectedStart.getDate();
 
     // Compare the dates
-    if (
-      selectedYear > currentYear2 ||
-      (selectedYear === currentYear2 && selectedMonth > currentMonth) ||
-      (selectedYear === currentYear2 &&
-        selectedMonth === currentMonth &&
-        selectedDay > currentDay)
-    ) {
+    if (show === "show") {
+      if (
+        selectedYear > currentYear2 ||
+        (selectedYear === currentYear2 && selectedMonth > currentMonth) ||
+        (selectedYear === currentYear2 &&
+          selectedMonth === currentMonth &&
+          selectedDay > currentDay)
+      ) {
+        disableSelect = false;
+      } else if (
+        selectedYear < currentYear2 ||
+        (selectedYear === currentYear2 && selectedMonth < currentMonth) ||
+        (selectedYear === currentYear2 &&
+          selectedMonth === currentMonth &&
+          selectedDay < currentDay)
+      ) {
+        disableSelect = true;
+      } else {
+        disableSelect = false;
+      }
+    }
+    if (show === "show-end" && selectedEnd) {
       disableSelect = false;
-    } else if (
-      selectedYear < currentYear2 ||
-      (selectedYear === currentYear2 && selectedMonth < currentMonth) ||
-      (selectedYear === currentYear2 &&
-        selectedMonth === currentMonth &&
-        selectedDay < currentDay)
-    ) {
-      disableSelect = true;
-    } else {
+    }
+  } else {
+    if (show === "show" || (show === "show-end" && selectedEnd)) {
       disableSelect = false;
     }
   }
@@ -2074,7 +2082,7 @@ export default function VDateTimePicker(props) {
   };
 
   const handleStartUndo = () => {
-   props.undoClick && props.undoClick();
+    props.undoClick && props.undoClick();
   };
 
   const handleEndUndo = () => {
@@ -2098,12 +2106,36 @@ export default function VDateTimePicker(props) {
   };
 
   const handleApply = () => {
-    // if(selectedDay === currentDay && timeFormat === "AM"){
-    //   if(currentHour >= selectedHour){
-    //     dispatch({type: "FORMAT_CHANGE" ,payload:"AM"})
-    //   }
-    // }
-    dispatch({ type: "APPLY" });
+    if (props.isMinCurrentTime) {
+      if (selectedStart > currentDate) {
+        dispatch({ type: "APPLY" });
+      }
+
+      if (props.clockTimeFormat === "am-pm") {
+        if (selectedStart > currentDate) {
+          dispatch({ type: "APPLY" });
+        }
+        if (currentDate.getHours() <= 12) {
+          if (timeFormat === "AM") {
+            if (selectedStart.toDateString() === currentDate.toDateString()) {
+              if (selectedHour >= currentDate.getHours()) {
+                dispatch({ type: "APPLY" });
+              }
+            }
+          }
+        } else {
+          if (timeFormat === "PM") {
+            if (selectedStart.toDateString() === currentDate.toDateString()) {
+              if (selectedHour >= currentDate.getHours()) {
+                dispatch({ type: "APPLY" });
+              }
+            }
+          }
+        }
+      }
+    } else {
+      dispatch({ type: "APPLY" });
+    }
   };
 
   const handleDayClick = (day) => {
@@ -2196,8 +2228,6 @@ export default function VDateTimePicker(props) {
     );
   }
 
-
-
   let currentHour = currentDate.getHours();
   let currentMinute = currentDate.getMinutes();
   let currentSecond = currentDate.getSeconds();
@@ -2219,12 +2249,14 @@ export default function VDateTimePicker(props) {
         eveHour = parseInt(selectedHour);
       }
 
+      if (show === "show") {
+        if (isStartDateSelected) {
+          disabled = false;
+        }
+      }
+
       if (currentHour > 12 && show === "show") {
         currentPmHour = currentHour - 12;
-
-        if (isStartDateSelected) {
-          disabled = false; 
-        }
 
         if (
           selectedStart &&
@@ -2261,7 +2293,6 @@ export default function VDateTimePicker(props) {
             selectedEnd &&
             selectedEnd.toDateString() === selectedStart.toDateString()
           ) {
-            console.log('enddate',endDateFormat)
             if (endTimeFormat === "AM") {
               disabled = i < eveHour;
             } else {
@@ -2286,11 +2317,19 @@ export default function VDateTimePicker(props) {
         }
       }
 
-      hourOptions.push(
-        <option value={value} key={value} disabled={disabled}>
-          {value}
-        </option>
-      );
+      if (props.isMinCurrentTime || show === "show-end") {
+        hourOptions.push(
+          <option value={value} key={value} disabled={disabled}>
+            {value}
+          </option>
+        );
+      } else {
+        hourOptions.push(
+          <option value={value} key={value}>
+            {value}
+          </option>
+        );
+      }
     }
   } else {
     for (let i = 0; i < 24; i++) {
@@ -2323,11 +2362,19 @@ export default function VDateTimePicker(props) {
         }
       }
 
-      hourOptions.push(
-        <option value={value} key={value} disabled={disabled}>
-          {value}
-        </option>
-      );
+      if (props.isMinCurrentTime || show === "show-end") {
+        hourOptions.push(
+          <option value={value} key={value} disabled={disabled}>
+            {value}
+          </option>
+        );
+      } else {
+        hourOptions.push(
+          <option value={value} key={value}>
+            {value}
+          </option>
+        );
+      }
     }
   }
 
@@ -2392,7 +2439,7 @@ export default function VDateTimePicker(props) {
     } else {
       if (show === "show") {
         if (isStartDateSelected) {
-          disabled = false; 
+          disabled = false;
         }
 
         if (
@@ -2420,13 +2467,20 @@ export default function VDateTimePicker(props) {
       }
     }
 
-    minuteOptions.push(
-      <option value={value} key={value} disabled={disabled}>
-        {value}
-      </option>
-    );
+    if (props.isMinCurrentTime || show === "show-end") {
+      minuteOptions.push(
+        <option value={value} key={value} disabled={disabled}>
+          {value}
+        </option>
+      );
+    } else {
+      minuteOptions.push(
+        <option value={value} key={value}>
+          {value}
+        </option>
+      );
+    }
   }
-
 
   // Generate options for seconds selection based on condition
   for (let i = 0; i < 60; i++) {
@@ -2492,7 +2546,7 @@ export default function VDateTimePicker(props) {
     } else {
       if (show === "show") {
         if (isStartDateSelected) {
-          disabled = false; 
+          disabled = false;
         }
 
         if (
@@ -2523,17 +2577,23 @@ export default function VDateTimePicker(props) {
       }
     }
 
-    secondsOptions.push(
-      <option value={value} key={value} disabled={disabled}>
-        {value}
-      </option>
-    );
+    if (props.isMinCurrentTime || show === "show-end") {
+      secondsOptions.push(
+        <option value={value} key={value} disabled={disabled}>
+          {value}
+        </option>
+      );
+    } else {
+      secondsOptions.push(
+        <option value={value} key={value}>
+          {value}
+        </option>
+      );
+    }
   }
-
 
   // Determine the date format based on the props or use default "DD/MM/YYYY"
   const str = props.format || "DD/MM/YYYY";
-
 
   // Determine the separator based on the date format
   const separator = str.includes("/")
@@ -2606,7 +2666,6 @@ export default function VDateTimePicker(props) {
 
   endDate = endDateFormat(str, separator);
 
-
   // Determine the previous button state based on the "show" value and current month/year
   if (show === "show") {
     if (month === minCalDate.getMonth() && year === minCalDate.getFullYear()) {
@@ -2638,7 +2697,7 @@ export default function VDateTimePicker(props) {
      =================================
      ================================= */
 
- // Handle the change event of the date input
+  // Handle the change event of the date input
 
   const handleDateChange = (event) => {
     const value = event.target.value;
@@ -2646,6 +2705,7 @@ export default function VDateTimePicker(props) {
 
     let isDateValid;
     let isTimeValid;
+    let dateValue;
 
     const lowercaseFormat = format.toLowerCase();
     const lowercaseValue = value.toLowerCase();
@@ -2659,7 +2719,6 @@ export default function VDateTimePicker(props) {
     isDateValid = lowercaseValue.match(regex);
 
     if (showClock === "show") {
-      let dateValue;
       if (lowercaseValue.includes(" ")) {
         [dateValue] = lowercaseValue.split(" ");
 
@@ -2742,8 +2801,8 @@ export default function VDateTimePicker(props) {
         });
       } else if (props.clockTimeFormat === "am-pm") {
         if (hour > 12) {
-          hour -= 12;
           capitalMeridiem = "PM";
+          hour -= 12;
 
           dispatch({
             type: "SET_TIME",
@@ -2761,13 +2820,10 @@ export default function VDateTimePicker(props) {
       let dateTimeRegex = regex;
 
       if (props.selectedMode === "dateTime") {
-        dateTimeRegex = new RegExp(`^${str} ${timeRegex.source}$`, "i");
+        dateTimeRegex = new RegExp(`^${str} ${timeRegex}$`, "i");
 
         if (props.clockTimeFormat === "am-pm") {
-          dateTimeRegex = new RegExp(
-            `^${str} ${timeRegex.source} (AM|PM)$`,
-            "i"
-          );
+          dateTimeRegex = new RegExp(`^${str} ${timeRegex} (AM|PM)$`, "i");
         }
       }
 
@@ -2838,6 +2894,8 @@ export default function VDateTimePicker(props) {
     const format = props.format || "DD/MM/YYYY";
 
     let isDateValid;
+    let isTimeValid;
+    let dateValue;
 
     const lowercaseFormat = format.toLowerCase();
     const lowercaseValue = value.toLowerCase();
@@ -2851,7 +2909,6 @@ export default function VDateTimePicker(props) {
     isDateValid = lowercaseValue.match(regex);
 
     if (showClock === "show") {
-      let dateValue;
       if (lowercaseValue.includes(" ")) {
         [dateValue] = lowercaseValue.split(" ");
 
@@ -2904,8 +2961,9 @@ export default function VDateTimePicker(props) {
     }
 
     const matches = lowercaseValue.match(timeRegex);
+    isTimeValid = matches && matches.length > 1;
 
-    if (matches && matches.length > 1) {
+    if (isTimeValid) {
       var time = matches[0];
       var hour = value.substr(matches.index, 2);
       var minute = value.substr(matches.index + 3, 2);
@@ -2913,7 +2971,7 @@ export default function VDateTimePicker(props) {
 
       if (!props.isSecondHide) {
         second = value.substr(matches.index + 6, 2);
-        amPm = value.substr(matches.index + 8, 2);
+        amPm = value.substr(matches.index + 9, 2);
         capitalMeridiem = amPm.toUpperCase();
       } else {
         amPm = value.substr(matches.index + 6, 2);
@@ -2928,6 +2986,19 @@ export default function VDateTimePicker(props) {
           minute,
           second,
         });
+      } else if (props.clockTimeFormat === "am-pm") {
+        if (hour > 12) {
+          capitalMeridiem = "PM";
+          hour -= 12;
+
+          dispatch({
+            type: "SET_END_TIME",
+            format: capitalMeridiem,
+            hour,
+            minute,
+            second,
+          });
+        }
       }
     }
 
@@ -2948,7 +3019,7 @@ export default function VDateTimePicker(props) {
 
       const validate = value.match(dateTimeRegex);
 
-      if (validate) {
+      if (validate && validate.length > 0) {
         const year = parseInt(validate[0].substring(6, 11));
         const month = parseInt(validate[0].substring(3, 5)); // Months are zero-based (0-11)
         const day = parseInt(validate[0].substring(0, 2));
@@ -3198,7 +3269,7 @@ export default function VDateTimePicker(props) {
                           className="table-select"
                           value={selectedHour}
                           onChange={handleHourChange}
-                          isMinTime={selectedHour}
+                          isMinCurrentTime={selectedHour}
                         >
                           {hourOptions}
                         </select>
