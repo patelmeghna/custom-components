@@ -1846,6 +1846,21 @@ export default function VDateTimePicker(props) {
           hideError: true,
           hideErrorEnd: true,
         };
+
+      case "CHANGE_TIME_FORMAT":
+        let changedFormat = "AM";
+        if (props.isMinCurrentTime) {
+          if (props.clockTimeFormat) {
+            if (state.currentDate.getHours() >= 12) {
+              changedFormat = "PM";
+            }
+          }
+        }
+        return {
+          ...state,
+          timeFormat: changedFormat,
+          endTimeFormat: changedFormat,
+        };
       default:
         return state;
     }
@@ -1978,7 +1993,7 @@ export default function VDateTimePicker(props) {
     if (show === "show-end" && selectedEnd) {
       disableSelect = false;
     }
-  } else {
+  } else if (!props.isMinCurrentTime) {
     if (show === "show" || (show === "show-end" && selectedEnd)) {
       disableSelect = false;
     }
@@ -2115,7 +2130,7 @@ export default function VDateTimePicker(props) {
         if (selectedStart > currentDate) {
           dispatch({ type: "APPLY" });
         }
-        if (currentDate.getHours() <= 12) {
+        if (currentDate.getHours() <= 11) {
           if (timeFormat === "AM") {
             if (selectedStart.toDateString() === currentDate.toDateString()) {
               if (selectedHour >= currentDate.getHours()) {
@@ -2205,6 +2220,10 @@ export default function VDateTimePicker(props) {
     if (props.defaultValue) {
       dispatch({ type: "DEFAULT_VALUES" });
     }
+
+    if (props.isMinCurrentTime) {
+      dispatch({ type: "CHANGE_TIME_FORMAT" });
+    }
   }, []);
 
   useEffect(() => {
@@ -2255,7 +2274,7 @@ export default function VDateTimePicker(props) {
         }
       }
 
-      if (currentHour > 12 && show === "show") {
+      if (currentHour > 11 && show === "show") {
         currentPmHour = currentHour - 12;
 
         if (
@@ -2288,7 +2307,7 @@ export default function VDateTimePicker(props) {
           disabled = false;
         }
 
-        if (eveHour <= 12) {
+        if (eveHour < 12) {
           if (
             selectedEnd &&
             selectedEnd.toDateString() === selectedStart.toDateString()
@@ -2305,8 +2324,8 @@ export default function VDateTimePicker(props) {
           selectedEnd &&
           selectedEnd.toDateString() === selectedStart.toDateString()
         ) {
-          if (eveHour > 12) {
-            if (endTimeFormat === "PM") {
+          if (eveHour > 11) {
+            if (endTimeFormat === "PM" && eveHour !== 12) {
               disabled = i < selectedHour;
             } else if (endTimeFormat === "AM") {
               disabled = true;
@@ -2384,7 +2403,7 @@ export default function VDateTimePicker(props) {
     let disabled = false;
 
     if (props.clockTimeFormat) {
-      if (currentHour > 12 && show === "show") {
+      if (currentHour > 11 && show === "show") {
         if (isStartDateSelected) {
           disabled = false; // Enable all options if selected date is greater than current date
         }
@@ -2400,7 +2419,7 @@ export default function VDateTimePicker(props) {
             disabled = true;
           }
         }
-      } else if (currentHour <= 12 && show === "show") {
+      } else if (currentHour < 12 && show === "show") {
         if (
           selectedStart &&
           selectedStart.toDateString() === currentDate.toDateString() &&
@@ -2488,7 +2507,7 @@ export default function VDateTimePicker(props) {
     let disabled = false;
 
     if (props.clockTimeFormat) {
-      if (currentHour > 12 && show === "show") {
+      if (currentHour > 11 && show === "show") {
         if (isStartDateSelected) {
           disabled = false;
         }
@@ -2505,7 +2524,7 @@ export default function VDateTimePicker(props) {
             disabled = true;
           }
         }
-      } else if (currentHour <= 12 && show === "show") {
+      } else if (currentHour < 12 && show === "show") {
         if (
           selectedStart &&
           selectedStart.toDateString() === currentDate.toDateString() &&
@@ -3447,7 +3466,7 @@ export default function VDateTimePicker(props) {
               </button>
             )}
 
-            {props.isClear && (
+            {props.isClear && props.clearClick && (
               <button onClick={handleClearClick} className="clear-btn">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -3563,7 +3582,7 @@ export default function VDateTimePicker(props) {
               </button>
             )} */}
 
-            {props.isClear && (
+            {props.isClear && props.clearClickEnd && (
               <button onClick={handleClearClickEnd} className="clear-btn">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

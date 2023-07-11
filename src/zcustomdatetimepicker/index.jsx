@@ -14,7 +14,7 @@ function DatePicker() {
         // defaultValue={"2022-02-12 12:12:00 To 2022-01-23 12:20:10"}
         // minDate
         range
-        // isMinCurrentTime
+        isMinCurrentTime
         // isClear
         // clearClick
         // clearClickEnd
