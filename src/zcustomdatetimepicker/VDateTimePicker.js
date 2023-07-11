@@ -2987,9 +2987,19 @@ export default function VDateTimePicker(props) {
       const dateArr = [yyyy, mm, dd];
       const rearrangedDateStr = dateArr.join("-");
 
-      if (parseInt(dd) <= 31 && parseInt(mm) <= 12 && yyyy.length === 4) {
+      if (
+        parseInt(dd) <= 31 &&
+        parseInt(mm) <= 12 &&
+        yyyy.length === 4 &&
+        parseInt(yyyy) >= minYear &&
+        parseInt(yyyy) <= maxYear
+      ) {
         if (props.minDate) {
-          if (new Date(rearrangedDateStr) > currentDate) {
+          if (
+            new Date(rearrangedDateStr) > currentDate ||
+            new Date(rearrangedDateStr).toDateString() ===
+              currentDate.toDateString()
+          ) {
             dispatch({
               type: "SET_SELECTED_START",
               payload: new Date(rearrangedDateStr),
@@ -3177,16 +3187,22 @@ export default function VDateTimePicker(props) {
       const dateArr = [yyyy, mm, dd];
       const rearrangedDateStr = dateArr.join("-");
 
-      if (new Date(rearrangedDateStr) > selectedStart) {
-        dispatch({
-          type: "SET_SELECTED_END",
-          payload: new Date(rearrangedDateStr),
-        });
-      } else {
-        dispatch({
-          type: "SET_SELECTED_END",
-          payload: selectedStart,
-        });
+      if (parseInt(yyyy) <= maxYear) {
+        if (
+          new Date(rearrangedDateStr) > selectedStart ||
+          new Date(rearrangedDateStr).toDateString() ===
+            selectedStart.toDateString()
+        ) {
+          dispatch({
+            type: "SET_SELECTED_END",
+            payload: new Date(rearrangedDateStr),
+          });
+        } else {
+          dispatch({
+            type: "SET_SELECTED_END",
+            payload: selectedStart,
+          });
+        }
       }
 
       previousSelectedEndDate.push(rearrangedDateStr);
