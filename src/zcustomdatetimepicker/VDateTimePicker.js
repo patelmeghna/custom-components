@@ -1315,12 +1315,60 @@ export default function VDateTimePicker(props) {
       dispatch({ type: "UNDO_STATE", payload: "end" });
     }
 
-    dispatch({
-      type: "SELECT_DATE",
-      year,
-      month,
-      day,
-    });
+    if (props.minDate && !props.maxDate) {
+      if (
+        new Date(year, month, day) > minCalDate ||
+        new Date(year, month, day).toDateString() === minCalDate.toDateString()
+      ) {
+        dispatch({
+          type: "SELECT_DATE",
+          year,
+          month,
+          day,
+        });
+      }
+    }
+
+    if (!props.minDate && props.maxDate) {
+      if (
+        new Date(year, month, day) < maximumDate ||
+        new Date(year, month, day).toDateString() === maximumDate.toDateString()
+      ) {
+        dispatch({
+          type: "SELECT_DATE",
+          year,
+          month,
+          day,
+        });
+      }
+    }
+
+    if (props.minDate && props.maxDate) {
+      if (
+        (new Date(year, month, day) < maximumDate ||
+          new Date(year, month, day).toDateString() ===
+            maximumDate.toDateString()) &&
+        (new Date(year, month, day) > minCalDate ||
+          new Date(year, month, day).toDateString() ===
+            minCalDate.toDateString())
+      ) {
+        dispatch({
+          type: "SELECT_DATE",
+          year,
+          month,
+          day,
+        });
+      }
+    }
+
+    if (!props.minDate && !props.maxDate) {
+      dispatch({
+        type: "SELECT_DATE",
+        year,
+        month,
+        day,
+      });
+    }
   };
 
   const handleDocumentClick = (e) => {
