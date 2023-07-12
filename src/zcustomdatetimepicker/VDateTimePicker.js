@@ -2277,6 +2277,16 @@ export default function VDateTimePicker(props) {
      function for input value :: end
      =================================
      ================================= */
+
+  const startInputValueText = `${selectedStart ? startDate : ""}${
+    props.selectedMode
+      ? showClock !== ""
+        ? time !== ""
+          ? ` ${time}`
+          : ""
+        : ""
+      : ""
+  }`;
   return (
     <div
       className={`date-time-range-picker ${props.className}`}
