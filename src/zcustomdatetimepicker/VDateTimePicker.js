@@ -2010,10 +2010,22 @@ export default function VDateTimePicker(props) {
       let dateTimeRegex = regex;
 
       if (props.selectedMode === "dateTime") {
-        dateTimeRegex = new RegExp(`^${str} ${timeRegex}$`, "i");
+        dateTimeRegex = new RegExp(/^\d{2}-\d{2}-\d{4} \d{2}:\d{2}:\d{2}$/);
+
+        if (props.isSecondHide) {
+          dateTimeRegex = new RegExp(/^\d{2}-\d{2}-\d{4} \d{2}:\d{2}$/);
+        }
 
         if (props.clockTimeFormat === "am-pm") {
-          dateTimeRegex = new RegExp(`^${str} ${timeRegex} (AM|PM)$`, "i");
+          dateTimeRegex = new RegExp(
+            /^\d{2}-\d{2}-\d{4} \d{2}:\d{2}:\d{2} (AM|PM)$/
+          );
+
+          if (props.isSecondHide) {
+            dateTimeRegex = new RegExp(
+              /^\d{2}-\d{2}-\d{4} \d{2}:\d{2} (AM|PM)$/
+            );
+          }
         }
       }
 
@@ -2052,7 +2064,9 @@ export default function VDateTimePicker(props) {
 
         const dateObject = new Date(year, month, day, hour, minute, second);
         const isValidDateTime =
-          !isNaN(dateObject) && dateObject instanceof Date;
+          !isNaN(dateObject) || dateObject instanceof Date;
+
+        console.log(isValidDateTime);
 
         dispatch({ type: "VALIDATE_START", payload: isValidDateTime });
       } else {
@@ -2205,13 +2219,22 @@ export default function VDateTimePicker(props) {
       let dateTimeRegex = regex;
 
       if (props.selectedMode === "dateTime") {
-        dateTimeRegex = new RegExp(`^${str} ${timeRegex.source}$`, "i");
+        dateTimeRegex = new RegExp(/^\d{2}-\d{2}-\d{4} \d{2}:\d{2}:\d{2}$/);
+
+        if (props.isSecondHide) {
+          dateTimeRegex = new RegExp(/^\d{2}-\d{2}-\d{4} \d{2}:\d{2}$/);
+        }
 
         if (props.clockTimeFormat === "am-pm") {
           dateTimeRegex = new RegExp(
-            `^${str} ${timeRegex.source} (AM|PM)$`,
-            "i"
+            /^\d{2}-\d{2}-\d{4} \d{2}:\d{2}:\d{2} (AM|PM)$/
           );
+
+          if (props.isSecondHide) {
+            dateTimeRegex = new RegExp(
+              /^\d{2}-\d{2}-\d{4} \d{2}:\d{2} (AM|PM)$/
+            );
+          }
         }
       }
 
