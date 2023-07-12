@@ -438,7 +438,6 @@ const VMonth = (props) => {
             <input
               tabIndex={props.tabIndex}
               onClick={handleShow}
-              style={{ padding: "12px" }}
               type="text"
               className={month ? "selected" : ""}
               onChange={handleMonthChange}
@@ -450,7 +449,6 @@ const VMonth = (props) => {
             />
           ) : (
             <input
-              style={{ padding: "12px" }}
               type="text"
               onClick={handleShow}
               className={month ? "selected" : ""}

@@ -28,7 +28,7 @@ function DatePicker() {
         // clockTimeFormat="am-pm"
         placeholder="Add date"
         // isDisabled
-        // maxDate="2023-07-12"
+        maxDate="2024-03-12"
         // onChange={(data) => console.log(data)}
         // onEndChange={(end) => alert(end)}
         // startTabIndex

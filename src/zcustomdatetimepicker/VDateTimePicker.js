@@ -1925,11 +1925,11 @@ export default function VDateTimePicker(props) {
         parseInt(yyyy) >= minYear &&
         parseInt(yyyy) <= maxYear
       ) {
-        if (props.minDate) {
+        if (props.minDate && !props.maxDate) {
           if (
-            new Date(rearrangedDateStr) > currentDate ||
+            minCalDate < new Date(rearrangedDateStr) ||
             new Date(rearrangedDateStr).toDateString() ===
-              currentDate.toDateString()
+              minCalDate.toDateString()
           ) {
             dispatch({
               type: "SET_SELECTED_START",
@@ -1937,7 +1937,40 @@ export default function VDateTimePicker(props) {
             });
             previousSelectedStartDate.push(rearrangedDateStr);
           }
-        } else {
+        }
+
+        if (!props.minDate && props.maxDate) {
+          if (
+            maximumDate > new Date(rearrangedDateStr) ||
+            new Date(rearrangedDateStr).toDateString() ===
+              maximumDate.toDateString()
+          ) {
+            dispatch({
+              type: "SET_SELECTED_START",
+              payload: new Date(rearrangedDateStr),
+            });
+            previousSelectedStartDate.push(rearrangedDateStr);
+          }
+        }
+
+        if (props.minDate && props.maxDate) {
+          if (
+            (minCalDate < new Date(rearrangedDateStr) ||
+              new Date(rearrangedDateStr).toDateString() ===
+                minCalDate.toDateString()) &&
+            (maximumDate > new Date(rearrangedDateStr) ||
+              new Date(rearrangedDateStr).toDateString() ===
+                maximumDate.toDateString())
+          ) {
+            dispatch({
+              type: "SET_SELECTED_START",
+              payload: new Date(rearrangedDateStr),
+            });
+            previousSelectedStartDate.push(rearrangedDateStr);
+          }
+        }
+
+        if (!props.minDate && !props.maxDate) {
           dispatch({
             type: "SET_SELECTED_START",
             payload: new Date(rearrangedDateStr),
@@ -2599,7 +2632,6 @@ export default function VDateTimePicker(props) {
           >
             {state.isFocused ? (
               <input
-                style={{ padding: "12px" }}
                 type="text"
                 onChange={handleDateChange}
                 onFocus={handleFocus}
@@ -2621,7 +2653,6 @@ export default function VDateTimePicker(props) {
               />
             ) : (
               <input
-                style={{ padding: "12px" }}
                 type="text"
                 onClick={handleShow}
                 onChange={handleDateChange}
@@ -2717,7 +2748,6 @@ export default function VDateTimePicker(props) {
           >
             {state.isEndFocused ? (
               <input
-                style={{ padding: "12px" }}
                 type="text"
                 onClick={handleShowEnd}
                 onChange={handleEndDateChange}
@@ -2738,7 +2768,6 @@ export default function VDateTimePicker(props) {
               />
             ) : (
               <input
-                style={{ padding: "12px" }}
                 type="text"
                 onClick={handleShowEnd}
                 onChange={handleEndDateChange}
