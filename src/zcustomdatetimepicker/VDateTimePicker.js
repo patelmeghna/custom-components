@@ -1,8 +1,5 @@
 import "./zcustomdatetimepicker.css";
 import { useReducer, useEffect } from "react";
-import error from "./error.svg";
-import clear from "./clear.svg";
-import undo from "./undo.svg";
 
 export default function VDateTimePicker(props) {
   // initial value :: begin
@@ -2301,15 +2298,6 @@ export default function VDateTimePicker(props) {
      =================================
      ================================= */
 
-  const startInputValueText = `${selectedStart ? startDate : ""}${
-    props.selectedMode
-      ? showClock !== ""
-        ? time !== ""
-          ? ` ${time}`
-          : ""
-        : ""
-      : ""
-  }`;
   return (
     <div
       className={`date-time-range-picker ${props.className}`}

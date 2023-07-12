@@ -324,7 +324,7 @@ const VMonth = (props) => {
   }, [show]);
 
   return (
-    <div className={`month-year-picker ${props.className}`}>
+    <div className={`month-year-picker ${props.className}`} style={props.style}>
       <div className="calendar-wrap" id={id}>
         <div className={`calendar ${show ? "show" : ""}`}>
           {/* ===== month calendar :: begin ===== */}
