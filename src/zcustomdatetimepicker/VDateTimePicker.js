@@ -532,17 +532,12 @@ export default function VDateTimePicker(props) {
         let toggleTime = state.show;
         let newTimeFormat = state.timeFormat;
         let newEndTimeFormat = state.endTimeFormat;
-        let hideSecond = "";
-        let singleLetterSecond = "";
-        let hideEndSecond = "";
-        let hideEndSingleSecond = "";
-
-        if (!props.isSecondHide) {
-          hideSecond = `${state.selectedSecond}`;
-          singleLetterSecond = `0${state.selectedSecond}`;
-          hideEndSecond = `${state.selectedEndSecond}`;
-          hideEndSingleSecond = `0${state.selectedEndSecond}`;
-        }
+        let startHourTime = state.selectedHour;
+        let startMinuteTime = state.selectedMinute;
+        let startSecondTime = state.selectedSecond;
+        let endHourTime = state.selectedEndHour;
+        let endMinuteTime = state.selectedEndMinute;
+        let endSecondTime = state.selectedEndSecond;
 
         if (props.clockTimeFormat !== "am-pm") {
           newTimeFormat = "";
@@ -556,1177 +551,98 @@ export default function VDateTimePicker(props) {
         if (state.show === "show") {
           // start date selection :: begin
           if (props.clockTimeFormat === "am-pm") {
-            if (state.selectedHour > 12) {
-              if ((state.selectedHour - 12).toString().length === 1) {
-                return {
-                  ...state,
-                  selectedHour: `0${state.selectedHour - 12}`,
-                };
+            if (startHourTime > 12) {
+              if ((startHourTime - 12).toString().length === 1) {
+                startHourTime = `0${state.selectedHour - 12}`;
               } else {
-                return {
-                  ...state,
-                  selectedHour: state.selectedHour - 12,
-                };
-              }
-            }
-
-            if (state.selectedEndHour > 12) {
-              if ((state.selectedEndHour - 12).toString().length === 1) {
-                return {
-                  ...state,
-                  selectedEndHour: `0${state.selectedEndHour - 12}`,
-                };
-              } else {
-                return {
-                  ...state,
-                  selectedEndHour: state.selectedEndHour - 12,
-                };
-              }
-            }
-          }
-          if (state.selectedMinute.toString().length === 1) {
-            return {
-              ...state,
-              selectedMinute: `0${state.selectedMinute}`,
-            };
-          }
-          if (state.selectedSecond.toString().length === 1) {
-            return {
-              ...state,
-              selectedSecond: `0${state.selectedSecond}`,
-            };
-          }
-          if (state.selectedEndMinute.toString().length === 1) {
-            return {
-              ...state,
-              selectedEndMinute: `0${state.selectedEndMinute}`,
-            };
-          }
-          if (state.selectedEndSecond.toString().length === 1) {
-            return {
-              ...state,
-              selectedEndSecond: `0${state.selectedEndSecond}`,
-            };
-          }
-          if (
-            state.selectedHour &&
-            state.selectedMinute &&
-            state.selectedSecond
-          ) {
-            if (state.selectedHour < 10 && state.selectedHour.length === 1) {
-              return {
-                ...state,
-                time: `0${state.selectedHour}:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
-                show: toggleTime,
-              };
-            }
-            if (
-              state.selectedMinute < 10 &&
-              state.selectedMinute.length === 1
-            ) {
-              return {
-                ...state,
-                time: `${state.selectedHour}:0${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
-                show: toggleTime,
-              };
-            }
-            if (
-              state.selectedSecond < 10 &&
-              state.selectedSecond.length === 1
-            ) {
-              return {
-                ...state,
-                time: `${state.selectedHour}:${state.selectedMinute}:${singleLetterSecond} ${newTimeFormat}`,
-                show: toggleTime,
-              };
-            }
-            if (
-              state.selectedHour < 10 &&
-              state.selectedHour.length === 1 &&
-              state.selectedMinute < 10 &&
-              state.selectedMinute.length === 1
-            ) {
-              return {
-                ...state,
-                time: `0${state.selectedHour}:0${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
-                show: toggleTime,
-              };
-            }
-            if (
-              state.selectedHour < 10 &&
-              state.selectedHour.length === 1 &&
-              state.selectedSecond < 10 &&
-              state.selectedSecond.length === 1
-            ) {
-              return {
-                ...state,
-                time: `0${state.selectedHour}:${state.selectedMinute}:${singleLetterSecond} ${newTimeFormat}`,
-                show: toggleTime,
-              };
-            }
-            if (
-              state.selectedSecond < 10 &&
-              state.selectedSecond.length === 1 &&
-              state.selectedMinute < 10 &&
-              state.selectedMinute.length === 1
-            ) {
-              return {
-                ...state,
-                time: `${state.selectedHour}:0${state.selectedMinute}:${singleLetterSecond} ${newTimeFormat}`,
-                show: toggleTime,
-              };
-            }
-            if (
-              state.selectedHour < 10 &&
-              state.selectedHour.length === 1 &&
-              state.selectedMinute < 10 &&
-              state.selectedMinute.length === 1 &&
-              state.selectedSecond < 10 &&
-              state.selectedSecond.length === 1
-            ) {
-              return {
-                ...state,
-                time: `0${state.selectedHour}:0${state.selectedMinute}:${singleLetterSecond} ${newTimeFormat}`,
-                show: toggleTime,
-              };
-            }
-
-            return {
-              ...state,
-              time: `${state.selectedHour}:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
-              show: toggleTime,
-            };
-          }
-          if (
-            state.selectedHour === null &&
-            state.selectedMinute !== null &&
-            state.selectedSecond !== null
-          ) {
-            if (
-              state.selectedMinute < 10 &&
-              state.selectedMinute.length === 1
-            ) {
-              return {
-                ...state,
-                time: `24:0${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
-                show: toggleTime,
-                selectedHour: "24",
-              };
-            }
-            if (
-              state.selectedSecond < 10 &&
-              state.selectedSecond.length === 1
-            ) {
-              return {
-                ...state,
-                time: `24:${state.selectedMinute}:${singleLetterSecond} ${newTimeFormat}`,
-                show: toggleTime,
-                selectedHour: "24",
-              };
-            }
-            if (
-              state.selectedMinute < 10 &&
-              state.selectedMinute.length === 1 &&
-              state.selectedSecond < 10 &&
-              state.selectedSecond.length === 1
-            ) {
-              return {
-                ...state,
-                time: `24:0${state.selectedMinute}:${singleLetterSecond} ${newTimeFormat}`,
-                show: toggleTime,
-                selectedHour: "24",
-              };
-            }
-
-            return {
-              ...state,
-              time: `24:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
-              show: toggleTime,
-              selectedHour: "24",
-            };
-          }
-          if (
-            state.selectedHour === null &&
-            state.selectedMinute === null &&
-            state.selectedSecond !== null
-          ) {
-            if (
-              state.selectedSecond < 10 &&
-              state.selectedSecond.length === 1
-            ) {
-              return {
-                ...state,
-                time: `24:00:${singleLetterSecond} ${newTimeFormat}`,
-                show: toggleTime,
-                selectedHour: "24",
-                selectedMinute: "00",
-              };
-            }
-
-            return {
-              ...state,
-              time: `24:00:${hideSecond} ${newTimeFormat}`,
-              show: toggleTime,
-              selectedHour: "24",
-              selectedMinute: "00",
-            };
-          }
-          if (
-            state.selectedHour === null &&
-            state.selectedMinute !== null &&
-            state.selectedSecond === null
-          ) {
-            if (
-              state.selectedMinute < 10 &&
-              state.selectedMinute.length === 1
-            ) {
-              return {
-                ...state,
-                time: `24:0${state.selectedMinute}:00 ${newTimeFormat}`,
-                show: toggleTime,
-                selectedHour: "24",
-                selectedMinute: "00",
-              };
-            }
-
-            return {
-              ...state,
-              time: `24:${state.selectedMinute}:00 ${newTimeFormat}`,
-              show: toggleTime,
-              selectedHour: "24",
-              selectedSecond: "00",
-            };
-          }
-          if (
-            state.selectedHour !== null &&
-            state.selectedMinute === null &&
-            state.selectedSecond === null
-          ) {
-            if (state.selectedHour < 10 && state.selectedHour.length === 1) {
-              return {
-                ...state,
-                time: `0${state.selectedHour}:00:00 ${newTimeFormat}`,
-                show: toggleTime,
-                selectedSecond: "00",
-                selectedMinute: "00",
-              };
-            }
-
-            return {
-              ...state,
-              time: `${state.selectedHour}:00:00 ${newTimeFormat}`,
-              show: toggleTime,
-              selectedSecond: "00",
-              selectedSecond: "00",
-            };
-          }
-          if (
-            state.selectedHour !== null &&
-            state.selectedMinute !== null &&
-            state.selectedSecond === null
-          ) {
-            if (
-              state.selectedMinute < 10 &&
-              state.selectedMinute.length === 1
-            ) {
-              return {
-                ...state,
-                time: `${state.selectedHour}:0${state.selectedMinute}:00 ${newTimeFormat}`,
-                show: toggleTime,
-                selectedSecond: "00",
-              };
-            }
-            if (state.selectedHour < 10 && state.selectedHour.length === 1) {
-              return {
-                ...state,
-                time: `0${state.selectedSecond}:${state.selectedMinute}:00 ${newTimeFormat}`,
-                show: toggleTime,
-                selectedSecond: "00",
-              };
-            }
-            if (
-              state.selectedHour < 10 &&
-              state.selectedHour.length === 1 &&
-              state.selectedMinute < 10 &&
-              state.selectedMinute.length === 1
-            ) {
-              return {
-                ...state,
-                time: `0${state.selectedHour}:0${state.selectedMinute}:00 ${newTimeFormat}`,
-                show: toggleTime,
-                selectedSecond: "00",
-              };
-            }
-
-            return {
-              ...state,
-              time: `${state.selectedHour}:${state.selectedMinute}:00 ${newTimeFormat}`,
-              show: toggleTime,
-              selectedSecond: "00",
-            };
-          }
-          if (
-            state.selectedHour !== null &&
-            state.selectedMinute === null &&
-            state.selectedSecond !== null
-          ) {
-            if (state.selectedHour < 10 && state.selectedHour.length === 1) {
-              return {
-                ...state,
-                time: `0${state.selectedHour}:00:${hideSecond} ${newTimeFormat}`,
-                show: toggleTime,
-                selectedMinute: "00",
-              };
-            }
-            if (
-              state.selectedSecond < 10 &&
-              state.selectedSecond.length === 1
-            ) {
-              return {
-                ...state,
-                time: `${state.selectedHour}:00:${singleLetterSecond} ${newTimeFormat}`,
-                show: toggleTime,
-                selectedMinute: "00",
-              };
-            }
-            if (
-              state.selectedHour < 10 &&
-              state.selectedHour.length === 1 &&
-              state.selectedSecond < 10 &&
-              state.selectedSecond.length === 1
-            ) {
-              return {
-                ...state,
-                time: `0${state.selectedHour}:00:${singleLetterSecond} ${newTimeFormat}`,
-                show: toggleTime,
-                selectedMinute: "00",
-              };
-            }
-
-            return {
-              ...state,
-              time: `24:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
-              show: toggleTime,
-              selectedHour: "24",
-            };
-          }
-          if (
-            (state.time === null && state.selectedStart === null) ||
-            (state.time === "" && state.selectedStart === null) ||
-            state.selectedStart === null
-          ) {
-            if (!props.isSecondHide) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  selectedStart: new Date(),
-                  selectedHour: "12",
-                  selectedMinute: "00",
-                  selectedSecond: "00",
-                  time: `12:00:00 ${newTimeFormat}`,
-                  show: toggleTime,
-                };
-              } else {
-                return {
-                  ...state,
-                  selectedStart: new Date(),
-                  selectedHour: "00",
-                  selectedMinute: "00",
-                  selectedSecond: "00",
-                  time: `00:00:00 ${newTimeFormat}`,
-                  show: toggleTime,
-                };
-              }
-            } else {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  selectedStart: new Date(),
-                  selectedHour: "12",
-                  selectedMinute: "00",
-                  time: `12:00 ${newTimeFormat}`,
-                  show: toggleTime,
-                };
-              } else {
-                return {
-                  ...state,
-                  selectedStart: new Date(),
-                  selectedHour: "00",
-                  selectedMinute: "00",
-                  time: `00:00 ${newTimeFormat}`,
-                  show: toggleTime,
-                };
-              }
-            }
-          }
-          if (state.selectedStart === null) {
-            if (state.time === null || state.time === "") {
-              if (!props.isSecondHide) {
-                if (props.clockTimeFormat === "am-pm") {
-                  return {
-                    ...state,
-                    selectedStart: new Date(),
-                    selectedHour: "12",
-                    selectedMinute: "00",
-                    selectedSecond: "00",
-                    time: `12:00:00 ${newTimeFormat}`,
-                    show: toggleTime,
-                  };
-                } else {
-                  return {
-                    ...state,
-                    selectedStart: new Date(),
-                    selectedHour: "00",
-                    selectedMinute: "00",
-                    selectedSecond: "00",
-                    time: `00:00:00 ${newTimeFormat}`,
-                    show: toggleTime,
-                  };
-                }
-              } else {
-                if (props.clockTimeFormat === "am-pm") {
-                  return {
-                    ...state,
-                    selectedStart: new Date(),
-                    selectedHour: "12",
-                    selectedMinute: "00",
-                    time: `12:00 ${newTimeFormat}`,
-                    show: toggleTime,
-                  };
-                } else {
-                  return {
-                    ...state,
-                    selectedStart: new Date(),
-                    selectedHour: "00",
-                    selectedMinute: "00",
-                    time: `00:00 ${newTimeFormat}`,
-                    show: toggleTime,
-                  };
-                }
-              }
-            }
-            if (state.time !== null || state.time !== "") {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  selectedHour: state.selectedHour,
-                  selectedMinute: state.selectedMinute,
-                  selectedSecond: state.selectedSecond,
-                  time: `${state.selectedHour}:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
-                  show: toggleTime,
-                };
-              } else {
-                return {
-                  ...state,
-                  selectedHour: state.selectedHour,
-                  selectedMinute: state.selectedMinute,
-                  selectedSecond: state.selectedSecond,
-                  time: `${state.selectedHour}:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
-                  show: toggleTime,
-                };
+                startHourTime = state.selectedHour - 12;
               }
             }
           } else {
-            if (state.time === null || state.time === "") {
-              if (!props.isSecondHide) {
-                if (props.clockTimeFormat === "am-pm") {
-                  return {
-                    ...state,
-                    selectedHour: "12",
-                    selectedMinute: "00",
-                    selectedSecond: "00",
-                    time: `12:00:00 ${newTimeFormat}`,
-                    show: toggleTime,
-                  };
-                } else {
-                  return {
-                    ...state,
-                    selectedHour: "00",
-                    selectedMinute: "00",
-                    selectedSecond: "00",
-                    time: `00:00:00 ${newTimeFormat}`,
-                    show: toggleTime,
-                  };
-                }
-              } else {
-                if (props.clockTimeFormat === "am-pm") {
-                  return {
-                    ...state,
-                    selectedHour: "12",
-                    selectedMinute: "00",
-                    time: `12:00 ${newTimeFormat}`,
-                    show: toggleTime,
-                  };
-                } else {
-                  return {
-                    ...state,
-                    selectedHour: "00",
-                    selectedMinute: "00",
-                    time: `00:00 ${newTimeFormat}`,
-                    show: toggleTime,
-                  };
-                }
-              }
-            }
-            if (state.time !== null || state.time !== "") {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  selectedHour: state.selectedHour,
-                  selectedMinute: state.selectedMinute,
-                  selectedSecond: state.selectedSecond,
-                  time: `${state.selectedHour}:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
-                  show: toggleTime,
-                };
-              } else {
-                return {
-                  ...state,
-                  selectedHour: state.selectedHour,
-                  selectedMinute: state.selectedMinute,
-                  selectedSecond: state.selectedSecond,
-                  time: `${state.selectedHour}:${state.selectedMinute}:${hideSecond} ${newTimeFormat}`,
-                  show: toggleTime,
-                };
-              }
+            if (startHourTime.toString().length === 1) {
+              startHourTime = `0${state.selectedHour}`;
+            } else {
+              startHourTime = state.selectedHour;
             }
           }
-          // start date selection :: end
-        } else {
-          if (state.selectedEnd === null) {
+          if (startMinuteTime.toString().length === 1) {
+            startMinuteTime = `0${state.selectedMinute}`;
+          } else {
+            startMinuteTime = state.selectedMinute;
+          }
+          if (startSecondTime.toString().length === 1) {
+            startSecondTime = `0${state.selectedSecond}`;
+          } else {
+            startSecondTime = state.selectedSecond;
+          }
+
+          if (!props.isSecondHide) {
             return {
               ...state,
+              time: `${startHourTime}:${startMinuteTime}:${startSecondTime} ${newTimeFormat}`,
+              show: toggleTime,
+              endTime: "",
+            };
+          } else {
+            return {
+              ...state,
+              time: `${startHourTime}:${startMinuteTime} ${newTimeFormat}`,
+              show: toggleTime,
               endTime: "",
             };
           }
-          // end date selection :: begin
-          if (
-            state.selectedEndHour &&
-            state.selectedEndMinute &&
-            state.selectedSecond
-          ) {
-            if (
-              state.selectedEndHour < 10 &&
-              state.selectedEndHour.length === 1
-            ) {
-              return {
-                ...state,
-                endTime: `0${state.selectedEndHour}:${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
-                show: "",
-              };
+
+          // start date selection :: end
+        } else {
+          if (props.clockTimeFormat === "am-pm") {
+            if (endHourTime > 12) {
+              if ((endHourTime - 12).toString().length === 1) {
+                endHourTime = `0${state.selectedEndHour - 12}`;
+              } else {
+                endHourTime = state.selectedEndHour - 12;
+              }
             }
-            if (
-              state.selectedEndMinute < 10 &&
-              state.selectedEndMinute.length === 1
-            ) {
-              return {
-                ...state,
-                endTime: `${state.selectedEndHour}:0${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
-                show: "",
-              };
-            }
-            if (
-              state.selectedEndSecond < 10 &&
-              state.selectedEndSecond.length === 1
-            ) {
-              return {
-                ...state,
-                time: `${state.selectedEndHour}:${state.selectedMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                show: "",
-              };
-            }
-            if (
-              state.selectedEndHour < 10 &&
-              state.selectedEndHour.length === 1 &&
-              state.selectedEndMinute < 10 &&
-              state.selectedEndMinute.length === 1
-            ) {
-              return {
-                ...state,
-                endTime: `0${state.selectedEndHour}:0${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
-                show: "",
-              };
-            }
-            if (
-              state.selectedEndHour < 10 &&
-              state.selectedEndHour.length === 1 &&
-              state.selectedEndSecond < 10 &&
-              state.selectedEndSecond.length === 1
-            ) {
-              return {
-                ...state,
-                endTime: `0${state.selectedEndHour}:${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                show: "",
-              };
-            }
-            if (
-              state.selectedEndSecond < 10 &&
-              state.selectedEndSecond.length === 1 &&
-              state.selectedEndMinute < 10 &&
-              state.selectedEndMinute.length === 1
-            ) {
-              return {
-                ...state,
-                endTime: `${state.selectedEndHour}:0${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                show: "",
-              };
-            }
-            if (
-              state.selectedEndHour < 10 &&
-              state.selectedEndHour.length === 1 &&
-              state.selectedEndMinute < 10 &&
-              state.selectedEndMinute.length === 1 &&
-              state.selectedEndSecond < 10 &&
-              state.selectedEndSecond.length === 1
-            ) {
-              return {
-                ...state,
-                endTime: `0${state.selectedEndHour}:0${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                show: "",
-              };
+          } else {
+            if (endHourTime.toString().length === 1) {
+              endHourTime = `0${state.selectedEndHour}`;
+            } else {
+              endHourTime = state.selectedEndHour;
             }
 
+            if (endMinuteTime.toString().length === 1) {
+              endMinuteTime = `0${state.selectedEndMinute}`;
+            } else {
+              endMinuteTime = state.selectedEndMinute;
+            }
+
+            if (endSecondTime.toString().length === 1) {
+              endSecondTime = `0${state.selectedEndSecond}`;
+            } else {
+              endSecondTime = state.selectedEndSecond;
+            }
+          }
+
+          if (!props.isSecondHide) {
             return {
               ...state,
-              endTime: `${state.selectedEndHour}:${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
+              endTime: `${endHourTime}:${endMinuteTime}:${endSecondTime} ${newEndTimeFormat}`,
               show: "",
             };
           }
-          if (
-            state.selectedEndHour === null &&
-            state.selectedEndMinute !== null &&
-            state.selectedEndSecond !== null
-          ) {
-            if (
-              state.selectedEndMinute < 10 &&
-              state.selectedEndMinute.length === 1
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  endTime: `11:0${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
-                  selectedEndHour: "11",
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  endTime: `23:0${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
-                  selectedEndHour: "23",
-                  show: "",
-                };
-              }
-            }
-            if (
-              state.selectedEndSecond < 10 &&
-              state.selectedEndSecond.length === 1
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  endTime: `11:${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                  selectedEndHour: "11",
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  endTime: `23:${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                  selectedEndHour: "23",
-                  show: "",
-                };
-              }
-            }
-            if (
-              state.selectedEndSecond < 10 &&
-              state.selectedEndSecond.length === 1 &&
-              state.selectedEndMinute < 10 &&
-              state.selectedEndMinute.length === 1
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  endTime: `11:0${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                  selectedEndHour: "11",
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  endTime: `23:0${state.selectedEndMinute}:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                  selectedEndHour: "23",
-                  show: "",
-                };
-              }
-            }
-            if (props.clockTimeFormat === "am-pm") {
-              return {
-                ...state,
-                endTime: `11:0${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
-                selectedEndHour: "11",
-                show: "",
-              };
-            } else {
-              return {
-                ...state,
-                endTime: `23:0${state.selectedEndMinute}:${hideEndSecond} ${newEndTimeFormat}`,
-                selectedEndHour: "23",
-                show: "",
-              };
-            }
-          }
-          if (
-            state.selectedEndHour === null &&
-            state.selectedEndMinute === null &&
-            state.selectedEndSecond !== null
-          ) {
-            if (
-              state.selectedEndSecond < 10 &&
-              state.selectedEndSecond.length === 1
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  endTime: `11:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                  selectedEndHour: "11",
-                  selectedEndMinute: "00",
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  endTime: `23:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                  selectedEndHour: "23",
-                  selectedEndMinute: "00",
-                  show: "",
-                };
-              }
-            }
-            if (props.clockTimeFormat === "am-pm") {
-              return {
-                ...state,
-                endTime: `11:00${hideEndSecond} ${newEndTimeFormat}`,
-                selectedEndHour: "11",
-                selectedEndMinute: "00",
-                show: "",
-              };
-            } else {
-              return {
-                ...state,
-                endTime: `23:00${hideEndSecond} ${newEndTimeFormat}`,
-                selectedEndHour: "23",
-                selectedEndMinute: "00",
-                show: "",
-              };
-            }
-          }
-          if (
-            state.selectedEndHour === null &&
-            state.selectedEndMinute !== null &&
-            state.selectedEndSecond === null
-          ) {
-            if (
-              state.selectedEndMinute < 10 &&
-              state.selectedEndMinute.length === 1
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  endTime: `11:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
-                  selectedEndHour: "11",
-                  selectedEndSecond: "00",
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  endTime: `23:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
-                  selectedEndHour: "23",
-                  selectedEndSecond: "00",
-                  show: "",
-                };
-              }
-            }
-            if (props.clockTimeFormat === "am-pm") {
-              return {
-                ...state,
-                endTime: `11:${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
-                selectedEndHour: "11",
-                selectedEndSecond: "00",
-                show: "",
-              };
-            } else {
-              return {
-                ...state,
-                endTime: `23:${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
-                selectedEndHour: "23",
-                selectedEndSecond: "00",
-                show: "",
-              };
-            }
-          }
-          if (
-            state.selectedEndHour !== null &&
-            state.selectedEndMinute !== null &&
-            state.selectedEndSecond === null
-          ) {
-            if (
-              state.selectedEndMinute < 10 &&
-              state.selectedEndMinute.length === 1
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  endTime: `${state.selectedEndHour}:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
-                  selectedEndSecond: "00",
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  endTime: `${state.selectedEndHour}:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
-                  selectedEndSecond: "00",
-                  show: "",
-                };
-              }
-            }
-            if (
-              state.selectedEndHour < 10 &&
-              state.selectedEndHour.length === 1
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  endTime: `0${state.selectedEndHour}:${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
-                  selectedEndSecond: "00",
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  endTime: `0${state.selectedEndHour}:${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
-                  selectedEndSecond: "00",
-                  show: "",
-                };
-              }
-            }
-            if (
-              state.selectedEndHour < 10 &&
-              state.selectedEndHour.length === 1 &&
-              state.selectedEndMinute < 10 &&
-              state.selectedEndMinute.length === 1
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  endTime: `0${state.selectedEndHour}:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
-                  selectedEndSecond: "00",
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  endTime: `0${state.selectedEndHour}:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
-                  selectedEndSecond: "00",
-                  show: "",
-                };
-              }
-            }
-            if (props.clockTimeFormat === "am-pm") {
-              return {
-                ...state,
-                endTime: `${state.selectedEndHour}:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
-                selectedEndSecond: "00",
-                show: "",
-              };
-            } else {
-              return {
-                ...state,
-                endTime: `${state.selectedEndHour}:0${state.selectedEndMinute}:00 ${newEndTimeFormat}`,
-                selectedEndSecond: "00",
-                show: "",
-              };
-            }
-          }
-          if (
-            state.selectedEndHour !== null &&
-            state.selectedEndMinute === null &&
-            state.selectedEndSecond !== null
-          ) {
-            if (
-              state.selectedEndSecond < 10 &&
-              state.selectedEndSecond.length === 1
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  endTime: `${state.selectedEndHour}:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                  selectedEndMinute: "00",
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  endTime: `${state.selectedEndHour}:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                  selectedEndMinute: "00",
-                  show: "",
-                };
-              }
-            }
-            if (
-              state.selectedEndHour < 10 &&
-              state.selectedEndHour.length === 1
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  endTime: `0${state.selectedEndHour}:00${hideEndSecond} ${newEndTimeFormat}`,
-                  selectedEndMinute: "00",
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  endTime: `0${state.selectedEndHour}:00${hideEndSecond} ${newEndTimeFormat}`,
-                  selectedEndMinute: "00",
-                  show: "",
-                };
-              }
-            }
-            if (
-              state.selectedEndHour < 10 &&
-              state.selectedEndHour.length === 1 &&
-              state.selectedEndSecond < 10 &&
-              state.selectedEndSecond.length === 1
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  endTime: `0${state.selectedEndHour}:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                  selectedEndMinute: "00",
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  endTime: `0${state.selectedEndHour}:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                  selectedEndMinute: "00",
-                  show: "",
-                };
-              }
-            }
-            if (props.clockTimeFormat === "am-pm") {
-              return {
-                ...state,
-                endTime: `${state.selectedEndHour}:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                selectedEndMinute: "00",
-                show: "",
-              };
-            } else {
-              return {
-                ...state,
-                endTime: `${state.selectedEndHour}:00:${hideEndSingleSecond} ${newEndTimeFormat}`,
-                selectedEndMinute: "00",
-                show: "",
-              };
-            }
-          }
-          if (
-            state.selectedEndHour !== null &&
-            state.selectedEndMinute === null &&
-            state.selectedEndSecond === null
-          ) {
-            if (
-              state.selectedEndHour < 10 &&
-              state.selectedEndHour.length === 1
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  endTime: `0${state.selectedEndHour}:00:00 ${newEndTimeFormat}`,
-                  selectedEndMinute: "00",
-                  selectedEndSecond: "00",
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  endTime: `0${state.selectedEndHour}:00:00 ${newEndTimeFormat}`,
-                  selectedEndMinute: "00",
-                  selectedEndSecond: "00",
-                  show: "",
-                };
-              }
-            }
-            if (props.clockTimeFormat === "am-pm") {
-              return {
-                ...state,
-                endTime: `${state.selectedEndHour}:00:00 ${newEndTimeFormat}`,
-                selectedEndMinute: "00",
-                selectedEndSecond: "00",
-                show: "",
-              };
-            } else {
-              return {
-                ...state,
-                endTime: `${state.selectedEndHour}:00:00 ${newEndTimeFormat}`,
-                selectedEndMinute: "00",
-                selectedEndSecond: "00",
-                show: "",
-              };
-            }
-          }
 
-          if (
-            (state.endTime === null && state.selectedEnd === null) ||
-            (state.endTime === "" && state.selectedEnd === null) ||
-            state.selectedEnd === null
-          ) {
-            if (props.clockTimeFormat === "am-pm") {
-              return {
-                ...state,
-                selectedEnd: state.selectedStart,
-                selectedEndHour: "11",
-                selectedEndMinute: "59",
-                selectedEndSecond: "00",
-                endTime: `11:59:00 ${newTimeFormat}`,
-                show: "",
-              };
-            } else {
-              return {
-                ...state,
-                selectedEnd: state.selectedStart,
-                selectedEndHour: "23",
-                selectedEndMinute: "59",
-                selectedEndSecond: "00",
-                endTime: `23:59:00 ${newTimeFormat}`,
-                show: "",
-              };
-            }
-          }
-          if (state.selectedEnd) {
-            if (state.endTime === null || state.endTime === "") {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  selectedEndHour: "11",
-                  selectedEndMinute: "59",
-                  selectedEndSecond: "00",
-                  endTime: `11:59:00 ${newTimeFormat}`,
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  selectedEndHour: "23",
-                  selectedEndMinute: "59",
-                  selectedEndSecond: "00",
-                  endTime: `23:59:00 ${newTimeFormat}`,
-                  show: "",
-                };
-              }
-            }
-          }
-          if (state.endTime !== null || state.endTime !== "") {
-            if (props.clockTimeFormat === "am-pm") {
-              return {
-                ...state,
-                selectedEndHour: state.selectedEndHour,
-                selectedEndMinute: state.selectedEndMinute,
-                selectedEndSecond: state.selectedEndSecond,
-                endTime: `${state.selectedEndHour}:${state.selectedEndMinute}:${hideEndSecond} ${newTimeFormat}`,
-                show: "",
-              };
-            } else {
-              return {
-                ...state,
-                selectedEndHour: state.selectedEndHour,
-                selectedEndMinute: state.selectedEndMinute,
-                selectedEndSecond: state.selectedEndSecond,
-                endTime: `${state.selectedEndHour}:${state.selectedEndMinute}:${hideEndSecond} ${newTimeFormat}`,
-                show: "",
-              };
-            }
-          }
           // end date selection :: end
 
-          if (props.range) {
-            if (state.selectedEnd && state.selectedStart > state.selectedEnd) {
-              return {
-                ...state,
-                selectedEnd: null,
-                endTime: "",
-              };
-            }
-
-            if (
-              state.selectedStart &&
-              state.selectedEnd &&
-              state.selectedStart.toDateString() ===
-                state.selectedEnd.toDateString()
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                if (state.endTimeFormat === state.timeFormat) {
-                  if (state.selectedEndHour < state.selectedHour) {
-                    return {
-                      ...state,
-                      endTime: "",
-                      selectedEndHour: state.selectedHour,
-                    };
-                  } else if (state.selectedEndHour === state.selectedHour) {
-                    if (state.selectedEndMinute < state.selectedMinute) {
-                      return {
-                        ...state,
-                        endTime: "",
-                        selectedEndMinute: state.selectedMinute,
-                      };
-                    } else if (
-                      state.selectedEndMinute === state.selectedMinute
-                    ) {
-                      if (state.selectedSecond > state.selectedEndSecond) {
-                        return {
-                          ...state,
-                          endTime: "",
-                          selectedEndSecond: state.selectedSecond,
-                        };
-                      }
-                    }
-                  }
-                } else if (
-                  state.endTimeFormat === "AM" &&
-                  state.timeFormat === "PM"
-                ) {
-                  return {
-                    ...state,
-                    endTime: "",
-                    endTimeFormat: state.timeFormat,
-                  };
-                }
-              } else {
-                if (state.selectedEndHour < state.selectedHour) {
-                  return {
-                    ...state,
-                    endTime: "",
-                    selectedEndHour: state.selectedHour,
-                  };
-                } else if (state.selectedEndHour === state.selectedHour) {
-                  if (state.selectedEndMinute < state.selectedMinute) {
-                    return {
-                      ...state,
-                      endTime: "",
-                      selectedEndMinute: state.selectedMinute,
-                    };
-                  } else if (state.selectedEndMinute === state.selectedMinute) {
-                    if (state.selectedSecond > state.selectedEndSecond) {
-                      return {
-                        ...state,
-                        endTime: "",
-                        selectedEndSecond: state.selectedSecond,
-                      };
-                    }
-                  }
-                }
-              }
-            }
+          if (
+            state.selectedEnd &&
+            state.selectedStart &&
+            state.selectedStart > state.selectedEnd &&
+            props.range
+          ) {
+            return {
+              ...state,
+              selectedEnd: null,
+              endTime: "",
+            };
           }
         }
       // apply event handler :: end
@@ -2341,37 +1257,55 @@ export default function VDateTimePicker(props) {
   };
 
   const handleApply = () => {
-    if (props.isMinCurrentTime) {
-      if (selectedStart > currentDate) {
-        dispatch({ type: "APPLY" });
-      }
-
-      if (props.clockTimeFormat === "am-pm") {
+    if (show === "show") {
+      if (props.isMinCurrentTime) {
         if (selectedStart > currentDate) {
           dispatch({ type: "APPLY" });
         }
-        if (currentDate.getHours() <= 11) {
-          if (timeFormat === "AM") {
-            if (selectedStart.toDateString() === currentDate.toDateString()) {
-              if (selectedHour >= currentDate.getHours()) {
-                dispatch({ type: "APPLY" });
+
+        if (props.clockTimeFormat === "am-pm") {
+          if (selectedStart > currentDate) {
+            dispatch({ type: "APPLY" });
+          }
+          if (currentDate.getHours() <= 11) {
+            if (timeFormat === "AM") {
+              if (selectedStart.toDateString() === currentDate.toDateString()) {
+                if (selectedHour >= currentDate.getHours()) {
+                  dispatch({ type: "APPLY" });
+                }
+              }
+            }
+          } else {
+            if (timeFormat === "PM") {
+              if (selectedStart.toDateString() === currentDate.toDateString()) {
+                if (parseInt(selectedHour) + 12 >= currentDate.getHours()) {
+                  dispatch({ type: "APPLY" });
+                }
               }
             }
           }
         } else {
-          if (timeFormat === "PM") {
-            if (selectedStart.toDateString() === currentDate.toDateString()) {
-              if (parseInt(selectedHour) + 12 >= currentDate.getHours()) {
-                dispatch({ type: "APPLY" });
-              }
-            }
-          }
+          dispatch({ type: "APPLY" });
         }
       } else {
         dispatch({ type: "APPLY" });
       }
     } else {
-      dispatch({ type: "APPLY" });
+      if (selectedStart.toDateString() === selectedEnd.toDateString()) {
+        if (timeFormat === endTimeFormat) {
+          if (selectedEndHour >= selectedHour) {
+            dispatch({ type: "APPLY" });
+          }
+        }
+
+        if (timeFormat === "AM" && endTimeFormat === "PM") {
+          dispatch({ type: "APPLY" });
+        }
+      }
+
+      if (selectedEnd > selectedStart) {
+        dispatch({ type: "APPLY" });
+      }
     }
   };
 
@@ -2413,6 +1347,10 @@ export default function VDateTimePicker(props) {
   // useEffect hook :: begin
   useEffect(() => {
     props.onChange && props.onChange(startInputValue);
+
+    if (selectedStart > selectedEnd) {
+      dispatch({ type: "EMPTY_END_FIELD" });
+    }
   }, [selectedStart, selectedHour, selectedMinute, timeFormat, selectedSecond]);
 
   useEffect(() => {
@@ -2457,10 +1395,6 @@ export default function VDateTimePicker(props) {
   useEffect(() => {
     dispatch({ type: "TOGGLE_SHOW" });
   }, [props.range]);
-
-  useEffect(() => {
-    dispatch({ type: "EMPTY_END_FIELD" });
-  }, [selectedStart, selectedHour, selectedMinute, selectedSecond, timeFormat]);
 
   // useEffect hook :: end
 
@@ -3045,7 +1979,7 @@ export default function VDateTimePicker(props) {
         capitalMeridiem = amPm.toUpperCase();
       }
 
-      if (minute <= 60 && second <= 60) {
+      if (minute <= 60 && second <= 60 && hour <= 24) {
         dispatch({
           type: "SET_TIME",
           format: capitalMeridiem,
@@ -3058,13 +1992,15 @@ export default function VDateTimePicker(props) {
           capitalMeridiem = "PM";
           hour -= 12;
 
-          dispatch({
-            type: "SET_TIME",
-            format: capitalMeridiem,
-            hour,
-            minute,
-            second,
-          });
+          if (hour <= 12) {
+            dispatch({
+              type: "SET_TIME",
+              format: capitalMeridiem,
+              hour,
+              minute,
+              second,
+            });
+          }
         }
       }
     }
@@ -3238,7 +2174,7 @@ export default function VDateTimePicker(props) {
         capitalMeridiem = amPm.toUpperCase();
       }
 
-      if (minute <= 60 && second <= 60 && hour >= selectedHour) {
+      if (minute <= 60 && second <= 60 && hour >= selectedHour && hour <= 24) {
         dispatch({
           type: "SET_END_TIME",
           format: capitalMeridiem,
@@ -3251,13 +2187,15 @@ export default function VDateTimePicker(props) {
           capitalMeridiem = "PM";
           hour -= 12;
 
-          dispatch({
-            type: "SET_END_TIME",
-            format: capitalMeridiem,
-            hour,
-            minute,
-            second,
-          });
+          if (hour <= 12) {
+            dispatch({
+              type: "SET_END_TIME",
+              format: capitalMeridiem,
+              hour,
+              minute,
+              second,
+            });
+          }
         }
       }
     }
@@ -3788,7 +2726,7 @@ export default function VDateTimePicker(props) {
                 name={props.eName}
                 value={`${selectedEnd ? endDate : ""}${
                   props.selectedMode
-                    ? showEndClock !== ""
+                    ? showEndClock !== "" && selectedEnd
                       ? endTime !== ""
                         ? ` ${endTime}`
                         : ""
