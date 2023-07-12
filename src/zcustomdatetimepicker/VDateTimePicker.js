@@ -1601,7 +1601,6 @@ export default function VDateTimePicker(props) {
       }
     }
   }
-  console.log(selectedHour);
   // Generate options for minutes selection based on condition
   for (let i = 0; i < 60; i++) {
     const value = i < 10 ? `0${i}` : i.toString();
@@ -2266,8 +2265,6 @@ export default function VDateTimePicker(props) {
         const isValidDateTime =
           !isNaN(dateObject) || dateObject instanceof Date;
 
-        console.log(isValidDateTime);
-
         dispatch({ type: "VALIDATE_START", payload: isValidDateTime });
       } else {
         dispatch({ type: "VALIDATE_START", payload: false });
@@ -2403,68 +2400,8 @@ export default function VDateTimePicker(props) {
         capitalMeridiem = amPm.toUpperCase();
       }
 
-      if (minute <= 60 && second <= 60 && hour >= selectedHour && hour <= 24) {
-        if (selectedEnd > selectedStart) {
-          dispatch({
-            type: "SET_END_TIME",
-            format: capitalMeridiem,
-            hour,
-            minute,
-            second,
-          });
-        }
-
-        if (selectedEnd.toDateString() === selectedStart.toDateString()) {
-          if (
-            hour >= selectedHour &&
-            minute >= selectedMinute &&
-            second >= selectedSecond
-          ) {
-            dispatch({
-              type: "SET_END_TIME",
-              format: capitalMeridiem,
-              hour,
-              minute,
-              second,
-            });
-          }
-
-          if (hour > selectedHour) {
-            dispatch({
-              type: "SET_END_TIME",
-              format: capitalMeridiem,
-              hour,
-              minute,
-              second,
-            });
-          }
-
-          if (hour === selectedHour) {
-            if (minute > selectedMinute) {
-              dispatch({
-                type: "SET_END_TIME",
-                format: capitalMeridiem,
-                hour,
-                minute,
-                second,
-              });
-            }
-
-            if (minute === selectedMinute) {
-              if (second >= selectedSecond) {
-                dispatch({
-                  type: "SET_END_TIME",
-                  format: capitalMeridiem,
-                  hour,
-                  minute,
-                  second,
-                });
-              }
-            }
-          }
-        }
-      } else if (props.clockTimeFormat === "am-pm") {
-        if (timeFormat === "PM") {
+      if (minute <= 60 && second <= 60 && hour <= 24) {
+        if (!props.clockTimeFormat) {
           if (selectedEnd > selectedStart) {
             dispatch({
               type: "SET_END_TIME",
@@ -2476,38 +2413,13 @@ export default function VDateTimePicker(props) {
           }
 
           if (selectedEnd.toDateString() === selectedStart.toDateString()) {
-            dispatch({
-              type: "SET_END_TIME",
-              format: "PM",
-              hour,
-              minute,
-              second,
-            });
-          }
-          console.log(timeFormat);
-        } else if (timeFormat === "AM") {
-          console.log("cond applied");
-          if (selectedEnd > selectedStart || capitalMeridiem === "PM") {
-            dispatch({
-              type: "SET_TIME",
-              format: capitalMeridiem,
-              hour,
-              minute,
-              second,
-            });
-          }
-
-          if (
-            selectedEnd.toDateString() === selectedStart.toDateString() &&
-            capitalMeridiem === "AM"
-          ) {
             if (
               hour >= selectedHour &&
               minute >= selectedMinute &&
               second >= selectedSecond
             ) {
               dispatch({
-                type: "SET_TIME",
+                type: "SET_END_TIME",
                 format: capitalMeridiem,
                 hour,
                 minute,
@@ -2517,7 +2429,7 @@ export default function VDateTimePicker(props) {
 
             if (hour > selectedHour) {
               dispatch({
-                type: "SET_TIME",
+                type: "SET_END_TIME",
                 format: capitalMeridiem,
                 hour,
                 minute,
@@ -2528,7 +2440,7 @@ export default function VDateTimePicker(props) {
             if (hour === selectedHour) {
               if (minute > selectedMinute) {
                 dispatch({
-                  type: "SET_TIME",
+                  type: "SET_END_TIME",
                   format: capitalMeridiem,
                   hour,
                   minute,
@@ -2539,7 +2451,7 @@ export default function VDateTimePicker(props) {
               if (minute === selectedMinute) {
                 if (second >= selectedSecond) {
                   dispatch({
-                    type: "SET_TIME",
+                    type: "SET_END_TIME",
                     format: capitalMeridiem,
                     hour,
                     minute,
@@ -2550,7 +2462,289 @@ export default function VDateTimePicker(props) {
             }
           }
         }
+
+        if (props.clockTimeFormat === "am-pm") {
+          if (
+            new Date(
+              selectedEnd.getFullYear(),
+              selectedEnd.getMonth(),
+              selectedEnd.getDate()
+            ) >
+            new Date(
+              selectedStart.getFullYear(),
+              selectedStart.getMonth(),
+              selectedStart.getDate()
+            )
+          ) {
+            dispatch({
+              type: "SET_END_TIME",
+              format: capitalMeridiem,
+              hour,
+              minute,
+              second,
+            });
+          }
+
+          if (selectedEnd.toDateString() === selectedStart.toDateString()) {
+            if (timeFormat === "PM") {
+              if (
+                hour >= selectedHour &&
+                minute >= selectedMinute &&
+                second >= selectedSecond
+              ) {
+                dispatch({
+                  type: "SET_END_TIME",
+                  format: "PM",
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+
+              if (hour > selectedHour) {
+                dispatch({
+                  type: "SET_END_TIME",
+                  format: "PM",
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+
+              if (hour === selectedHour) {
+                if (minute > selectedMinute) {
+                  dispatch({
+                    type: "SET_END_TIME",
+                    format: "PM",
+                    hour,
+                    minute,
+                    second,
+                  });
+                }
+
+                if (minute === selectedMinute) {
+                  if (second >= selectedSecond) {
+                    dispatch({
+                      type: "SET_END_TIME",
+                      format: "PM",
+                      hour,
+                      minute,
+                      second,
+                    });
+                  }
+                }
+              }
+            }
+            if (timeFormat === "AM") {
+              if (capitalMeridiem === "PM") {
+                dispatch({
+                  type: "SET_END_TIME",
+                  format: capitalMeridiem,
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+              if (capitalMeridiem === "AM") {
+                if (
+                  hour >= selectedHour &&
+                  minute >= selectedMinute &&
+                  second >= selectedSecond
+                ) {
+                  dispatch({
+                    type: "SET_END_TIME",
+                    format: capitalMeridiem,
+                    hour,
+                    minute,
+                    second,
+                  });
+                }
+
+                if (hour > selectedHour) {
+                  dispatch({
+                    type: "SET_END_TIME",
+                    format: capitalMeridiem,
+                    hour,
+                    minute,
+                    second,
+                  });
+                }
+
+                if (hour === selectedHour) {
+                  if (minute > selectedMinute) {
+                    dispatch({
+                      type: "SET_END_TIME",
+                      format: capitalMeridiem,
+                      hour,
+                      minute,
+                      second,
+                    });
+                  }
+
+                  if (minute === selectedMinute) {
+                    if (second >= selectedSecond) {
+                      dispatch({
+                        type: "SET_END_TIME",
+                        format: capitalMeridiem,
+                        hour,
+                        minute,
+                        second,
+                      });
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
+
+      // if (minute <= 60 && second <= 60 && hour >= selectedHour && hour <= 24) {
+      //   if (selectedEnd > selectedStart) {
+      //     dispatch({
+      //       type: "SET_END_TIME",
+      //       format: capitalMeridiem,
+      //       hour,
+      //       minute,
+      //       second,
+      //     });
+      //   }
+
+      //   if (selectedEnd.toDateString() === selectedStart.toDateString()) {
+      //     if (
+      //       hour >= selectedHour &&
+      //       minute >= selectedMinute &&
+      //       second >= selectedSecond
+      //     ) {
+      //       dispatch({
+      //         type: "SET_END_TIME",
+      //         format: capitalMeridiem,
+      //         hour,
+      //         minute,
+      //         second,
+      //       });
+      //     }
+
+      //     if (hour > selectedHour) {
+      //       dispatch({
+      //         type: "SET_END_TIME",
+      //         format: capitalMeridiem,
+      //         hour,
+      //         minute,
+      //         second,
+      //       });
+      //     }
+
+      //     if (hour === selectedHour) {
+      //       if (minute > selectedMinute) {
+      //         dispatch({
+      //           type: "SET_END_TIME",
+      //           format: capitalMeridiem,
+      //           hour,
+      //           minute,
+      //           second,
+      //         });
+      //       }
+
+      //       if (minute === selectedMinute) {
+      //         if (second >= selectedSecond) {
+      //           dispatch({
+      //             type: "SET_END_TIME",
+      //             format: capitalMeridiem,
+      //             hour,
+      //             minute,
+      //             second,
+      //           });
+      //         }
+      //       }
+      //     }
+      //   }
+      // } else if (props.clockTimeFormat === "am-pm") {
+      //   if (timeFormat === "PM") {
+      //     if (selectedEnd > selectedStart) {
+      //       dispatch({
+      //         type: "SET_END_TIME",
+      //         format: capitalMeridiem,
+      //         hour,
+      //         minute,
+      //         second,
+      //       });
+      //     }
+
+      //     if (selectedEnd.toDateString() === selectedStart.toDateString()) {
+      //       dispatch({
+      //         type: "SET_END_TIME",
+      //         format: "PM",
+      //         hour,
+      //         minute,
+      //         second,
+      //       });
+      //     }
+      //   } else if (timeFormat === "AM") {
+      //     if (selectedEnd > selectedStart || capitalMeridiem === "PM") {
+      //       dispatch({
+      //         type: "SET_TIME",
+      //         format: capitalMeridiem,
+      //         hour,
+      //         minute,
+      //         second,
+      //       });
+      //     }
+
+      //     if (
+      //       selectedEnd.toDateString() === selectedStart.toDateString() &&
+      //       capitalMeridiem === "AM"
+      //     ) {
+      //       if (
+      //         hour >= selectedHour &&
+      //         minute >= selectedMinute &&
+      //         second >= selectedSecond
+      //       ) {
+      //         dispatch({
+      //           type: "SET_TIME",
+      //           format: capitalMeridiem,
+      //           hour,
+      //           minute,
+      //           second,
+      //         });
+      //       }
+
+      //       if (hour > selectedHour) {
+      //         dispatch({
+      //           type: "SET_TIME",
+      //           format: capitalMeridiem,
+      //           hour,
+      //           minute,
+      //           second,
+      //         });
+      //       }
+
+      //       if (hour === selectedHour) {
+      //         if (minute > selectedMinute) {
+      //           dispatch({
+      //             type: "SET_TIME",
+      //             format: capitalMeridiem,
+      //             hour,
+      //             minute,
+      //             second,
+      //           });
+      //         }
+
+      //         if (minute === selectedMinute) {
+      //           if (second >= selectedSecond) {
+      //             dispatch({
+      //               type: "SET_TIME",
+      //               format: capitalMeridiem,
+      //               hour,
+      //               minute,
+      //               second,
+      //             });
+      //           }
+      //         }
+      //       }
+      //     }
+      //   }
+      // }
     }
 
     // check validity of input text
