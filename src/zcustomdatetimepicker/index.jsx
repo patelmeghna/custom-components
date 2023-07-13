@@ -1,10 +1,11 @@
-import React from "react";
+import React, {useState} from "react";
 import VDateTimePicker from "./VDateTimePicker";
 import { Container } from "react-bootstrap";
 import VMonth from "./VMonth";
 
 function DatePicker() {
   // const [isDisabled, setIsDisabled] = useState(false);
+  const [startValue, setStartValue] = useState('');
 
   return (
     <Container className="py-5">
@@ -25,16 +26,19 @@ function DatePicker() {
         // errorMsg="Dummy error msg"
         // isSecondHide
         format="dd-mm-yyyy"
-        // clockTimeFormat="am-pm"
+        clockTimeFormat="am-pm"
         placeholder="Add date"
         // isDisabled
         maxDate="2024-03-12"
-        // onChange={(data) => console.log(data)}
+        onChange={(data) => setStartValue(data)}
         // onEndChange={(end) => alert(end)}
         // startTabIndex
         // endTabIndex
       />
+      <p>first {startValue}</p>
       <br />
+      <VDateTimePicker id="date-picker" onChange={(e) => setStartValue(e)} />
+      <p>second {startValue}</p>
 
       <h4>Month only</h4>
 

@@ -1211,36 +1211,6 @@ export default function VDateTimePicker(props) {
 
   // disable select dropodwn :: end
 
-  // form variables
-  // Assign the start time based on selected hour, minute, and second
-  const startTime = props.range
-    ? props.isSecondHide
-      ? `${selectedHour}:${selectedMinute}`
-      : `${selectedHour}:${selectedMinute}:${selectedSecond}`
-    : "";
-  const startTimeFormat = props.clockTimeFormat === "am-pm" ? timeFormat : "";
-  const startInputValue =
-    selectedStart &&
-    `${selectedStart.getDate()}-${
-      selectedStart.getMonth() + 1
-    }-${selectedStart.getFullYear()} ${startTime} ${startTimeFormat}`;
-
-  // ===============================================
-
-  const endTimeValue = props.range
-    ? props.isSecondHide
-      ? `${selectedEndHour}:${selectedEndMinute}`
-      : `${selectedEndHour}:${selectedEndMinute}:${selectedEndSecond}`
-    : "";
-  const endTimeFormatValue =
-    props.clockTimeFormat === "am-pm" ? endTimeFormat : "";
-  const endInputValue =
-    selectedEnd &&
-    `${selectedEnd.getDate()}/${
-      selectedEnd.getMonth() + 1
-    }/${selectedEnd.getFullYear()} ${endTimeValue} ${endTimeFormatValue}`;
-  // form variables
-
   // handle event listeners :: begin
   const handleFormatChange = () => {
     dispatch({ type: "FORMAT_CHANGE" });
@@ -1467,23 +1437,6 @@ export default function VDateTimePicker(props) {
   // handle event listeners :: end
 
   // useEffect hook :: begin
-  useEffect(() => {
-    props.onChange && props.onChange(startInputValue);
-
-    if (selectedStart > selectedEnd) {
-      dispatch({ type: "EMPTY_END_FIELD" });
-    }
-  }, [selectedStart, selectedHour, selectedMinute, timeFormat, selectedSecond]);
-
-  useEffect(() => {
-    props.onEndChange && props.onEndChange(endInputValue);
-  }, [
-    selectedEnd,
-    selectedEndHour,
-    selectedEndMinute,
-    endTimeFormat,
-    selectedEndSecond,
-  ]);
 
   useEffect(() => {
     document.addEventListener("click", handleDocumentClick);
@@ -1983,6 +1936,40 @@ export default function VDateTimePicker(props) {
 
   endDate = endDateFormat(str, separator);
 
+  // form variables
+  // Assign the start time based on selected hour, minute, and second
+  const startInputValue = selectedStart && `${startDate} ${time}`;
+
+  // ===============================================
+
+  const endInputValue = selectedEnd && `${endDate} ${endTime}`;
+  // form variables
+
+  useEffect(() => {
+    props.onChange && props.onChange(startInputValue);
+    if (selectedStart > selectedEnd) {
+      dispatch({ type: "EMPTY_END_FIELD" });
+    }
+  }, [
+    selectedStart,
+    selectedHour,
+    selectedMinute,
+    timeFormat,
+    selectedSecond,
+    time,
+  ]);
+
+  useEffect(() => {
+    props.onEndChange && props.onEndChange(endInputValue);
+  }, [
+    selectedEnd,
+    selectedEndHour,
+    selectedEndMinute,
+    endTimeFormat,
+    selectedEndSecond,
+    endTime,
+  ]);
+
   // Determine the previous button state based on the "show" value and current month/year
   if (show === "show") {
     if (month === minCalDate.getMonth() && year === minCalDate.getFullYear()) {
@@ -2019,6 +2006,8 @@ export default function VDateTimePicker(props) {
   const handleDateChange = (event) => {
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
+
+    props.onChange && props.onChange(value);
 
     let isDateValid;
     let isTimeValid;
@@ -2392,6 +2381,8 @@ export default function VDateTimePicker(props) {
   const handleEndDateChange = (event) => {
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
+
+    props.onEndChange && props.onEndChange(value);
 
     let isDateValid;
     let isTimeValid;
