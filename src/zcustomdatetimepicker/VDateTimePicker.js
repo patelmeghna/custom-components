@@ -701,6 +701,26 @@ export default function VDateTimePicker(props) {
         }
       // apply event handler :: end
 
+      // apply start date :: begin
+      case "APPLY_START_DATE":
+        if (state.show === "show" && state.selectedStart === null) {
+          return {
+            ...state,
+            selectedStart: new Date(),
+          };
+        }
+      // apply start date :: end
+
+      // apply end date :: begin
+      case "APPLY_END_DATE":
+        if (state.show === "show-end" && state.selectedEnd === null) {
+          return {
+            ...state,
+            selectedEnd: state.selectedStart,
+          };
+        }
+      // apply end date :: end
+
       // date select :: begin
       case "SELECT_DATE":
         let toggle = state.show;
@@ -1311,7 +1331,7 @@ export default function VDateTimePicker(props) {
   };
 
   const handleApply = () => {
-    if (show === "show") {
+    if (show === "show" && selectedStart !== null) {
       if (props.isMinCurrentTime) {
         if (selectedStart > currentDate) {
           dispatch({ type: "APPLY" });
@@ -1344,7 +1364,7 @@ export default function VDateTimePicker(props) {
       } else {
         dispatch({ type: "APPLY" });
       }
-    } else {
+    } else if (show === "show-end" && selectedEnd !== null) {
       if (selectedStart.toDateString() === selectedEnd.toDateString()) {
         if (timeFormat === endTimeFormat) {
           if (selectedEndHour >= selectedHour) {
