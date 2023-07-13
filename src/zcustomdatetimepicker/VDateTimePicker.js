@@ -3042,58 +3042,27 @@ export default function VDateTimePicker(props) {
             }`}
             disabled={props.isDisabled || props.isReadOnly}
           >
-            {state.isFocused ? (
-              <input
-                type="text"
-                onChange={handleDateChange}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                onClick={handleShow}
-                className={`${selectedStart ? "selected" : ""} ${
-                  validateStart ? "error" : ""
-                }`}
-                placeholder={
-                  props.placeholder
-                    ? props.placeholder
-                    : props.format
-                    ? props.format
-                    : "DD/MM/YYYY"
-                }
-                disabled={props.isDisabled || props.isReadOnly}
-                name={props.name}
-                tabIndex={props.startTabIndex}
-              />
-            ) : (
-              <input
-                type="text"
-                onClick={handleShow}
-                onChange={handleDateChange}
-                value={`${selectedStart ? startDate : ""}${
-                  props.selectedMode
-                    ? showClock !== ""
-                      ? time !== ""
-                        ? ` ${time}`
-                        : ""
-                      : ""
-                    : ""
-                }`}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                className={`${selectedStart ? "selected" : ""} ${
-                  validateStart ? "error" : ""
-                }`}
-                placeholder={
-                  props.placeholder
-                    ? props.placeholder
-                    : props.format
-                    ? props.format
-                    : "DD/MM/YYYY"
-                }
-                disabled={props.isDisabled || props.isReadOnly}
-                name={props.name}
-                tabIndex={props.startTabIndex}
-              />
-            )}
+            <input
+              type="text"
+              onChange={handleDateChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              onClick={handleShow}
+              className={`${selectedStart ? "selected" : ""} ${
+                validateStart ? "error" : ""
+              }`}
+              placeholder={
+                props.placeholder
+                  ? props.placeholder
+                  : props.format
+                  ? props.format
+                  : "DD/MM/YYYY"
+              }
+              disabled={props.isDisabled || props.isReadOnly}
+              name={props.name}
+              tabIndex={props.startTabIndex}
+              value={props.value}
+            />
 
             {props.isUndo && props.undoClick && !props.range && (
               <button className="icon-btn" onClick={handleStartUndo}>
@@ -3158,56 +3127,26 @@ export default function VDateTimePicker(props) {
             }
             disabled={props.isDisabled || props.isReadOnly}
           >
-            {state.isEndFocused ? (
-              <input
-                type="text"
-                onClick={handleShowEnd}
-                onChange={handleEndDateChange}
-                onBlur={handleEndBlur}
-                onFocus={handleEndFocus}
-                className={selectedEnd ? "selected" : ""}
-                placeholder={
-                  props.placeholder
-                    ? props.placeholder
-                    : props.format
-                    ? props.format
-                    : "DD/MM/YYYY"
-                }
-                disabled={props.isDisabled || props.isReadOnly}
-                readOnly={selectedStart === null ? true : false}
-                name={props.eName}
-                tabIndex={props.endTabIndex}
-              />
-            ) : (
-              <input
-                type="text"
-                onClick={handleShowEnd}
-                onChange={handleEndDateChange}
-                disabled={props.isDisabled || props.isReadOnly}
-                readOnly={selectedStart === null ? true : false}
-                name={props.eName}
-                value={`${selectedEnd ? endDate : ""}${
-                  props.selectedMode
-                    ? showEndClock !== "" && selectedEnd
-                      ? endTime !== ""
-                        ? ` ${endTime}`
-                        : ""
-                      : ""
-                    : ""
-                }`}
-                onBlur={handleEndBlur}
-                onFocus={handleEndFocus}
-                className={selectedEnd ? "selected" : ""}
-                placeholder={
-                  props.placeholder
-                    ? props.placeholder
-                    : props.format
-                    ? props.format
-                    : "DD/MM/YYYY"
-                }
-                tabIndex={props.endTabIndex}
-              />
-            )}
+            <input
+              type="text"
+              onClick={handleShowEnd}
+              onChange={handleEndDateChange}
+              onBlur={handleEndBlur}
+              onFocus={handleEndFocus}
+              className={selectedEnd ? "selected" : ""}
+              placeholder={
+                props.placeholder
+                  ? props.placeholder
+                  : props.format
+                  ? props.format
+                  : "DD/MM/YYYY"
+              }
+              disabled={props.isDisabled || props.isReadOnly}
+              readOnly={selectedStart === null ? true : false}
+              name={props.eName}
+              tabIndex={props.endTabIndex}
+              value={props.eValue}
+            />
 
             {/* {props.isUndo && (
               <button className="icon-btn" onClick={handleEndUndo}>

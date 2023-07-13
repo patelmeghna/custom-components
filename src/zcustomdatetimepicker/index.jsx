@@ -6,6 +6,8 @@ import VMonth from "./VMonth";
 function DatePicker() {
   // const [isDisabled, setIsDisabled] = useState(false);
   const [startValue, setStartValue] = useState('');
+  const [endValue, setEndValue] = useState("");
+  const [monthValue, setMonthValue] = useState("");
 
   return (
     <Container className="py-5">
@@ -27,18 +29,20 @@ function DatePicker() {
         // isSecondHide
         format="dd-mm-yyyy"
         clockTimeFormat="am-pm"
-        placeholder="Add date"
+        // placeholder="Add date"
         // isDisabled
         maxDate="2024-03-12"
         onChange={(data) => setStartValue(data)}
-        // onEndChange={(end) => alert(end)}
+        onEndChange={(end) => setEndValue(end)}
         // startTabIndex
         // endTabIndex
+        value={startValue}
+        eValue={endValue}
       />
-      <p>first {startValue}</p>
+      <p>from {startValue} To {endValue}</p>
       <br />
-      <VDateTimePicker id="date-picker" onChange={(e) => setStartValue(e)} />
-      <p>second {startValue}</p>
+      {/* <VDateTimePicker id="date-picker" onChange={(e) => setStartValue(e)} />
+      <p>second {startValue}</p> */}
 
       <h4>Month only</h4>
 
@@ -56,7 +60,10 @@ function DatePicker() {
         // errorMsg
         // isClear
         // clearClick
+        onChange={(data) => setMonthValue(data)}
+        value={monthValue}
       />
+      <p>Result: {monthValue}</p>
     </Container>
   );
 }

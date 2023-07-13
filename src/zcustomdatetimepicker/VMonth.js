@@ -186,6 +186,7 @@ const VMonth = (props) => {
 
   const handleMonthChange = (event) => {
     const value = event.target.value;
+    props.onChange && props.onChange(value);
 
     const regex = /(\d{2})\/(\d{4})/;
     const matches = value.match(regex);
@@ -301,7 +302,7 @@ const VMonth = (props) => {
     years.push(presentYear + i);
   }
 
-  let placeholderText = "";
+  let placeholderText;
 
   if (props.placeholder) {
     placeholderText = props.placeholder;
@@ -311,6 +312,10 @@ const VMonth = (props) => {
         ? `0${month + 1}/${changedYear}`
         : `${month + 1}/${changedYear}`;
   }
+
+  useEffect(() => {
+    props.onChange && props.onChange(placeholderText);
+  }, [month, changedYear]);
 
   const previousValue =
     month < 9 ? `${changedYear}-0${month + 1}` : `${changedYear}-${month + 1}`;
@@ -434,39 +439,24 @@ const VMonth = (props) => {
           }`}
           disabled={props.isDisabled || props.isReadOnly}
         >
-          {state.isFocused ? (
-            <input
-              tabIndex={props.tabIndex}
-              onClick={handleShow}
-              type="text"
-              className={month ? "selected" : ""}
-              onChange={handleMonthChange}
-              onBlur={handleBlur}
-              onFocus={handleFocus}
-              disabled={props.isDisabled || props.isReadOnly}
-              name={props.name}
-              placeholder={props.placeholder ? props.placeholder : "MM/YYYY"}
-            />
-          ) : (
-            <input
-              type="text"
-              onClick={handleShow}
-              className={month ? "selected" : ""}
-              onBlur={handleBlur}
-              onFocus={handleFocus}
-              onChange={handleMonthChange}
-              disabled={props.isDisabled || props.isReadOnly}
-              value={placeholderText}
-              name={props.name}
-              placeholder={
-                props.placeholder
-                  ? props.placeholder
-                  : props.placeholder
-                  ? props.placeholder
-                  : "MM/YYYY"
-              }
-            />
-          )}
+          <input
+            type="text"
+            onClick={handleShow}
+            className={month ? "selected" : ""}
+            onBlur={handleBlur}
+            onFocus={handleFocus}
+            onChange={handleMonthChange}
+            disabled={props.isDisabled || props.isReadOnly}
+            value={props.value}
+            name={props.name}
+            placeholder={
+              props.placeholder
+                ? props.placeholder
+                : props.placeholder
+                ? props.placeholder
+                : "MM/YYYY"
+            }
+          />
 
           {props.isUndo && props.undoClick && (
             <button className="icon-btn" onClick={handleUndo}>
