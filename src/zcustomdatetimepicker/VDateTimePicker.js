@@ -536,6 +536,8 @@ export default function VDateTimePicker(props) {
         let endMinuteTime = state.selectedEndMinute;
         let endSecondTime = state.selectedEndSecond;
 
+        // console.log(state.selectedStart);
+
         if (props.clockTimeFormat !== "am-pm") {
           newTimeFormat = "";
           newEndTimeFormat = "";
@@ -1288,6 +1290,8 @@ export default function VDateTimePicker(props) {
                   dispatch({ type: "APPLY" });
                 }
               }
+            } else {
+              dispatch({ type: "APPLY" });
             }
           } else {
             if (timeFormat === "PM") {
