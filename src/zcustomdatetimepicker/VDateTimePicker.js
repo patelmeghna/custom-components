@@ -568,7 +568,7 @@ export default function VDateTimePicker(props) {
               startHourTime = state.selectedHour;
             }
           }
-          if (startMinuteTime.toString.length === 1) {
+          if (startMinuteTime >= 0 && startMinuteTime < 10) {
             startMinuteTime = `0${state.selectedMinute}`;
           } else {
             startMinuteTime = state.selectedMinute;
