@@ -551,31 +551,31 @@ export default function VDateTimePicker(props) {
           // start date selection :: begin
           if (props.clockTimeFormat === "am-pm") {
             if (startHourTime > 12) {
-              if (startHourTime - 12 >= 0 && startHourTime - 12 < 10) {
+              if ((state.selectedHour - 12).toString().length < 2) {
                 startHourTime = `0${state.selectedHour - 12}`;
               } else {
                 startHourTime = state.selectedHour - 12;
               }
             } else {
-              if (startHourTime >= 0 && startHourTime < 10) {
+              if (state.selectedHour.toString().length < 2) {
                 startHourTime = `0${state.selectedHour}`;
               } else {
                 startHourTime = state.selectedHour;
               }
             }
           } else {
-            if (startHourTime >= 0 && startHourTime < 10) {
+            if (state.selectedHour.toString().length < 2) {
               startHourTime = `0${state.selectedHour}`;
             } else {
               startHourTime = state.selectedHour;
             }
           }
-          if (startMinuteTime >= 0 && startMinuteTime < 10) {
+          if (state.selectedMinute.toString().length < 2) {
             startMinuteTime = `0${state.selectedMinute}`;
           } else {
             startMinuteTime = state.selectedMinute;
           }
-          if (startSecondTime >= 0 && startSecondTime < 10) {
+          if (state.selectedSecond.toString().length < 2) {
             startSecondTime = `0${state.selectedSecond}`;
           } else {
             startSecondTime = state.selectedSecond;
@@ -599,33 +599,33 @@ export default function VDateTimePicker(props) {
         } else {
           if (props.clockTimeFormat === "am-pm") {
             if (endHourTime > 12) {
-              if (endHourTime - 12 >= 0 && endHourTime < 10) {
+              if ((state.selectedEndHour - 12).toString().length < 2) {
                 endHourTime = `0${state.selectedEndHour - 12}`;
               } else {
                 endHourTime = state.selectedEndHour - 12;
               }
             } else {
-              if (endHourTime >= 0 && endHourTime < 10) {
+              if (state.selectedEndHour.toString().length < 2) {
                 endHourTime = `0${state.selectedEndHour}`;
               } else {
                 endHourTime = state.selectedEndHour;
               }
             }
           } else {
-            if (endHourTime >= 0 && endHourTime < 10) {
+            if (state.selectedEndHour.toString().length < 2) {
               endHourTime = `0${state.selectedEndHour}`;
             } else {
               endHourTime = state.selectedEndHour;
             }
           }
 
-          if (endMinuteTime >= 0 && endMinuteTime < 10) {
+          if (state.selectedEndMinute.toString().length < 2) {
             endMinuteTime = `0${state.selectedEndMinute}`;
           } else {
             endMinuteTime = state.selectedEndMinute;
           }
 
-          if (endSecondTime >= 0 && endSecondTime < 10) {
+          if (state.selectedEndSecond.toString().length < 2) {
             endSecondTime = `0${state.selectedEndSecond}`;
           } else {
             endSecondTime = state.selectedEndSecond;
