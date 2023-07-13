@@ -2495,8 +2495,13 @@ export default function VDateTimePicker(props) {
       }
 
       if (minute <= 60 && second <= 60 && hour <= 24) {
-        if (!props.clockTimeFormat) {
-          if (selectedEnd > selectedStart) {
+        if (selectedEnd.toDateString() === selectedStart.toDateString()) {
+          if (
+            hour > selectedHour ||
+            (hour === selectedHour &&
+              (minute > selectedMinute ||
+                (minute === selectedMinute && second >= selectedSecond)))
+          ) {
             dispatch({
               type: "SET_END_TIME",
               format: capitalMeridiem,
@@ -2505,8 +2510,39 @@ export default function VDateTimePicker(props) {
               second,
             });
           }
+        } else if (selectedEnd > selectedStart) {
+          dispatch({
+            type: "SET_END_TIME",
+            format: capitalMeridiem,
+            hour,
+            minute,
+            second,
+          });
+        }
+      } else if (props.clockTimeFormat === "am-pm") {
+        if (
+          new Date(
+            selectedEnd.getFullYear(),
+            selectedEnd.getMonth(),
+            selectedEnd.getDate()
+          ) >
+          new Date(
+            selectedStart.getFullYear(),
+            selectedStart.getMonth(),
+            selectedStart.getDate()
+          )
+        ) {
+          dispatch({
+            type: "SET_END_TIME",
+            format: capitalMeridiem,
+            hour,
+            minute,
+            second,
+          });
+        }
 
-          if (selectedEnd.toDateString() === selectedStart.toDateString()) {
+        if (selectedEnd.toDateString() === selectedStart.toDateString()) {
+          if (timeFormat === "PM") {
             if (
               hour >= selectedHour &&
               minute >= selectedMinute &&
@@ -2514,7 +2550,7 @@ export default function VDateTimePicker(props) {
             ) {
               dispatch({
                 type: "SET_END_TIME",
-                format: capitalMeridiem,
+                format: "PM",
                 hour,
                 minute,
                 second,
@@ -2524,7 +2560,7 @@ export default function VDateTimePicker(props) {
             if (hour > selectedHour) {
               dispatch({
                 type: "SET_END_TIME",
-                format: capitalMeridiem,
+                format: "PM",
                 hour,
                 minute,
                 second,
@@ -2535,7 +2571,7 @@ export default function VDateTimePicker(props) {
               if (minute > selectedMinute) {
                 dispatch({
                   type: "SET_END_TIME",
-                  format: capitalMeridiem,
+                  format: "PM",
                   hour,
                   minute,
                   second,
@@ -2546,7 +2582,7 @@ export default function VDateTimePicker(props) {
                 if (second >= selectedSecond) {
                   dispatch({
                     type: "SET_END_TIME",
-                    format: capitalMeridiem,
+                    format: "PM",
                     hour,
                     minute,
                     second,
@@ -2555,32 +2591,17 @@ export default function VDateTimePicker(props) {
               }
             }
           }
-        }
-
-        if (props.clockTimeFormat === "am-pm") {
-          if (
-            new Date(
-              selectedEnd.getFullYear(),
-              selectedEnd.getMonth(),
-              selectedEnd.getDate()
-            ) >
-            new Date(
-              selectedStart.getFullYear(),
-              selectedStart.getMonth(),
-              selectedStart.getDate()
-            )
-          ) {
-            dispatch({
-              type: "SET_END_TIME",
-              format: capitalMeridiem,
-              hour,
-              minute,
-              second,
-            });
-          }
-
-          if (selectedEnd.toDateString() === selectedStart.toDateString()) {
-            if (timeFormat === "PM") {
+          if (timeFormat === "AM") {
+            if (capitalMeridiem === "PM") {
+              dispatch({
+                type: "SET_END_TIME",
+                format: capitalMeridiem,
+                hour,
+                minute,
+                second,
+              });
+            }
+            if (capitalMeridiem === "AM") {
               if (
                 hour >= selectedHour &&
                 minute >= selectedMinute &&
@@ -2588,7 +2609,7 @@ export default function VDateTimePicker(props) {
               ) {
                 dispatch({
                   type: "SET_END_TIME",
-                  format: "PM",
+                  format: capitalMeridiem,
                   hour,
                   minute,
                   second,
@@ -2598,7 +2619,7 @@ export default function VDateTimePicker(props) {
               if (hour > selectedHour) {
                 dispatch({
                   type: "SET_END_TIME",
-                  format: "PM",
+                  format: capitalMeridiem,
                   hour,
                   minute,
                   second,
@@ -2609,7 +2630,7 @@ export default function VDateTimePicker(props) {
                 if (minute > selectedMinute) {
                   dispatch({
                     type: "SET_END_TIME",
-                    format: "PM",
+                    format: capitalMeridiem,
                     hour,
                     minute,
                     second,
@@ -2620,71 +2641,11 @@ export default function VDateTimePicker(props) {
                   if (second >= selectedSecond) {
                     dispatch({
                       type: "SET_END_TIME",
-                      format: "PM",
-                      hour,
-                      minute,
-                      second,
-                    });
-                  }
-                }
-              }
-            }
-            if (timeFormat === "AM") {
-              if (capitalMeridiem === "PM") {
-                dispatch({
-                  type: "SET_END_TIME",
-                  format: capitalMeridiem,
-                  hour,
-                  minute,
-                  second,
-                });
-              }
-              if (capitalMeridiem === "AM") {
-                if (
-                  hour >= selectedHour &&
-                  minute >= selectedMinute &&
-                  second >= selectedSecond
-                ) {
-                  dispatch({
-                    type: "SET_END_TIME",
-                    format: capitalMeridiem,
-                    hour,
-                    minute,
-                    second,
-                  });
-                }
-
-                if (hour > selectedHour) {
-                  dispatch({
-                    type: "SET_END_TIME",
-                    format: capitalMeridiem,
-                    hour,
-                    minute,
-                    second,
-                  });
-                }
-
-                if (hour === selectedHour) {
-                  if (minute > selectedMinute) {
-                    dispatch({
-                      type: "SET_END_TIME",
                       format: capitalMeridiem,
                       hour,
                       minute,
                       second,
                     });
-                  }
-
-                  if (minute === selectedMinute) {
-                    if (second >= selectedSecond) {
-                      dispatch({
-                        type: "SET_END_TIME",
-                        format: capitalMeridiem,
-                        hour,
-                        minute,
-                        second,
-                      });
-                    }
                   }
                 }
               }
