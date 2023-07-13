@@ -2210,7 +2210,12 @@ export default function VDateTimePicker(props) {
             }
           }
         }
-      } else if (props.clockTimeFormat === "am-pm") {
+      } else if (
+        props.clockTimeFormat === "am-pm" &&
+        minute <= 60 &&
+        second <= 60 &&
+        hour <= 12
+      ) {
         if (hour > 12) {
           hour -= 12;
 
@@ -2519,7 +2524,12 @@ export default function VDateTimePicker(props) {
             second,
           });
         }
-      } else if (props.clockTimeFormat === "am-pm") {
+      } else if (
+        props.clockTimeFormat === "am-pm" &&
+        minute <= 60 &&
+        second <= 60 &&
+        hour <= 12
+      ) {
         if (
           new Date(
             selectedEnd.getFullYear(),
