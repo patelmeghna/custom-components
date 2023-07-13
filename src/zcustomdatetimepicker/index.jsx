@@ -25,7 +25,7 @@ function DatePicker() {
         // errorMsg="Dummy error msg"
         // isSecondHide
         format="dd-mm-yyyy"
-        clockTimeFormat="am-pm"
+        // clockTimeFormat="am-pm"
         placeholder="Add date"
         // isDisabled
         maxDate="2024-03-12"
