@@ -328,6 +328,7 @@ button svg {
   margin: 0;
   width: 100%;
   outline: none;
+  text-transform: uppercase;
 }
 
 .date-time-range-picker,
