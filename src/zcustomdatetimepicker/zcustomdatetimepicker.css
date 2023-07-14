@@ -360,6 +360,7 @@ button svg {
   transition: all 0.3s ease;
   cursor: pointer;
   background-color: white;
+  color:rgba(17, 17, 121, 0.9);
 }
 
 .format-btn {
@@ -423,28 +424,7 @@ button svg {
   font-weight: 500;
   color:#a9a9a9af;
 }
-/* 
-td:nth-child(7){
-  padding-left: 0px;
-}
-td:nth-child(6){
-  padding-left: -1px;
-}
-td:nth-child(5){
-  padding-left: -1px;
-}
-td:nth-child(4){
-  padding-left: 16px;
-}
-td:nth-child(3){
-  padding-left: 1px;
-}
-td:nth-child(2){
-  padding-right:0px;
-}
-td:nth-child(1){
-  padding-right:0px;
-} */
+
 td:nth-child(n+1):nth-child(-n+7) {
   padding:5px 10px;
 }
