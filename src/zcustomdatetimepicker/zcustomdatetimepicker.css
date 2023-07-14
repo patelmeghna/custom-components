@@ -14,7 +14,7 @@
 .month-table td,
 .year-table th,
 .year-table td {
-  padding: 5px  ;
+  padding: 5px;
   text-align: center;
   cursor: pointer;
 }
@@ -22,7 +22,6 @@
 .table-header {
   background-color: white;
   color: #2991d6;
-
 }
 
 td.selected,
@@ -30,7 +29,7 @@ td.selected,
 .first-date,
 .last-date,
 .start-range.disabled {
-  background-color:#2991d6;
+  background-color: #2991d6;
   color: #fff;
 }
 
@@ -51,23 +50,30 @@ td.selected,
 }
 
 .table-btn {
-  color:#2991d6;
-  background-color: white;
+  color: #2991d6;
+  background-color: transparent;
   border: none;
   padding: 5px 10px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size:12px;
+  font-size: 12px;
   margin: 3px 0px;
   cursor: pointer;
   font-weight: 700;
 }
 
+.table-btn.functional {
+  background-color: #2991d6;
+  color: white;
+  margin-right: 5px;
+  margin-top: 10px;
+}
+
 .table-btn.btn-gray {
   color: #2991d6;
-  font-weight:700;
-  font-size:12px;
+  font-weight: 700;
+  font-size: 12px;
 }
 
 .in-range {
@@ -97,22 +103,24 @@ td.selected,
 
 .disabled,
 .next-prev-month {
-  background-color:white;
+  background-color: white;
   color: #828282cb;
   cursor: not-allowed;
   font-weight: 500;
 }
- tbody ,td ,tr .day current {
+tbody,
+td,
+tr .day current {
   font-weight: 500;
   color: #828282;
- }
+}
 
 .calendar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid #ccc;
-  background-color:rgb(240, 240, 240);
+  background-color: rgb(240, 240, 240);
 }
 
 .d-none {
@@ -158,7 +166,7 @@ button svg {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top:0px;
+  margin-top: 0px;
   border-top: 1px solid #ddd;
 }
 
@@ -180,7 +188,6 @@ button svg {
   outline: none;
   padding: 0;
   margin: 0px 3px;
-  
 }
 
 .calendar.show-end .show-clock,
@@ -197,10 +204,10 @@ button svg {
 .calendar.show-end .time-range-wrap.show-end .clock-wrap {
   padding: 5px 0;
   border: 1px solid #ccc;
-  background-color:rgb(240, 240, 240) ;
+  background-color: rgb(240, 240, 240);
   width: 100%;
   margin-bottom: 1px;
-  margin-top:0px;
+  margin-top: 0px;
 }
 
 .calendar-bottom-btn {
@@ -216,7 +223,7 @@ button svg {
   border-color: #cacaca;
   margin-bottom: 0px;
   font-weight: 700;
-  color:rgba(17, 17, 121, 0.9);
+  color: rgba(17, 17, 121, 0.9);
 }
 .calendar-wrap p {
   margin-bottom: 0 !important;
@@ -305,8 +312,8 @@ button svg {
 }
 
 .table-btn:disabled {
-  color:rgba(17, 17, 121, 0.9);
-  cursor: not-allowed;;
+  color: rgba(17, 17, 121, 0.9);
+  cursor: not-allowed;
   border: 1px solid #cacaca;
   text-align: center;
   text-decoration: none;
@@ -315,22 +322,10 @@ button svg {
   font-weight: bold;
   padding-left: 12px;
 }
-.table-btn-next {
+.table-btn.prev,
+.table-btn.next {
   border: 1px solid #cacaca;
-  color:rgba(17, 17, 121, 0.9);
-  font-weight: bold;
-  background-color: white;
-  padding: 8px 12px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 15px;
-  cursor: pointer;
-  font-weight: bold;
-}
-.table-btn-prev {
-  border: 1px solid #cacaca;
-  color:rgba(17, 17, 121, 0.9);
+  color: rgba(17, 17, 121, 0.9);
   font-weight: bold;
   background-color: white;
   padding: 8px 12px;
@@ -367,8 +362,7 @@ button svg {
   background: #fff;
   margin-left: 5px;
   font-weight: 700;
-  color:rgba(17, 17, 121, 0.9);
-
+  color: rgba(17, 17, 121, 0.9);
 }
 
 .text-box input {
@@ -420,7 +414,7 @@ button svg {
 .day.disabled {
   text-decoration: line-through;
   font-weight: 500;
-  color:#a9a9a9af;
+  color: #a9a9a9af;
 }
 /* 
 td:nth-child(7){
@@ -444,6 +438,6 @@ td:nth-child(2){
 td:nth-child(1){
   padding-right:0px;
 } */
-td:nth-child(n+1):nth-child(-n+7) {
-  padding:5px 10px;
+td:nth-child(n + 1):nth-child(-n + 7) {
+  padding: 5px 10px;
 }
