@@ -1493,7 +1493,7 @@ export default function VDateTimePicker(props) {
   }, []);
 
   let prevBtn = (
-    <button className="table-btn" onClick={handlePrevious}>
+    <button className="table-btn-prev" onClick={handlePrevious}>
       &#x276E;
     </button>
   );
@@ -1987,7 +1987,7 @@ export default function VDateTimePicker(props) {
   if (show === "show") {
     if (month === minCalDate.getMonth() && year === minCalDate.getFullYear()) {
       prevBtn = (
-        <button disabled className="table-btn" onClick={handlePrevious}>
+        <button disabled className="table-btn-prev" onClick={handlePrevious}>
           &#x276E;
         </button>
       );
@@ -1995,7 +1995,7 @@ export default function VDateTimePicker(props) {
   } else if (show === "show-end") {
     if (month === new Date(selectedStart).getMonth()) {
       prevBtn = (
-        <button disabled className="table-btn" onClick={handlePrevious}>
+        <button disabled className="table-btn-prev" onClick={handlePrevious}>
           &#x276E;
         </button>
       );
@@ -2767,13 +2767,13 @@ export default function VDateTimePicker(props) {
                 year === minCalDate.getFullYear() ? (
                   <button
                     disabled
-                    className="table-btn"
+                    className="table-btn-prev"
                     onClick={handlePrevious}
                   >
                     &#x276E;
                   </button>
                 ) : (
-                  <button className="table-btn" onClick={handlePrevious}>
+                  <button className="table-btn-prev" onClick={handlePrevious}>
                     &#x276E;
                   </button>
                 )}
@@ -2802,11 +2802,11 @@ export default function VDateTimePicker(props) {
                 </div>
                 {month === maximumDate.getMonth() &&
                 year === maximumDate.getFullYear() ? (
-                  <button disabled className="table-btn" onClick={handleNext}>
+                  <button disabled className="table-btn-next" onClick={handleNext}>
                     &#x276F;
                   </button>
                 ) : (
-                  <button className="table-btn" onClick={handleNext}>
+                  <button className="table-btn-next" onClick={handleNext}>
                     &#x276F;
                   </button>
                 )}
@@ -2923,6 +2923,7 @@ export default function VDateTimePicker(props) {
                 {props.selectedMode === "dateTime" && (
                   <div className="clock-wrap">
                     <button
+                    
                       className="clock-btn"
                       onClick={
                         show === "show"
