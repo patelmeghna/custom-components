@@ -12,34 +12,27 @@ function DatePicker() {
   return (
     <Container className="py-5">
       <VDateTimePicker
-        id="date-picker-1"
-        className="custom-date-picker"
-        // defaultValue={"2022-02-12 12:12:00 To 2022-01-23 12:20:10"}
-        minDate
-        range
-        isMinCurrentTime
-        // isClear
-        // clearClick
-        // clearClickEnd
-        isUndo
-        undoClick
-        selectedMode="dateTime"
-        // hideError
-        // errorMsg="Dummy error msg"
-        // isSecondHide
+        name="date-disable-reset"
         format="dd-mm-yyyy"
-        clockTimeFormat="am-pm"
-        // placeholder="Add date"
-        // isDisabled
-        maxDate="2024-03-12"
+        selectedMode="dateTime"
         onChange={(data) => setStartValue(data)}
-        onEndChange={(end) => setEndValue(end)}
-        // startTabIndex
-        // endTabIndex
         value={startValue}
-        eValue={endValue}
+        id="disable-reset-demo"
       />
-      <p>from {startValue} To {endValue}</p>
+
+      <br />
+
+      <VDateTimePicker
+        name="demo-date"
+        format="yyyy/mm/dd"
+        placeholder="Add date in formate of yyyy/mm/dd"
+        onChange={(data) => setEndValue(data)}
+        value={endValue}
+        id="placeholder-demo"
+        minDate="2023-01-14"
+        maxDate="2024-04-29"
+      />
+      {/* <p>from {startValue} To {endValue}</p> */}
       <br />
       {/* <VDateTimePicker id="date-picker" onChange={(e) => setStartValue(e)} />
       <p>second {startValue}</p> */}
@@ -47,12 +40,12 @@ function DatePicker() {
       <h4>Month only</h4>
 
       <VMonth
-        // defaultSelectedMonth={"2023-07"}
+        defaultSelectedMonth="2022-02"
         id="month"
         isUndo
         // disableControl
         // setIsDisabled={setIsDisabled}
-        // isDisabled={isDisabled}
+        isReadOnly
         // resetControl
         // placeholder="Add month"
         // tabIndex
@@ -60,8 +53,8 @@ function DatePicker() {
         // errorMsg
         // isClear
         // clearClick
-        onChange={(data) => setMonthValue(data)}
-        value={monthValue}
+        // onChange={(data) => setMonthValue(data)}
+        // value={monthValue}
       />
       <p>Result: {monthValue}</p>
     </Container>

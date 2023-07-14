@@ -217,6 +217,7 @@ const VMonth = (props) => {
 
   const handleReset = () => {
     dispatch({ type: "RESET" });
+    props.reset && props.reset();
   };
 
   const handleEnable = () => {
@@ -439,24 +440,44 @@ const VMonth = (props) => {
           }`}
           disabled={props.isDisabled || props.isReadOnly}
         >
-          <input
-            type="text"
-            onClick={handleShow}
-            className={month ? "selected" : ""}
-            onBlur={handleBlur}
-            onFocus={handleFocus}
-            onChange={handleMonthChange}
-            disabled={props.isDisabled || props.isReadOnly}
-            value={props.value}
-            name={props.name}
-            placeholder={
-              props.placeholder
-                ? props.placeholder
-                : props.placeholder
-                ? props.placeholder
-                : "MM/YYYY"
-            }
-          />
+          {props.isFocused ? (
+            <input
+              type="text"
+              onClick={handleShow}
+              className={month ? "selected" : ""}
+              onBlur={handleBlur}
+              onFocus={handleFocus}
+              onChange={handleMonthChange}
+              disabled={props.isDisabled || props.isReadOnly}
+              name={props.name}
+              placeholder={
+                props.placeholder
+                  ? props.placeholder
+                  : props.placeholder
+                  ? props.placeholder
+                  : "MM/YYYY"
+              }
+            />
+          ) : (
+            <input
+              type="text"
+              onClick={handleShow}
+              className={month ? "selected" : ""}
+              onBlur={handleBlur}
+              onFocus={handleFocus}
+              onChange={handleMonthChange}
+              disabled={props.isDisabled || props.isReadOnly}
+              value={props.value ? props.value : placeholderText}
+              name={props.name}
+              placeholder={
+                props.placeholder
+                  ? props.placeholder
+                  : props.placeholder
+                  ? props.placeholder
+                  : "MM/YYYY"
+              }
+            />
+          )}
 
           {props.isUndo && props.undoClick && (
             <button className="icon-btn" onClick={handleUndo}>
