@@ -1,5 +1,5 @@
 import "./zcustomdatetimepicker.css";
-import { useReducer, useEffect } from "react";
+import { useReducer, useEffect, useRef } from "react";
 
 export default function VDateTimePicker(props) {
   // initial value :: begin
@@ -39,6 +39,8 @@ export default function VDateTimePicker(props) {
     hideErrorEnd: true,
   };
   // initial value :: end
+
+  const renderCount = useRef(0);
 
   const maximumDate = new Date(props.maxDate);
   let minCalDate = props.minDate;
@@ -1067,6 +1069,12 @@ export default function VDateTimePicker(props) {
           timeFormat: changedFormat,
           endTimeFormat: changedFormat,
         };
+
+      case "HIDE_CALENDAR_AT_START":
+        return {
+          ...state,
+          show: "",
+        };
       default:
         return state;
     }
@@ -1457,6 +1465,14 @@ export default function VDateTimePicker(props) {
       dispatch({ type: "CHANGE_TIME_FORMAT" });
     }
   }, []);
+
+  useEffect(() => {
+    renderCount.current += 1;
+
+    if (renderCount.current === 2) {
+      dispatch({ type: "HIDE_CALENDAR_AT_START" });
+    }
+  });
 
   useEffect(() => {
     if (props.defaultValue) {
@@ -2820,7 +2836,11 @@ export default function VDateTimePicker(props) {
                 </div>
                 {month === maximumDate.getMonth() &&
                 year === maximumDate.getFullYear() ? (
-                  <button disabled className="table-btn next" onClick={handleNext}>
+                  <button
+                    disabled
+                    className="table-btn next"
+                    onClick={handleNext}
+                  >
                     &#x276F;
                   </button>
                 ) : (
@@ -2941,7 +2961,6 @@ export default function VDateTimePicker(props) {
                 {props.selectedMode === "dateTime" && (
                   <div className="clock-wrap">
                     <button
-                    
                       className="clock-btn"
                       onClick={
                         show === "show"
@@ -3276,13 +3295,13 @@ export default function VDateTimePicker(props) {
         {/* ===== display value :: end ===== */}
       </div>
       {props.disableControl && (
-        <button className="table-btn" onClick={handleEnable}>
+        <button className="table-btn functional" onClick={handleEnable}>
           {!props.isDisabled ? "Disable" : "Enable"}
         </button>
       )}
 
       {props.resetControl && (
-        <button className="table-btn" onClick={handleReset}>
+        <button className="table-btn functional" onClick={handleReset}>
           Reset
         </button>
       )}
@@ -3291,18 +3310,18 @@ export default function VDateTimePicker(props) {
 }
 
 const months = [
-  "January",
-  "February",
-  "March",
-  "April",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
   "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
-const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const weekdays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
