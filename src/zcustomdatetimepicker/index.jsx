@@ -21,10 +21,12 @@ function DatePicker() {
         range
         minDate="2023-07-14"
         isClear
-        // clearClick
+        clearClick={() => {alert("hello")}}
+        isSecondHide={true}
+        error
         // isMinCurrentTime
       />
-
+{/* 
       <br />
 
       <VDateTimePicker
@@ -38,7 +40,7 @@ function DatePicker() {
         maxDate="2024-04-29"
         resetControl
         reset={() => setEndValue("")}
-      />
+      /> */}
       {/* <p>from {startValue} To {endValue}</p> */}
       <br />
       {/* <VDateTimePicker id="date-picker" onChange={(e) => setStartValue(e)} />
@@ -47,7 +49,7 @@ function DatePicker() {
       <h4>Month only</h4>
 
       <VMonth
-        defaultSelectedMonth="2022-02"
+        // defaultSelectedMonth="2022-02"
         id="month"
         isUndo
         // disableControl

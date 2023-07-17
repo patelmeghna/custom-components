@@ -1110,6 +1110,8 @@ export default function VDateTimePicker(props) {
     validateEnd,
     hideError,
     hideErrorEnd,
+    isFocused,
+    isEndFocused,
   } = state;
   // reducer hook :: end
 
@@ -2425,7 +2427,7 @@ export default function VDateTimePicker(props) {
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
 
-    props.onEndChange && props.onEndChange(value);
+    props.onChange && props.onChange(`${startInputValue} To ${value}`);
 
     let isDateValid;
     let isTimeValid;
@@ -2980,7 +2982,6 @@ export default function VDateTimePicker(props) {
                           className="table-select "
                           value={selectedHour}
                           onChange={handleHourChange}
-                          isMinCurrentTime={selectedHour}
                         >
                           {hourOptions}
                         </select>
@@ -3132,17 +3133,11 @@ export default function VDateTimePicker(props) {
                 disabled={props.isDisabled || props.isReadOnly}
                 name={props.name}
                 tabIndex={props.startTabIndex}
-                value={
-                  props.value
-                    ? props.value
-                    : startInputValue !== null
-                    ? startInputValue
-                    : ""
-                }
+                value={startInputValue !== null ? startInputValue : ""}
               />
             )}
 
-            {props.isUndo && props.undoClick && !props.range && (
+            {props.isUndo && isFocused && (
               <button className="icon-btn" onClick={handleStartUndo}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -3156,7 +3151,7 @@ export default function VDateTimePicker(props) {
               </button>
             )}
 
-            {props.isClear && props.clearClick && (
+            {props.isClear && isFocused && (
               <button onClick={handleClearClick} className="clear-btn">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -3234,13 +3229,7 @@ export default function VDateTimePicker(props) {
                 disabled={props.isDisabled || props.isReadOnly}
                 readOnly={selectedStart === null ? true : false}
                 name={props.eName}
-                value={
-                  props.eValue
-                    ? props.eValue
-                    : endInputValue !== null
-                    ? endInputValue
-                    : ""
-                }
+                value={endInputValue !== null ? endInputValue : ""}
                 onBlur={handleEndBlur}
                 onFocus={handleEndFocus}
                 autoComplete="off"
@@ -3256,7 +3245,7 @@ export default function VDateTimePicker(props) {
               />
             )}
 
-            {/* {props.isUndo && (
+            {props.isUndo && isEndFocused && (
               <button className="icon-btn" onClick={handleEndUndo}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -3268,9 +3257,9 @@ export default function VDateTimePicker(props) {
                   <path d="M447.9 368.2c0-16.8 3.6-83.1-48.7-135.7-35.2-35.4-80.3-53.4-143.3-56.2V96L64 224l192 128v-79.8c40 1.1 62.4 9.1 86.7 20 30.9 13.8 55.3 44 75.8 76.6l19.2 31.2H448c0-10.1-.1-22.9-.1-31.8z"></path>
                 </svg>
               </button>
-            )} */}
+            )}
 
-            {props.isClear && props.clearClickEnd && (
+            {props.isClear && isEndFocused && (
               <button onClick={handleClearClickEnd} className="clear-btn">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -3310,7 +3299,7 @@ export default function VDateTimePicker(props) {
         </div>
         {/* ===== display value :: end ===== */}
       </div>
-      {props.disableControl && (
+      {/* {props.disableControl && (
         <button className="table-btn functional" onClick={handleEnable}>
           {!props.isDisabled ? "Disable" : "Enable"}
         </button>
@@ -3320,7 +3309,7 @@ export default function VDateTimePicker(props) {
         <button className="table-btn functional" onClick={handleReset}>
           Reset
         </button>
-      )}
+      )} */}
     </div>
   );
 }
