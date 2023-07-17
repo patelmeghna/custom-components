@@ -1,5 +1,5 @@
 import "./zcustomdatetimepicker.css";
-import { useReducer, useEffect } from "react";
+import { useReducer, useEffect, useRef } from "react";
 
 export default function VDateTimePicker(props) {
   // initial value :: begin
@@ -39,6 +39,8 @@ export default function VDateTimePicker(props) {
     hideErrorEnd: true,
   };
   // initial value :: end
+
+  const renderCount = useRef(0);
 
   const maximumDate = new Date(props.maxDate);
   let minCalDate = props.minDate;
@@ -1463,6 +1465,14 @@ export default function VDateTimePicker(props) {
       dispatch({ type: "CHANGE_TIME_FORMAT" });
     }
   }, []);
+
+  useEffect(() => {
+    renderCount.current += 1;
+
+    if (renderCount.current === 2) {
+      dispatch({ type: "HIDE_CALENDAR_AT_START" });
+    }
+  });
 
   useEffect(() => {
     if (props.defaultValue) {

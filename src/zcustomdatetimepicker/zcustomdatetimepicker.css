@@ -41,7 +41,7 @@ td.selected,
   z-index: 2;
   display: none;
   background-color: #fff;
-  width: 96%;
+  /* width: 96%; */
   border-collapse: collapse;
 }
 
@@ -77,7 +77,7 @@ td.selected,
 }
 
 .in-range {
-  background-color: rgba(92, 184, 92, 0.4);
+  background-color: #2991d642;
 }
 
 .calendar-wrap .calendar {
@@ -224,6 +224,12 @@ button svg {
   margin-bottom: 0px;
   font-weight: 700;
   color: rgba(17, 17, 121, 0.9);
+  appearance: none;
+  background-image: url("./arrow-down.svg");
+  background-repeat: no-repeat;
+  background-size: 8px;
+  background-position: right 5px center;
+  width: 55px;
 }
 .calendar-wrap p {
   margin-bottom: 0 !important;
@@ -236,6 +242,10 @@ button svg {
   outline: none;
   padding-right: 12px;
   position: relative;
+  background-image: url("./calendar.svg");
+  background-repeat: no-repeat;
+  background-size: 15px;
+  background-position: right 1% center;
 }
 
 .calendar-wrap .text-box p.error-msg-wrap {
@@ -303,8 +313,15 @@ button svg {
   width: 18px;
 }
 
+.date-time-table td.day.start-range,
+.date-time-table td.day.first-date,
+.date-time-table td.day.last-date {
+  color: #fff;
+}
+
 .date-time-table td.day {
   cursor: pointer;
+  color: #000;
 }
 
 .calendar-wrap .text-box.read-only {
@@ -348,8 +365,15 @@ button svg {
   align-items: center;
 }
 
+.clock-wrap .table-select {
+  width: 40px;
+  background-size: 7.5px;
+  background-position: right 3px center;
+}
+
 .year-display {
-  padding: 3px 8px;
+  padding: 7px 11px;
+  background: #fff;
   border: 1px solid #ccc;
   font-weight: 600;
   transition: all 0.3s ease;
@@ -416,28 +440,21 @@ button svg {
   font-weight: 500;
   color: #a9a9a9af;
 }
-/* 
-td:nth-child(7){
-  padding-left: 0px;
+
+html div.text-box input[disabled] {
+  color: #aaa;
+  background-color: transparent;
 }
-td:nth-child(6){
-  padding-left: -1px;
+
+.text-box.disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
 }
-td:nth-child(5){
-  padding-left: -1px;
+.text-box.disabled input[disabled] {
+  border: none;
 }
-td:nth-child(4){
-  padding-left: 16px;
-}
-td:nth-child(3){
-  padding-left: 1px;
-}
-td:nth-child(2){
-  padding-right:0px;
-}
-td:nth-child(1){
-  padding-right:0px;
-} */
-td:nth-child(n + 1):nth-child(-n + 7) {
-  padding: 5px 10px;
+.text-box.read-only input[disabled] {
+  border: none;
+  background-color: none;
+  color: #000;
 }
