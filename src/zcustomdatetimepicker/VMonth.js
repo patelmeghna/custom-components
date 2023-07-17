@@ -335,13 +335,13 @@ const VMonth = (props) => {
         <div className={`calendar ${show ? "show" : ""}`}>
           {/* ===== month calendar :: begin ===== */}
           <div className="calendar-header">
-            <button className="table-btn-prev" onClick={handlePreviousYear}>
+            <button className="table-btn prev" onClick={handlePreviousYear}>
               &#x276E;
             </button>
             <p className="year-display" onClick={handleYearShow}>
               {`${showYear ? "Back" : "Year"} ${changedYear}`}
             </p>
-            <button className="table-btn-next" onClick={handleNextYear}>
+            <button className="table-btn next" onClick={handleNextYear}>
               &#x276F;
             </button>
           </div>

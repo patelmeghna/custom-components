@@ -21,7 +21,7 @@
 
 .table-header {
   background-color: white;
-  color: #2991d6;
+  color: #3e9cda
 
 }
 
@@ -50,22 +50,9 @@ td.selected,
   display: table;
 }
 
-.table-btn {
-  color:#2991d6;
-  background-color: white;
-  border: none;
-  padding: 5px 10px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size:12px;
-  margin: 3px 0px;
-  cursor: pointer;
-  font-weight: 700;
-}
 
 .table-btn.btn-gray {
-  color: #2991d6;
+  color: #4485bd;
   font-weight:700;
   font-size:12px;
 }
@@ -97,22 +84,21 @@ td.selected,
 
 .disabled,
 .next-prev-month {
-  background-color:white;
-  color: #828282cb;
+  color: #b4b4b4;
   cursor: not-allowed;
   font-weight: 500;
 }
  tbody ,td ,tr .day current {
   font-weight: 500;
-  color: #828282;
+  color: #7b7b7b;
  }
 
 .calendar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #ccc;
-  background-color:rgb(240, 240, 240);
+  border-bottom: 1px solid #e4e4e4;
+  background-color:#f6f6f6;
 }
 
 .d-none {
@@ -180,6 +166,7 @@ button svg {
   outline: none;
   padding: 0;
   margin: 0px 3px;
+  border-bottom: #4c4977;
   
 }
 
@@ -196,8 +183,8 @@ button svg {
 .calendar.show .time-range-wrap.show .clock-wrap,
 .calendar.show-end .time-range-wrap.show-end .clock-wrap {
   padding: 5px 0;
-  border: 1px solid #ccc;
-  background-color:rgb(240, 240, 240) ;
+  border: 1px solid #e4e4e4;
+  background-color:#f6f6f6;
   width: 100%;
   margin-bottom: 1px;
   margin-top:0px;
@@ -213,11 +200,21 @@ button svg {
   margin-inline: 5px;
   padding: 6px 5px;
   border-radius: 0;
-  border-color: #cacaca;
+  border-color: #e5e5e5;
   margin-bottom: 0px;
   font-weight: 700;
-  color:rgba(17, 17, 121, 0.9);
+  color:#242b83;
+  appearance: none;
+  background-image: url('C:\Users\abc\Documents\viitorcloud\custom-components\src\dropdown.svg'); /* Replace with the path to your SVG icon */
+  background-repeat: no-repeat;
+  background-size: 8px;
+  background-position: 89%;
+  
 }
+.table-select.time {
+  font-weight:500;
+}
+
 .calendar-wrap p {
   margin-bottom: 0 !important;
   font-size: 14px;
@@ -303,9 +300,22 @@ button svg {
 .calendar-wrap .text-box.read-only {
   opacity: 1;
 }
+.table-btn {
+  color:#4485bd;
+  background-color:transparent;
+  border: none;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size:12px;
+  margin: 0px 0px;
+  cursor: pointer;
+  font-weight: 700;
+}
 
 .table-btn:disabled {
-  color:rgba(17, 17, 121, 0.9);
+  color:#242b83;
   cursor: not-allowed;;
   border: 1px solid #cacaca;
   text-align: center;
@@ -315,28 +325,21 @@ button svg {
   font-weight: bold;
   padding-left: 12px;
 }
-.table-btn-next {
-  border: 1px solid #cacaca;
-  color:rgba(17, 17, 121, 0.9);
-  font-weight: bold;
-  background-color: white;
+.table-btn.next {
+  border: 1px solid #e2e2e2;
+  color:#242b83;
+  background-color:white;
   padding: 8px 12px;
   text-align: center;
-  text-decoration: none;
-  display: inline-block;
   font-size: 15px;
   cursor: pointer;
   font-weight: bold;
 }
-.table-btn-prev {
-  border: 1px solid #cacaca;
-  color:rgba(17, 17, 121, 0.9);
-  font-weight: bold;
-  background-color: white;
+.table-btn.prev {
+  border: 1px solid #e2e2e2;
+  color:#242b83;
+  background-color:white;
   padding: 8px 12px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
   font-size: 15px;
   cursor: pointer;
   font-weight: bold;
@@ -359,8 +362,8 @@ button svg {
   font-weight: 600;
   transition: all 0.3s ease;
   cursor: pointer;
-  background-color: white;
-  color:rgba(17, 17, 121, 0.9);
+  color:#242b83;
+  background-color:white;
 }
 
 .format-btn {
@@ -422,9 +425,14 @@ button svg {
 .day.disabled {
   text-decoration: line-through;
   font-weight: 500;
-  color:#a9a9a9af;
+  color:#dcdcdc;
 }
 
-td:nth-child(n+1):nth-child(-n+7) {
+.date-time-table
+.alltd
+:nth-child(n+1):nth-child(-n+7) {
   padding:5px 10px;
+}
+.clock-wrap .table-select{
+background-position: 100%;
 }
