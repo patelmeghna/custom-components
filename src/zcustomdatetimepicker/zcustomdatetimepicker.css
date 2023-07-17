@@ -21,8 +21,7 @@
 
 .table-header {
   background-color: white;
-  color: #3e9cda
-
+  color: #3e9cda;
 }
 
 td.selected,
@@ -42,7 +41,7 @@ td.selected,
   z-index: 2;
   display: none;
   background-color: #fff;
-  /* width: 96%; */
+  width: 100%;
   border-collapse: collapse;
 }
 
@@ -73,8 +72,8 @@ td.selected,
 
 .table-btn.btn-gray {
   color: #4485bd;
-  font-weight:700;
-  font-size:12px;
+  font-weight: 700;
+  font-size: 12px;
 }
 
 .in-range {
@@ -114,14 +113,14 @@ td,
 tr .day current {
   font-weight: 500;
   color: #7b7b7b;
- }
+}
 
 .calendar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid #e4e4e4;
-  background-color:#f6f6f6;
+  background-color: #f6f6f6;
 }
 
 .d-none {
@@ -190,7 +189,6 @@ button svg {
   padding: 0;
   margin: 0px 3px;
   border-bottom: #4c4977;
-  
 }
 
 .calendar.show-end .show-clock,
@@ -207,7 +205,7 @@ button svg {
 .calendar.show-end .time-range-wrap.show-end .clock-wrap {
   padding: 5px 0;
   border: 1px solid #e4e4e4;
-  background-color:#f6f6f6;
+  background-color: #f6f6f6;
   width: 100%;
   margin-bottom: 1px;
   margin-top: 0px;
@@ -235,7 +233,7 @@ button svg {
   width: 55px;
 }
 .table-select.time {
-  font-weight:500;
+  font-weight: 500;
 }
 
 .calendar-wrap p {
@@ -253,7 +251,7 @@ button svg {
   background-repeat: no-repeat;
   background-size: 15px;
   background-position: right 1% center;
-  border: 1px solid #6a6a6a;
+  border: 1px solid #d8d8d8;
 }
 
 .calendar-wrap .text-box p.error-msg-wrap {
@@ -336,23 +334,26 @@ button svg {
   opacity: 1;
 }
 .table-btn {
-  color:#4485bd;
-  background-color:transparent;
+  color: #4485bd;
+  background-color: transparent;
   border: none;
   padding: 5px 10px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size:12px;
+  font-size: 12px;
   margin: 0px 0px;
   cursor: pointer;
   font-weight: 700;
 }
 
-.table-btn:disabled {
-  color: rgba(17, 17, 121, 0.9);
+.table-btn:disabled,
+.table-btn.prev:disabled,
+.table-btn.next:disabled {
+  color: #ccc;
+  background-color: #e4e4e4;
   cursor: not-allowed;
-  border: 1px solid #cacaca;
+  border: 1px solid #e4e4e4;
   text-align: center;
   text-decoration: none;
   display: inline-block;
@@ -396,8 +397,8 @@ button svg {
   font-weight: 600;
   transition: all 0.3s ease;
   cursor: pointer;
-  color:#242b83;
-  background-color:white;
+  color: #242b83;
+  background-color: white;
 }
 
 .format-btn {
@@ -455,7 +456,7 @@ button svg {
   }
 }
 
-.date-time-table td.day.disabled{
+.date-time-table td.day.disabled {
   text-decoration: line-through;
   font-weight: 500;
   color: #a9a9a9af;
