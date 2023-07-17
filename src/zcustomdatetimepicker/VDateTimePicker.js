@@ -3096,6 +3096,7 @@ export default function VDateTimePicker(props) {
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 onClick={handleShow}
+                autoComplete="off"
                 className={`${selectedStart ? "selected" : ""} ${
                   validateStart ? "error" : ""
                 }`}
@@ -3117,6 +3118,7 @@ export default function VDateTimePicker(props) {
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 onClick={handleShow}
+                autoComplete="off"
                 className={`${selectedStart ? "selected" : ""} ${
                   validateStart ? "error" : ""
                 }`}
@@ -3204,6 +3206,7 @@ export default function VDateTimePicker(props) {
                 onChange={handleEndDateChange}
                 onBlur={handleEndBlur}
                 onFocus={handleEndFocus}
+                autoComplete="off"
                 className={selectedEnd ? "selected" : ""}
                 placeholder={
                   props.placeholder
@@ -3228,6 +3231,7 @@ export default function VDateTimePicker(props) {
                 value={props.eValue ? props.eValue : endInputValue}
                 onBlur={handleEndBlur}
                 onFocus={handleEndFocus}
+                autoComplete="off"
                 className={selectedEnd ? "selected" : ""}
                 placeholder={
                   props.placeholder

@@ -36,7 +36,6 @@ function DatePicker() {
         id="placeholder-demo"
         minDate="2023-07-14"
         maxDate="2024-04-29"
-        range
       />
       {/* <p>from {startValue} To {endValue}</p> */}
       <br />
