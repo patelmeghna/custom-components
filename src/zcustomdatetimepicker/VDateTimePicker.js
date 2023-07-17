@@ -2853,7 +2853,7 @@ export default function VDateTimePicker(props) {
             {/* ===== calendar :: end ===== */}
 
             {/* ===== date time table :: begin ===== */}
-            <table className="date-time-table">
+            <table className="date-time-table alltd">
               <thead>
                 <tr className="table-head">
                   {weekdays.map((weekday) => (
@@ -2874,14 +2874,14 @@ export default function VDateTimePicker(props) {
                           const day = i * 7 + j + 1 - firstDayOfMonth;
                           if (i === 0 && day < 1) {
                             return (
-                              <td key={j} className="next-prev-month">
+                              <td key={j} className="next-prev-month ">
                                 {daysInPrevMonth + day}
                               </td>
                             );
                           }
                           if (day > lastDayOfMonth) {
                             return (
-                              <td key={j} className="disabled next-prev-month">
+                              <td key={j} className="disabled next-prev-month ">
                                 {day - lastDayOfMonth}
                               </td>
                             );
@@ -2977,7 +2977,7 @@ export default function VDateTimePicker(props) {
                       <div className="show-clock">
                         <select
                           disabled={disableSelect}
-                          className="table-select"
+                          className="table-select "
                           value={selectedHour}
                           onChange={handleHourChange}
                           isMinCurrentTime={selectedHour}
@@ -2987,7 +2987,7 @@ export default function VDateTimePicker(props) {
                         <span>:</span>
                         <select
                           disabled={disableSelect}
-                          className="table-select"
+                          className="table-select "
                           value={selectedMinute}
                           onChange={handleMinuteChange}
                         >
@@ -2998,7 +2998,7 @@ export default function VDateTimePicker(props) {
                             <span>:</span>
                             <select
                               disabled={disableSelect}
-                              className="table-select"
+                              className="table-select "
                               value={selectedSecond}
                               onChange={handleSecondChange}
                             >
@@ -3023,7 +3023,7 @@ export default function VDateTimePicker(props) {
                       <div className="show-end-clock">
                         <select
                           disabled={disableSelect}
-                          className="table-select"
+                          className="table-select "
                           value={selectedEndHour}
                           onChange={handleEndHourChange}
                         >
@@ -3032,7 +3032,7 @@ export default function VDateTimePicker(props) {
                         <span>:</span>
                         <select
                           disabled={disableSelect}
-                          className="table-select"
+                          className="table-select "
                           value={selectedEndMinute}
                           onChange={handleEndMinuteChange}
                         >
@@ -3043,7 +3043,7 @@ export default function VDateTimePicker(props) {
                             <span>:</span>
                             <select
                               disabled={disableSelect}
-                              className="table-select"
+                              className="table-select "
                               value={selectedEndSecond}
                               onChange={handleEndSecondChange}
                             >

@@ -21,7 +21,8 @@
 
 .table-header {
   background-color: white;
-  color: #2991d6;
+  color: #3e9cda
+
 }
 
 td.selected,
@@ -71,9 +72,9 @@ td.selected,
 }
 
 .table-btn.btn-gray {
-  color: #2991d6;
-  font-weight: 700;
-  font-size: 12px;
+  color: #4485bd;
+  font-weight:700;
+  font-size:12px;
 }
 
 .in-range {
@@ -112,15 +113,15 @@ tbody,
 td,
 tr .day current {
   font-weight: 500;
-  color: #828282;
-}
+  color: #7b7b7b;
+ }
 
 .calendar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #ccc;
-  background-color: rgb(240, 240, 240);
+  border-bottom: 1px solid #e4e4e4;
+  background-color:#f6f6f6;
 }
 
 .d-none {
@@ -188,6 +189,8 @@ button svg {
   outline: none;
   padding: 0;
   margin: 0px 3px;
+  border-bottom: #4c4977;
+  
 }
 
 .calendar.show-end .show-clock,
@@ -203,8 +206,8 @@ button svg {
 .calendar.show .time-range-wrap.show .clock-wrap,
 .calendar.show-end .time-range-wrap.show-end .clock-wrap {
   padding: 5px 0;
-  border: 1px solid #ccc;
-  background-color: rgb(240, 240, 240);
+  border: 1px solid #e4e4e4;
+  background-color:#f6f6f6;
   width: 100%;
   margin-bottom: 1px;
   margin-top: 0px;
@@ -220,7 +223,7 @@ button svg {
   margin-inline: 5px;
   padding: 6px 5px;
   border-radius: 0;
-  border-color: #cacaca;
+  border-color: #e5e5e5;
   margin-bottom: 0px;
   font-weight: 700;
   color: rgba(17, 17, 121, 0.9);
@@ -231,6 +234,10 @@ button svg {
   background-position: right 5px center;
   width: 55px;
 }
+.table-select.time {
+  font-weight:500;
+}
+
 .calendar-wrap p {
   margin-bottom: 0 !important;
   font-size: 14px;
@@ -322,11 +329,24 @@ button svg {
 
 .date-time-table td.day {
   cursor: pointer;
-  color: #000;
+  color: #5c5c5c;
 }
 
 .calendar-wrap .text-box.read-only {
   opacity: 1;
+}
+.table-btn {
+  color:#4485bd;
+  background-color:transparent;
+  border: none;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size:12px;
+  margin: 0px 0px;
+  cursor: pointer;
+  font-weight: 700;
 }
 
 .table-btn:disabled {
@@ -347,9 +367,6 @@ button svg {
   font-weight: bold;
   background-color: white;
   padding: 8px 12px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
   font-size: 15px;
   cursor: pointer;
   font-weight: bold;
@@ -379,6 +396,8 @@ button svg {
   font-weight: 600;
   transition: all 0.3s ease;
   cursor: pointer;
+  color:#242b83;
+  background-color:white;
 }
 
 .format-btn {
@@ -436,7 +455,7 @@ button svg {
   }
 }
 
-.day.disabled {
+.date-time-table td.day.disabled{
   text-decoration: line-through;
   font-weight: 500;
   color: #a9a9a9af;

@@ -18,6 +18,11 @@ function DatePicker() {
         onChange={(data) => setStartValue(data)}
         value={startValue}
         id="disable-reset-demo"
+        range
+        minDate="2023-07-14"
+        isClear
+        // clearClick
+
       />
 
       <br />
@@ -29,7 +34,7 @@ function DatePicker() {
         onChange={(data) => setEndValue(data)}
         value={endValue}
         id="placeholder-demo"
-        minDate="2023-01-14"
+        minDate="2023-07-14"
         maxDate="2024-04-29"
         range
       />
