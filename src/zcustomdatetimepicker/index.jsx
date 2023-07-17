@@ -22,7 +22,7 @@ function DatePicker() {
         minDate="2023-07-14"
         isClear
         // clearClick
-
+        isMinCurrentTime
       />
 
       <br />
@@ -36,6 +36,8 @@ function DatePicker() {
         id="placeholder-demo"
         minDate="2023-07-14"
         maxDate="2024-04-29"
+        resetControl
+        reset={() => setEndValue("")}
       />
       {/* <p>from {startValue} To {endValue}</p> */}
       <br />

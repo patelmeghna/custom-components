@@ -2439,7 +2439,7 @@ export default function VDateTimePicker(props) {
       .replace("mm", "\\d{2}")
       .replace("yyyy", "\\d{4}");
 
-    const regex = new RegExp(`^${str} $`);
+    const regex = new RegExp(`^${str}$`);
     isDateValid = lowercaseValue.match(regex);
 
     if (showClock === "show") {
@@ -3132,7 +3132,7 @@ export default function VDateTimePicker(props) {
                 disabled={props.isDisabled || props.isReadOnly}
                 name={props.name}
                 tabIndex={props.startTabIndex}
-                value={props.value ? props.value : startInputValue}
+                value={props.value}
               />
             )}
 
