@@ -240,12 +240,13 @@ button svg {
   display: flex;
   align-items: center;
   outline: none;
-  padding-right: 12px;
+  padding: 10px;
   position: relative;
   background-image: url("./calendar.svg");
   background-repeat: no-repeat;
   background-size: 15px;
   background-position: right 1% center;
+  border: 1px solid #6a6a6a;
 }
 
 .calendar-wrap .text-box p.error-msg-wrap {

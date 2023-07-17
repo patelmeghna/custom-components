@@ -1469,7 +1469,7 @@ export default function VDateTimePicker(props) {
   useEffect(() => {
     renderCount.current += 1;
 
-    if (renderCount.current === 2) {
+    if (renderCount.current === 3) {
       dispatch({ type: "HIDE_CALENDAR_AT_START" });
     }
   });

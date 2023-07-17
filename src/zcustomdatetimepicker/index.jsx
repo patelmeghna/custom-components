@@ -31,6 +31,7 @@ function DatePicker() {
         id="placeholder-demo"
         minDate="2023-01-14"
         maxDate="2024-04-29"
+        range
       />
       {/* <p>from {startValue} To {endValue}</p> */}
       <br />
@@ -45,7 +46,7 @@ function DatePicker() {
         isUndo
         // disableControl
         // setIsDisabled={setIsDisabled}
-        isReadOnly
+        // isReadOnly
         // resetControl
         // placeholder="Add month"
         // tabIndex
@@ -53,8 +54,8 @@ function DatePicker() {
         // errorMsg
         // isClear
         // clearClick
-        // onChange={(data) => setMonthValue(data)}
-        // value={monthValue}
+        onChange={(data) => setMonthValue(data)}
+        value={monthValue}
       />
       <p>Result: {monthValue}</p>
     </Container>
