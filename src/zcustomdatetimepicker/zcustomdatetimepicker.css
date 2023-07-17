@@ -328,7 +328,7 @@ button svg {
 
 .date-time-table td.day {
   cursor: pointer;
-  color: #000;
+  color: #5c5c5c;
 }
 
 .calendar-wrap .text-box.read-only {
@@ -454,7 +454,7 @@ button svg {
   }
 }
 
-.day.disabled {
+.date-time-table td.day.disabled{
   text-decoration: line-through;
   font-weight: 500;
   color: #a9a9a9af;
