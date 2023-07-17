@@ -3132,7 +3132,13 @@ export default function VDateTimePicker(props) {
                 disabled={props.isDisabled || props.isReadOnly}
                 name={props.name}
                 tabIndex={props.startTabIndex}
-                value={props.value}
+                value={
+                  props.value
+                    ? props.value
+                    : startInputValue !== null
+                    ? startInputValue
+                    : ""
+                }
               />
             )}
 
@@ -3228,7 +3234,13 @@ export default function VDateTimePicker(props) {
                 disabled={props.isDisabled || props.isReadOnly}
                 readOnly={selectedStart === null ? true : false}
                 name={props.eName}
-                value={props.eValue ? props.eValue : endInputValue}
+                value={
+                  props.eValue
+                    ? props.eValue
+                    : endInputValue !== null
+                    ? endInputValue
+                    : ""
+                }
                 onBlur={handleEndBlur}
                 onFocus={handleEndFocus}
                 autoComplete="off"

@@ -22,7 +22,7 @@ function DatePicker() {
         minDate="2023-07-14"
         isClear
         // clearClick
-        isMinCurrentTime
+        // isMinCurrentTime
       />
 
       <br />
