@@ -6,7 +6,7 @@ import VMonth from "./VMonth";
 function DatePicker() {
   // const [isDisabled, setIsDisabled] = useState(false);
   const [startValue, setStartValue] = useState("23-07-2023");
-  const [monthValue, setMonthValue] = useState("");
+  const [monthValue, setMonthValue] = useState("03/2022");
 
   // console.log('length', startValue)
 
@@ -23,10 +23,11 @@ function DatePicker() {
         minDate="2023-07-14"
         isClear
         clearClick={() => {alert("hello")}}
-        isSecondHide={true}
+        // isSecondHide={true}
+        // clockTimeFormat="am-pm"
         error
         isUndo
-        // isMinCurrentTime
+        isMinCurrentTime
       />
 {/* 
       <br />

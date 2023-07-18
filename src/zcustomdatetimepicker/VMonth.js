@@ -17,12 +17,17 @@ const VMonth = (props) => {
   const years = [];
 
   const id = props.id;
+  let defaultMonthValue, defaultYearValue;
+
+  if (props.value && props.value.length !== null && props.value.includes("/")) {
+    [defaultMonthValue, defaultYearValue] = props.value.split("/");
+  }
 
   const reducer = (state, action) => {
     switch (action.type) {
       case "MONTH_IN_MONTHONLY":
-        const defaultDate = props.defaultSelectedMonth
-          ? new Date(props.defaultSelectedMonth)
+        const defaultDate = props.value
+          ? new Date(defaultYearValue, defaultMonthValue - 1)
           : new Date();
         return {
           ...state,
@@ -31,8 +36,8 @@ const VMonth = (props) => {
           presentYear: defaultDate.getFullYear(),
           changedYear: defaultDate.getFullYear(),
           previousMonth: state.previousMonth
-            ? [...state.previousMonth, props.defaultSelectedMonth]
-            : [props.defaultSelectedMonth],
+            ? [...state.previousMonth, props.value]
+            : [props.value],
         };
       case "UNDO":
         return {
@@ -242,6 +247,8 @@ const VMonth = (props) => {
 
   const handleSelectYear = (year) => {
     dispatch({ type: "CHANGE_YEAR", payload: year });
+
+    props.onChange && props.onChange(placeholderText);
   };
 
   const handleYearShow = () => {
@@ -258,6 +265,8 @@ const VMonth = (props) => {
 
   const handleMonthClick = (selectedMonth) => {
     dispatch({ type: "SELECT_MONTH", selectedMonth });
+
+    props.onChange && props.onChange(placeholderText);
   };
 
   const handleDocumentClick = (e) => {
@@ -294,10 +303,10 @@ const VMonth = (props) => {
   }, []);
 
   useEffect(() => {
-    if (props.defaultSelectedMonth) {
+    if (props.value && props.value.length !== null) {
       dispatch({ type: "MONTH_IN_MONTHONLY" });
     }
-  }, [props.defaultSelectedMonth]);
+  }, []);
 
   for (let i = 0; i < 12; i++) {
     years.push(presentYear + i);
@@ -314,9 +323,9 @@ const VMonth = (props) => {
         : `${month + 1}/${changedYear}`;
   }
 
-  useEffect(() => {
-    props.onChange && props.onChange(placeholderText);
-  }, [month, changedYear]);
+  // useEffect(() => {
+  //   props.onChange && props.onChange(placeholderText);
+  // }, [month, changedYear]);
 
   const previousValue =
     month < 9 ? `${changedYear}-0${month + 1}` : `${changedYear}-${month + 1}`;
@@ -467,7 +476,7 @@ const VMonth = (props) => {
               onFocus={handleFocus}
               onChange={handleMonthChange}
               disabled={props.isDisabled || props.isReadOnly}
-              value={props.value ? props.value : placeholderText}
+              value={placeholderText}
               name={props.name}
               placeholder={
                 props.placeholder
