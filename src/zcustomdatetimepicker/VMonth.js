@@ -202,10 +202,14 @@ const VMonth = (props) => {
     const matches = value.match(regex);
 
     if (matches && matches.length > 2) {
-      const month = parseInt(matches[1]) - 1;
+      let month = parseInt(matches[1]) - 1;
       const year = parseInt(matches[2]);
 
       const dateObject = new Date(year, month);
+
+      if (month > 12) {
+        month -= 12;
+      }
       if (!props.hideError) {
         const isValidMonth = !isNaN(dateObject) && dateObject instanceof Date;
         dispatch({ type: "VALIDATE_MONTH", payload: isValidMonth });
@@ -317,11 +321,14 @@ const VMonth = (props) => {
 
   if (props.placeholder) {
     inputValueText = props.placeholder;
-  } else {
+  } else if (props.value.length !== 0) {
     inputValueText =
       monthValue < 9
         ? `${monthValue}/${yearValue}`
         : `${monthValue}/${yearValue}`;
+  } else {
+    inputValueText =
+      month < 9 ? `0${month}/${changedYear}` : `${month}/${changedYear}`;
   }
 
   // useEffect(() => {

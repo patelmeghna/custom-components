@@ -6,7 +6,7 @@ import VMonth from "./VMonth";
 function DatePicker() {
   // const [isDisabled, setIsDisabled] = useState(false);
   const [startValue, setStartValue] = useState("2023/09/12");
-  const [monthValue, setMonthValue] = useState("09/2023");
+  const [monthValue, setMonthValue] = useState("");
 
   // console.log('length', startValue)
 
