@@ -5,15 +5,16 @@ import VMonth from "./VMonth";
 
 function DatePicker() {
   // const [isDisabled, setIsDisabled] = useState(false);
-  const [startValue, setStartValue] = useState('');
-  const [endValue, setEndValue] = useState("");
-  const [monthValue, setMonthValue] = useState("");
+  const [startValue, setStartValue] = useState("2023/09/12");
+  const [monthValue, setMonthValue] = useState("09/2023");
+
+  // console.log('length', startValue)
 
   return (
     <Container className="py-5">
       <VDateTimePicker
         name="date-disable-reset"
-        format="dd-mm-yyyy"
+        format="yyyy/mm/dd"
         selectedMode="dateTime"
         onChange={(data) => setStartValue(data)}
         value={startValue}

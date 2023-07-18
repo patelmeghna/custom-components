@@ -17,27 +17,32 @@ const VMonth = (props) => {
   const years = [];
 
   const id = props.id;
-  let defaultMonthValue, defaultYearValue;
 
-  if (props.value && props.value.length !== null && props.value.includes("/")) {
-    [defaultMonthValue, defaultYearValue] = props.value.split("/");
+  let monthValue;
+  let yearValue;
+
+  if (props.value && props.value.length !== null) {
+    if (props.value.includes("/")) {
+      [monthValue, yearValue] = props.value.split("/");
+    }
   }
 
   const reducer = (state, action) => {
     switch (action.type) {
       case "MONTH_IN_MONTHONLY":
         const defaultDate = props.value
-          ? new Date(defaultYearValue, defaultMonthValue - 1)
+          ? new Date(yearValue, monthValue - 1)
           : new Date();
+
         return {
           ...state,
           month: defaultDate.getMonth(),
           selectedMonth: defaultDate.getMonth(),
           presentYear: defaultDate.getFullYear(),
           changedYear: defaultDate.getFullYear(),
-          previousMonth: state.previousMonth
-            ? [...state.previousMonth, props.value]
-            : [props.value],
+          // previousMonth: state.previousMonth
+          //   ? [...state.previousMonth, props.defaultSelectedMonth]
+          //   : [props.defaultSelectedMonth],
         };
       case "UNDO":
         return {
@@ -247,8 +252,6 @@ const VMonth = (props) => {
 
   const handleSelectYear = (year) => {
     dispatch({ type: "CHANGE_YEAR", payload: year });
-
-    props.onChange && props.onChange(placeholderText);
   };
 
   const handleYearShow = () => {
@@ -265,8 +268,6 @@ const VMonth = (props) => {
 
   const handleMonthClick = (selectedMonth) => {
     dispatch({ type: "SELECT_MONTH", selectedMonth });
-
-    props.onChange && props.onChange(placeholderText);
   };
 
   const handleDocumentClick = (e) => {
@@ -303,24 +304,24 @@ const VMonth = (props) => {
   }, []);
 
   useEffect(() => {
-    if (props.value && props.value.length !== null) {
+    if (props.value) {
       dispatch({ type: "MONTH_IN_MONTHONLY" });
     }
-  }, []);
+  }, [props.value]);
 
   for (let i = 0; i < 12; i++) {
     years.push(presentYear + i);
   }
 
-  let placeholderText;
+  let inputValueText;
 
   if (props.placeholder) {
-    placeholderText = props.placeholder;
+    inputValueText = props.placeholder;
   } else {
-    placeholderText =
-      month < 9
-        ? `0${month + 1}/${changedYear}`
-        : `${month + 1}/${changedYear}`;
+    inputValueText =
+      monthValue < 9
+        ? `${monthValue}/${yearValue}`
+        : `${monthValue}/${yearValue}`;
   }
 
   // useEffect(() => {
@@ -476,7 +477,7 @@ const VMonth = (props) => {
               onFocus={handleFocus}
               onChange={handleMonthChange}
               disabled={props.isDisabled || props.isReadOnly}
-              value={placeholderText}
+              value={inputValueText}
               name={props.name}
               placeholder={
                 props.placeholder
