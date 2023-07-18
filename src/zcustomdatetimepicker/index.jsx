@@ -21,9 +21,12 @@ function DatePicker() {
         range
         minDate="2023-07-18"
         isClear
-        // clearClick
+        clearClick={() => {alert("hello")}}
+        // isSecondHide={true}
+        // clockTimeFormat="am-pm"
+        error
+        isUndo
         isMinCurrentTime
-        clockTimeFormat="am-pm"
       />
 
       <br />
