@@ -19,10 +19,11 @@ function DatePicker() {
         value={startValue}
         id="disable-reset-demo"
         range
-        minDate="2023-07-14"
+        minDate="2023-07-18"
         isClear
         // clearClick
         isMinCurrentTime
+        clockTimeFormat="am-pm"
       />
 
       <br />

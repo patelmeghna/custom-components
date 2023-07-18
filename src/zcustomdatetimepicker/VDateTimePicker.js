@@ -2041,7 +2041,7 @@ export default function VDateTimePicker(props) {
       if (lowercaseValue.includes(" ")) {
         [dateValue] = lowercaseValue.split(" ");
 
-        isDateValid = dateValue.match(regex);
+        isDateValid = dateValue.match(regex); 
       }
     }
 
@@ -2058,29 +2058,32 @@ export default function VDateTimePicker(props) {
         lowercaseFormat.indexOf("yyyy"),
         lowercaseFormat.indexOf("yyyy") + 4
       );
+      console.log("yyyy:", yyyy); 
 
       const dateArr = [yyyy, mm, dd];
       const rearrangedDateStr = dateArr.join("-");
-
       if (
         parseInt(dd) <= 31 &&
         parseInt(mm) <= 12 &&
         yyyy.length === 4 &&
         parseInt(yyyy) >= minYear &&
         parseInt(yyyy) <= maxYear
-      ) {
+        ) {
+        console.log("maxYear condition reached!");
         if (props.minDate && !props.maxDate) {
           if (
             minCalDate < new Date(rearrangedDateStr) ||
             new Date(rearrangedDateStr).toDateString() ===
               minCalDate.toDateString()
           ) {
+            console.log(new Date(rearrangedDateStr))
             dispatch({
               type: "SET_SELECTED_START",
               payload: new Date(rearrangedDateStr),
             });
-            previousSelectedStartDate.push(rearrangedDateStr);
-          }
+          } 
+          
+          previousSelectedStartDate.push(rearrangedDateStr);
         }
 
         if (!props.minDate && props.maxDate) {
@@ -2121,8 +2124,18 @@ export default function VDateTimePicker(props) {
           });
           previousSelectedStartDate.push(rearrangedDateStr);
         }
-      }
+
+      
+      } else {
+
+        console.log("trewq")
+        
+        dispatch({
+          type: "SET_SELECTED_START",
+          payload: new Date(),
+      })
     }
+  }
 
     // Handle the change event of the time input
     let timeRegex;
@@ -2470,13 +2483,13 @@ export default function VDateTimePicker(props) {
       if (props.maxDate && selectedStart) {
         if (
           (new Date(rearrangedDateStr) > selectedStart ||
-            new Date(rearrangedDateStr).toDateString() ===
-              selectedStart.toDateString()) &&
+          new Date(rearrangedDateStr).toDateString() ===
+          selectedStart.toDateString()) &&
           (new Date(rearrangedDateStr) < maximumDate ||
             new Date(rearrangedDateStr).toDateString() ===
-              maximumDate.toDateString())
-        ) {
-          dispatch({
+            maximumDate.toDateString())
+            ) {
+                dispatch({
             type: "SET_SELECTED_END",
             payload: new Date(rearrangedDateStr),
           });
@@ -2487,12 +2500,12 @@ export default function VDateTimePicker(props) {
           new Date(rearrangedDateStr) > selectedStart ||
           new Date(rearrangedDateStr).toDateString() ===
             selectedStart.toDateString()
-        ) {
-          dispatch({
-            type: "SET_SELECTED_END",
-            payload: new Date(rearrangedDateStr),
-          });
-        } else {
+            ) {
+              dispatch({
+                type: "SET_SELECTED_END",
+                payload: new Date(rearrangedDateStr),
+              });
+            } else {
           dispatch({
             type: "SET_SELECTED_END",
             payload: selectedStart,
