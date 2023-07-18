@@ -5,9 +5,10 @@ import VMonth from "./VMonth";
 
 function DatePicker() {
   // const [isDisabled, setIsDisabled] = useState(false);
-  const [startValue, setStartValue] = useState('');
-  const [endValue, setEndValue] = useState("");
+  const [startValue, setStartValue] = useState("23-07-2023");
   const [monthValue, setMonthValue] = useState("");
+
+  // console.log('length', startValue)
 
   return (
     <Container className="py-5">
@@ -15,7 +16,7 @@ function DatePicker() {
         name="date-disable-reset"
         format="dd-mm-yyyy"
         selectedMode="dateTime"
-        onChange={(data) => setStartValue(data)}
+        onChange={(data) => {setStartValue(data);}}
         value={startValue}
         id="disable-reset-demo"
         range
@@ -24,6 +25,7 @@ function DatePicker() {
         clearClick={() => {alert("hello")}}
         isSecondHide={true}
         error
+        isUndo
         // isMinCurrentTime
       />
 {/* 
