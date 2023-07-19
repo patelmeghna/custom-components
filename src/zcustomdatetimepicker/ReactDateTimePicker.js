@@ -1,7 +1,7 @@
 import "./zcustomdatetimepicker.css";
 import { useReducer, useEffect, useRef } from "react";
 
-export default function VDateTimePicker(props) {
+export default function ReactDateTimePicker(props) {
   // initial value :: begin
   const initialState = {
     currentDate: new Date(),
@@ -590,6 +590,7 @@ export default function VDateTimePicker(props) {
         } else {
           toggleTime = "show-end";
         }
+
         if (state.show === "show") {
           // start date selection :: begin
           if (props.clockTimeFormat === "am-pm") {
@@ -905,12 +906,18 @@ export default function VDateTimePicker(props) {
       // date select :: begin
       case "SELECT_DATE":
         let toggle = state.show;
-        let selectedDate;
-        if (state.showClock === "") {
-          toggle = "";
+        if (state.showClock === "" || state.showClock === undefined) {
+          if (props.range) {
+            toggle = "show-end";
+          } else {
+            toggle = "";
+          }
         }
-        const selected = new Date(action.year, action.month, action.day);
+        const selected =
+          new Date(action.year, action.month, action.day) ||
+          (props.minDate && minCalDate);
         if (!props.range) {
+          console.log(state.show);
           return {
             ...state,
             selectedStart: selected,
@@ -922,20 +929,33 @@ export default function VDateTimePicker(props) {
             return {
               ...state,
               selectedStart: selected,
-              show: state.showClock === "" ? "show-end" : "show",
+              show:
+                state.showClock === undefined || state.showClock === ""
+                  ? "show-end"
+                  : "show",
             };
-          } else {
-            if (selected < state.selectedStart) {
+          } else if (state.show === "show-end") {
+            if (
+              selected < state.selectedStart &&
+              state.selectedStart === null
+            ) {
               return {
                 ...state,
                 selectedStart: selected,
                 show: "show",
               };
-            } else {
+            }
+            if (
+              selected.toDateString() === state.selectedStart.toDateString() ||
+              selected > state.selectedStart
+            ) {
               return {
                 ...state,
                 selectedEnd: selected,
-                show: state.showEndClock === "" ? "" : state.show,
+                show:
+                  state.showEndClock === "" || state.showEndClock === undefined
+                    ? ""
+                    : "show-end",
               };
             }
           }
@@ -1528,6 +1548,15 @@ export default function VDateTimePicker(props) {
       if (selectedStart.toDateString() === selectedEnd.toDateString()) {
         if (timeFormat === endTimeFormat) {
           if (selectedEndHour >= selectedHour) {
+            console.log("clicked");
+            dispatch({ type: "APPLY" });
+          }
+
+          if (
+            selectedEndHour === undefined ||
+            selectedEndHour === undefined ||
+            selectedEndSecond === undefined
+          ) {
             dispatch({ type: "APPLY" });
           }
         }
@@ -2384,7 +2413,6 @@ export default function VDateTimePicker(props) {
       ) {
         if (props.minDate) {
           if (selectedStart > minCalDate) {
-            console.log("cond 1");
             dispatch({
               type: "SET_TIME",
               format: capitalMeridiem,
@@ -2399,7 +2427,6 @@ export default function VDateTimePicker(props) {
               minute >= minCalDate.getMinutes() &&
               second >= minCalDate.getSeconds()
             ) {
-              console.log("cond 2");
               dispatch({
                 type: "SET_TIME",
                 format: capitalMeridiem,
@@ -2410,7 +2437,6 @@ export default function VDateTimePicker(props) {
             }
 
             if (hour > minCalDate.getHours()) {
-              console.log("cond 3");
               dispatch({
                 type: "SET_TIME",
                 format: capitalMeridiem,
@@ -2422,7 +2448,6 @@ export default function VDateTimePicker(props) {
 
             if (hour === minCalDate.getHours()) {
               if (minute > minCalDate.getMinutes()) {
-                console.log("cond 4");
                 dispatch({
                   type: "SET_TIME",
                   format: capitalMeridiem,
@@ -2434,7 +2459,6 @@ export default function VDateTimePicker(props) {
 
               if (minute === minCalDate.getMinutes()) {
                 if (second >= minCalDate.getSeconds()) {
-                  console.log("cond 5");
                   dispatch({
                     type: "SET_TIME",
                     format: capitalMeridiem,
@@ -2447,7 +2471,6 @@ export default function VDateTimePicker(props) {
             }
           }
         } else {
-          console.log("cond 6");
           dispatch({
             type: "SET_TIME",
             format: capitalMeridiem,
@@ -2468,7 +2491,6 @@ export default function VDateTimePicker(props) {
           if (hour <= 12) {
             if (props.minDate) {
               if (selectedStart > minCalDate) {
-                console.log("cond 7");
                 dispatch({
                   type: "SET_TIME",
                   format: capitalMeridiem,
@@ -2478,7 +2500,6 @@ export default function VDateTimePicker(props) {
                 });
               }
               if (selectedStart.toDateString() === minCalDate.toDateString()) {
-                console.log("cond 8");
                 dispatch({
                   type: "SET_TIME",
                   format: "PM",
@@ -2488,7 +2509,6 @@ export default function VDateTimePicker(props) {
                 });
               }
             } else {
-              console.log("cond 9");
               dispatch({
                 type: "SET_TIME",
                 format: capitalMeridiem,
@@ -2501,7 +2521,6 @@ export default function VDateTimePicker(props) {
         } else {
           if (props.minDate) {
             if (selectedStart > minCalDate || capitalMeridiem === "PM") {
-              console.log("cond 10");
               dispatch({
                 type: "SET_TIME",
                 format: capitalMeridiem,
@@ -2517,7 +2536,6 @@ export default function VDateTimePicker(props) {
                 minute >= minCalDate.getMinutes() &&
                 second >= minCalDate.getSeconds()
               ) {
-                console.log("cond 11");
                 dispatch({
                   type: "SET_TIME",
                   format: capitalMeridiem,
@@ -2528,7 +2546,6 @@ export default function VDateTimePicker(props) {
               }
 
               if (hour > minCalDate.getHours()) {
-                console.log("cond 12");
                 dispatch({
                   type: "SET_TIME",
                   format: capitalMeridiem,
@@ -2540,7 +2557,6 @@ export default function VDateTimePicker(props) {
 
               if (hour === minCalDate.getHours()) {
                 if (minute > minCalDate.getMinutes()) {
-                  console.log("cond 13");
                   dispatch({
                     type: "SET_TIME",
                     format: capitalMeridiem,
@@ -2552,7 +2568,6 @@ export default function VDateTimePicker(props) {
 
                 if (minute === minCalDate.getMinutes()) {
                   if (second >= minCalDate.getSeconds()) {
-                    console.log("cond 14");
                     dispatch({
                       type: "SET_TIME",
                       format: capitalMeridiem,
@@ -2565,7 +2580,6 @@ export default function VDateTimePicker(props) {
               }
             }
           } else {
-            console.log("cond 16");
             dispatch({
               type: "SET_TIME",
               format: capitalMeridiem,
@@ -3186,8 +3200,12 @@ export default function VDateTimePicker(props) {
                                 currentDate > maximumDate ? "disabled" : ""
                               }${
                                 selectedStart &&
-                                new Date(year, month, day) < selectedStart
-                                  ? show === "show-end" && "disabled"
+                                new Date(year, month, day) < selectedStart &&
+                                new Date(year, month, day).toDateString() !==
+                                  selectedStart.toDateString()
+                                  ? show === "show-end"
+                                    ? "disabled"
+                                    : ""
                                   : ""
                               }`}
                               onClick={() => handleDayClick(day)}

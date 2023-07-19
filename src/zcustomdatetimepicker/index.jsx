@@ -1,18 +1,18 @@
 import React, {useState} from "react";
-import VDateTimePicker from "./VDateTimePicker";
 import { Container } from "react-bootstrap";
-import VMonth from "./VMonth";
+import ReactDateTimePicker from "./ReactDateTimePicker";
+import ReactMonth from "./ReactMonth";
 
 function DatePicker() {
   // const [isDisabled, setIsDisabled] = useState(false);
-  const [startValue, setStartValue] = useState("2023/09/12");
-  const [monthValue, setMonthValue] = useState("09/2023");
+  const [startValue, setStartValue] = useState("2023/07/19");
+  const [monthValue, setMonthValue] = useState("02/2022");
 
   // console.log('length', startValue)
 
   return (
     <Container className="py-5">
-      <VDateTimePicker
+      <ReactDateTimePicker
         name="date-disable-reset"
         format="yyyy/mm/dd"
         selectedMode="dateTime"
@@ -20,39 +20,20 @@ function DatePicker() {
         value={startValue}
         id="disable-reset-demo"
         range
-        minDate="2023-07-18"
+        minDate
         isClear
         clearClick={() => {alert("hello")}}
-        // isSecondHide={true}
-        // clockTimeFormat="am-pm"
+        isSecondHide={true}
+        clockTimeFormat="am-pm"
         error
         isUndo
         isMinCurrentTime
       />
 
-      <br />
-
-      <VDateTimePicker
-        name="demo-date"
-        format="yyyy/mm/dd"
-        placeholder="Add date in formate of yyyy/mm/dd"
-        onChange={(data) => setEndValue(data)}
-        value={endValue}
-        id="placeholder-demo"
-        minDate="2023-07-14"
-        maxDate="2024-04-29"
-        resetControl
-        reset={() => setEndValue("")}
-      />
-      {/* <p>from {startValue} To {endValue}</p> */}
-      <br />
-      {/* <VDateTimePicker id="date-picker" onChange={(e) => setStartValue(e)} />
-      <p>second {startValue}</p> */}
-
       <h4>Month only</h4>
 
-      <VMonth
-        defaultSelectedMonth="2022-02"
+      <ReactMonth
+        // defaultSelectedMonth="2022-02"
         id="month"
         isUndo
         // disableControl

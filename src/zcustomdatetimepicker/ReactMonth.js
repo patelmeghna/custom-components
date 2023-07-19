@@ -1,6 +1,6 @@
 import React, { useReducer, useEffect } from "react";
 
-const VMonth = (props) => {
+const ReactMonth = (props) => {
   const initialState = {
     show: false,
     presentYear: new Date().getFullYear(),
@@ -202,10 +202,14 @@ const VMonth = (props) => {
     const matches = value.match(regex);
 
     if (matches && matches.length > 2) {
-      const month = parseInt(matches[1]) - 1;
+      let month = parseInt(matches[1]) - 1;
       const year = parseInt(matches[2]);
 
       const dateObject = new Date(year, month);
+
+      if (month > 12) {
+        month -= 12;
+      }
       if (!props.hideError) {
         const isValidMonth = !isNaN(dateObject) && dateObject instanceof Date;
         dispatch({ type: "VALIDATE_MONTH", payload: isValidMonth });
@@ -252,6 +256,11 @@ const VMonth = (props) => {
 
   const handleSelectYear = (year) => {
     dispatch({ type: "CHANGE_YEAR", payload: year });
+    if (month < 9) {
+      props.onChange && props.onChange(`0${month + 1}/${year}`);
+    } else {
+      props.onChange && props.onChange(`${month + 1}/${year}`);
+    }
   };
 
   const handleYearShow = () => {
@@ -268,6 +277,11 @@ const VMonth = (props) => {
 
   const handleMonthClick = (selectedMonth) => {
     dispatch({ type: "SELECT_MONTH", selectedMonth });
+    if (selectedMonth < 9) {
+      props.onChange && props.onChange(`0${selectedMonth + 1}/${changedYear}`);
+    } else {
+      props.onChange && props.onChange(`${selectedMonth + 1}/${changedYear}`);
+    }
   };
 
   const handleDocumentClick = (e) => {
@@ -319,9 +333,9 @@ const VMonth = (props) => {
     inputValueText = props.placeholder;
   } else {
     inputValueText =
-      monthValue < 9
-        ? `${monthValue}/${yearValue}`
-        : `${monthValue}/${yearValue}`;
+      month < 9
+        ? `0${month + 1}/${changedYear}`
+        : `${month + 1}/${changedYear}`;
   }
 
   // useEffect(() => {
@@ -573,4 +587,4 @@ const months = [
 
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export default VMonth;
+export default ReactMonth;
