@@ -590,6 +590,7 @@ export default function ReactDateTimePicker(props) {
         } else {
           toggleTime = "show-end";
         }
+
         if (state.show === "show") {
           // start date selection :: begin
           if (props.clockTimeFormat === "am-pm") {
@@ -1547,6 +1548,15 @@ export default function ReactDateTimePicker(props) {
       if (selectedStart.toDateString() === selectedEnd.toDateString()) {
         if (timeFormat === endTimeFormat) {
           if (selectedEndHour >= selectedHour) {
+            console.log("clicked");
+            dispatch({ type: "APPLY" });
+          }
+
+          if (
+            selectedEndHour === undefined ||
+            selectedEndHour === undefined ||
+            selectedEndSecond === undefined
+          ) {
             dispatch({ type: "APPLY" });
           }
         }
