@@ -1,6 +1,6 @@
 import React, { useReducer, useEffect } from "react";
 
-const VMonth = (props) => {
+const ReactMonth = (props) => {
   const initialState = {
     show: false,
     presentYear: new Date().getFullYear(),
@@ -580,4 +580,4 @@ const months = [
 
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export default VMonth;
+export default ReactMonth;
