@@ -6,7 +6,7 @@ import ReactMonth from "./ReactMonth";
 function DatePicker() {
   // const [isDisabled, setIsDisabled] = useState(false);
   const [startValue, setStartValue] = useState("2023/07/19");
-  const [monthValue, setMonthValue] = useState("");
+  const [monthValue, setMonthValue] = useState("02/2022");
 
   // console.log('length', startValue)
 

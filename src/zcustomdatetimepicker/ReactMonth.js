@@ -256,6 +256,11 @@ const ReactMonth = (props) => {
 
   const handleSelectYear = (year) => {
     dispatch({ type: "CHANGE_YEAR", payload: year });
+    if (month < 9) {
+      props.onChange && props.onChange(`0${month + 1}/${year}`);
+    } else {
+      props.onChange && props.onChange(`${month + 1}/${year}`);
+    }
   };
 
   const handleYearShow = () => {
@@ -272,6 +277,11 @@ const ReactMonth = (props) => {
 
   const handleMonthClick = (selectedMonth) => {
     dispatch({ type: "SELECT_MONTH", selectedMonth });
+    if (selectedMonth < 9) {
+      props.onChange && props.onChange(`0${selectedMonth + 1}/${changedYear}`);
+    } else {
+      props.onChange && props.onChange(`${selectedMonth + 1}/${changedYear}`);
+    }
   };
 
   const handleDocumentClick = (e) => {
@@ -321,14 +331,11 @@ const ReactMonth = (props) => {
 
   if (props.placeholder) {
     inputValueText = props.placeholder;
-  } else if (props.value.length !== 0) {
-    inputValueText =
-      monthValue < 9
-        ? `${monthValue}/${yearValue}`
-        : `${monthValue}/${yearValue}`;
   } else {
     inputValueText =
-      month < 9 ? `0${month}/${changedYear}` : `${month}/${changedYear}`;
+      month < 9
+        ? `0${month + 1}/${changedYear}`
+        : `${month + 1}/${changedYear}`;
   }
 
   // useEffect(() => {
