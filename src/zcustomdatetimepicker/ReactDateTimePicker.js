@@ -1942,8 +1942,8 @@ export default function ReactDateTimePicker(props) {
         if (
           selectedStart &&
           selectedStart.toDateString() === currentDate.toDateString() &&
-          currentHour === selectedHour &&
-          currentMinute === selectedMinute
+          currentHour.toString() === selectedHour.toString() &&
+          currentMinute.toString() === selectedMinute.toString()
         ) {
           if (timeFormat === "AM") {
             disabled = i < currentSecond;
@@ -1985,8 +1985,8 @@ export default function ReactDateTimePicker(props) {
         if (
           selectedStart &&
           selectedStart.toDateString() === currentDate.toDateString() &&
-          currentHour === selectedHour &&
-          currentMinute === selectedMinute
+          currentHour.toString() === selectedHour.toString() &&
+          currentMinute.toString() === selectedMinute.toString()
         ) {
           disabled = i < currentSecond;
         }
@@ -2001,8 +2001,8 @@ export default function ReactDateTimePicker(props) {
           selectedEnd &&
           selectedEnd.toDateString() === selectedStart.toDateString()
         ) {
-          if (selectedEndHour === selectedHour) {
-            if (selectedEndMinute === selectedMinute) {
+          if (selectedEndHour.toString() === selectedHour.toString()) {
+            if (selectedEndMinute.toString() === selectedMinute.toString()) {
               disabled = i < selectedSecond;
             }
           }
