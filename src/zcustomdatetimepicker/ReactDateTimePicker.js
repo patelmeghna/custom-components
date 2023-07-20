@@ -1075,6 +1075,9 @@ export default function ReactDateTimePicker(props) {
         }
       // empty end field :: end
 
+      case "REMOVE_END_DATE":
+        return { ...state, selectedEnd: null };
+
       case "FOCUS":
         return { ...state, isFocused: true };
       case "BLUR":
