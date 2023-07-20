@@ -5,7 +5,7 @@ import ReactMonth from "./ReactMonth";
 
 function DatePicker() {
   // const [isDisabled, setIsDisabled] = useState(false);
-  const [startValue, setStartValue] = useState("2023/07/19");
+  const [startValue, setStartValue] = useState("");
   const [monthValue, setMonthValue] = useState("02/2022");
 
   // console.log('length', startValue)
@@ -23,7 +23,7 @@ function DatePicker() {
         minDate
         isClear
         clearClick={() => {alert("hello")}}
-        isSecondHide={true}
+        // isSecondHide={true}
         clockTimeFormat="am-pm"
         error
         isUndo
