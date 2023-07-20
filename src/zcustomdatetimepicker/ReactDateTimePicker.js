@@ -1546,11 +1546,11 @@ export default function ReactDateTimePicker(props) {
       }
     } else if (show === "show-end" && selectedEnd !== null) {
       if (selectedStart.toDateString() === selectedEnd.toDateString()) {
-        if (timeFormat === endTimeFormat) {
-          if (selectedEndHour >= selectedHour) {
+        if (timeFormat === endTimeFormat && selectedEndHour >= selectedHour) {
+
             console.log("clicked");
+            // console.log(selectedEndHour >= selectedHour)
             dispatch({ type: "APPLY" });
-          }
 
           if (
             selectedEndHour === undefined ||
@@ -2437,6 +2437,9 @@ export default function ReactDateTimePicker(props) {
             }
 
             if (hour > minCalDate.getHours()) {
+            console.log("testing....")
+            console.log(minCalDate)
+
               dispatch({
                 type: "SET_TIME",
                 format: capitalMeridiem,
@@ -2448,6 +2451,7 @@ export default function ReactDateTimePicker(props) {
 
             if (hour === minCalDate.getHours()) {
               if (minute > minCalDate.getMinutes()) {
+                console.log('min',hour === minCalDate.getHours())
                 dispatch({
                   type: "SET_TIME",
                   format: capitalMeridiem,
@@ -2682,7 +2686,7 @@ export default function ReactDateTimePicker(props) {
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
 
-    props.onChange && props.onChange(`${startInputValue}To ${value}`);
+    props.onChange && props.onChange(`${startInputValue} To ${value}`);
 
     let isDateValid;
     let isTimeValid;
@@ -2733,6 +2737,7 @@ export default function ReactDateTimePicker(props) {
             new Date(rearrangedDateStr).toDateString() ===
             maximumDate.toDateString())
             ) {
+            
                 dispatch({
             type: "SET_SELECTED_END",
             payload: new Date(rearrangedDateStr),
@@ -2810,6 +2815,7 @@ export default function ReactDateTimePicker(props) {
               (minute > selectedMinute ||
                 (minute === selectedMinute && second >= selectedSecond)))
           ) {
+            // console.log("1")
             dispatch({
               type: "SET_END_TIME",
               format: capitalMeridiem,
