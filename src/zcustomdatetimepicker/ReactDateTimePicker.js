@@ -590,7 +590,6 @@ export default function ReactDateTimePicker(props) {
         } else {
           toggleTime = "show-end";
         }
-
         if (state.show === "show") {
           // start date selection :: begin
           if (props.clockTimeFormat === "am-pm") {
@@ -644,7 +643,7 @@ export default function ReactDateTimePicker(props) {
               if (
                 startHourTime >= 0 &&
                 startHourTime < 10 &&
-                (state.selectedHour - 12).toString().length === 1
+                state.selectedHour.toString().length === 1
               ) {
                 startHourTime = `0${state.selectedHour}`;
               } else {
@@ -876,8 +875,7 @@ export default function ReactDateTimePicker(props) {
           ) {
             return {
               ...state,
-              selectedEnd: null,
-              endTime: "",
+              selectedEnd: state.selectedStart,
             };
           }
         }
@@ -906,6 +904,7 @@ export default function ReactDateTimePicker(props) {
       // date select :: begin
       case "SELECT_DATE":
         let toggle = state.show;
+        let selectedDate;
         if (state.showClock === "" || state.showClock === undefined) {
           if (props.range) {
             toggle = "show-end";
@@ -917,7 +916,6 @@ export default function ReactDateTimePicker(props) {
           new Date(action.year, action.month, action.day) ||
           (props.minDate && minCalDate);
         if (!props.range) {
-          console.log(state.show);
           return {
             ...state,
             selectedStart: selected,
@@ -937,7 +935,7 @@ export default function ReactDateTimePicker(props) {
           } else if (state.show === "show-end") {
             if (
               selected < state.selectedStart &&
-              state.selectedStart === null
+              state.selectedStart !== null
             ) {
               return {
                 ...state,
@@ -1007,8 +1005,7 @@ export default function ReactDateTimePicker(props) {
           if (state.selectedEnd && state.selectedStart > state.selectedEnd) {
             return {
               ...state,
-              selectedEnd: null,
-              endTime: "",
+              selectedEnd: state.selectedStart,
             };
           }
 
@@ -1023,21 +1020,18 @@ export default function ReactDateTimePicker(props) {
                 if (state.selectedEndHour < state.selectedHour) {
                   return {
                     ...state,
-                    endTime: "",
                     selectedEndHour: state.selectedHour,
                   };
                 } else if (state.selectedEndHour === state.selectedHour) {
                   if (state.selectedEndMinute < state.selectedMinute) {
                     return {
                       ...state,
-                      endTime: "",
                       selectedEndMinute: state.selectedMinute,
                     };
                   } else if (state.selectedEndMinute === state.selectedMinute) {
                     if (state.selectedSecond > state.selectedEndSecond) {
                       return {
                         ...state,
-                        endTime: "",
                         selectedEndSecond: state.selectedSecond,
                       };
                     }
@@ -1054,24 +1048,25 @@ export default function ReactDateTimePicker(props) {
                 };
               }
             } else {
-              if (state.selectedEndHour < state.selectedHour) {
+              if (state.selectedEndHour.toString() < state.selectedHour) {
                 return {
                   ...state,
-                  endTime: "",
                   selectedEndHour: state.selectedHour,
                 };
-              } else if (state.selectedEndHour === state.selectedHour) {
-                if (state.selectedEndMinute < state.selectedMinute) {
+              }
+              console.log(state.selectedEndHour == state.selectedHour);
+              if (state.selectedEndHour == state.selectedHour) {
+                if (state.selectedEndMinute.toString() < state.selectedMinute) {
                   return {
                     ...state,
-                    endTime: "",
                     selectedEndMinute: state.selectedMinute,
                   };
-                } else if (state.selectedEndMinute === state.selectedMinute) {
-                  if (state.selectedSecond > state.selectedEndSecond) {
+                } else if (state.selectedEndMinute == state.selectedMinute) {
+                  if (
+                    state.selectedSecond > state.selectedEndSecond.toString()
+                  ) {
                     return {
                       ...state,
-                      endTime: "",
                       selectedEndSecond: state.selectedSecond,
                     };
                   }
@@ -1081,9 +1076,6 @@ export default function ReactDateTimePicker(props) {
           }
         }
       // empty end field :: end
-
-      case "REMOVE_END_DATE":
-        return { ...state, selectedEnd: null };
 
       case "FOCUS":
         return { ...state, isFocused: true };
@@ -1159,6 +1151,7 @@ export default function ReactDateTimePicker(props) {
         let endMinute = state.selectedEndMinute;
         let endSecond = state.selectedEndSecond;
         let endTimeValue;
+        console.log("working?");
 
         if (!props.isSecondHide) {
           if (props.clockTimeFormat === "am-pm") {
@@ -1175,6 +1168,7 @@ export default function ReactDateTimePicker(props) {
             endHour = action.hour;
             endMinute = action.minute;
             endSecond = action.second;
+            console.log("check me");
             inputEndTimeFormat = "";
             endTimeValue = `${endHour}:${endMinute}:${endSecond}`;
           }
@@ -1439,14 +1433,26 @@ export default function ReactDateTimePicker(props) {
 
   const handleHourChange = (e) => {
     dispatch({ type: "CHANGE_HOUR", payload: e.target.value });
+
+    if (selectedEndHour && e.target.value > selectedEndHour) {
+      dispatch({ type: "CHANGE_END_HOUR", payload: e.target.value });
+    }
   };
 
   const handleMinuteChange = (e) => {
     dispatch({ type: "CHANGE_MINUTE", payload: e.target.value });
+
+    if (selectedEndMinute && e.target.value > selectedEndMinute) {
+      dispatch({ type: "CHANGE_END_MINUTE", payload: e.target.value });
+    }
   };
 
   const handleSecondChange = (e) => {
     dispatch({ type: "CHANGE_SECOND", payload: e.target.value });
+
+    if (selectedEndHour && e.target.value > selectedEndSecond) {
+      dispatch({ type: "CHANGE_END_SECOND", payload: e.target.value });
+    }
   };
 
   const handleEndSecondChange = (e) => {
@@ -1512,36 +1518,11 @@ export default function ReactDateTimePicker(props) {
 
   const handleApply = () => {
     if (show === "show" && selectedStart !== null) {
-      if (props.clockTimeFormat === "am-pm") {
-      if (selectedStart >= minCalDate) {
-        dispatch({ type: "APPLY" });
-      }
-      if (minCalDate.getHours() <= 11) {
-        // if(timeFormat === endTimeFormat){
-          console.log('compare',timeFormat === endTimeFormat)
-        if (timeFormat === "AM") {
-          if (selectedStart.toDateString() === minCalDate.toDateString()) {
-            if (selectedHour >= minCalDate.getHours()) {
-              dispatch({ type: "APPLY" });
-            }
-          }
-        }
-      // }
-       else {
-        if (timeFormat === "PM") {
-          if (selectedStart.toDateString() === minCalDate.toDateString()) {
-            if (parseInt(selectedHour) + 12 >= minCalDate.getHours()) {
-              dispatch({ type: "APPLY" });
-            }
-          }
-        }
-      }
-    } else {
-      dispatch({ type: "APPLY" });
-    }
-  }
-      if (props.isMinCurrentTime && props.minDate) {
-        if (selectedStart >= minCalDate) {
+      if ((props.isMinCurrentTime && props.minDate) || props.isMinCurrentTime) {
+        if (
+          selectedStart > minCalDate ||
+          selectedStart.toDateString() === minCalDate.toDateString()
+        ) {
           dispatch({ type: "APPLY" });
         }
       
@@ -1553,17 +1534,8 @@ export default function ReactDateTimePicker(props) {
     } else if (show === "show-end" && selectedEnd !== null) {
       console.log("m", selectedEnd !== null)
       if (selectedStart.toDateString() === selectedEnd.toDateString()) {
-       
-        console.log("compare",timeFormat === endTimeFormat)
-        if(selectedEndHour >= selectedHour) {
-
-            console.log("clicked");
-         dispatch({ type: "APPLY" });
-          if (
-            selectedEndHour === undefined ||
-            selectedEndHour === undefined ||
-            selectedEndSecond === undefined
-          ) {
+        if (timeFormat === endTimeFormat) {
+          if (selectedEndHour >= selectedHour) {
             dispatch({ type: "APPLY" });
           }
       }
@@ -1573,80 +1545,12 @@ export default function ReactDateTimePicker(props) {
         }
       }
 
-      if (selectedEnd >= selectedStart) {
+      if (
+        selectedEnd > selectedStart ||
+        selectedEnd.toDateString() === selectedStart.toDateString()
+      ) {
         dispatch({ type: "APPLY" });
       }
-    }
-  };
-
-  const handleDayClick = (day) => {
-    if (show === "show") {
-      previousSelectedStartDate.push(`${year}-${month + 1}-${day}`);
-      dispatch({ type: "UNDO_STATE", payload: "start" });
-    } else {
-      previousSelectedEndDate.push(`${year}-${month + 1}-${day}`);
-      dispatch({ type: "UNDO_STATE", payload: "end" });
-    }
-
-    if (props.minDate && !props.maxDate) {
-      if (
-        new Date(year, month, day) > minCalDate ||
-        new Date(year, month, day).toDateString() === minCalDate.toDateString()
-      ) {
-        dispatch({
-          type: "SELECT_DATE",
-          year,
-          month,
-          day,
-        });
-      }
-    }
-
-    if (!props.minDate && props.maxDate) {
-      if (
-        new Date(year, month, day) < maximumDate ||
-        new Date(year, month, day).toDateString() === maximumDate.toDateString()
-      ) {
-        dispatch({
-          type: "SELECT_DATE",
-          year,
-          month,
-          day,
-        });
-      }
-    }
-
-    if (props.minDate && props.maxDate) {
-      if (
-        (new Date(year, month, day) < maximumDate ||
-          new Date(year, month, day).toDateString() ===
-            maximumDate.toDateString()) &&
-        (new Date(year, month, day) > minCalDate ||
-          new Date(year, month, day).toDateString() ===
-            minCalDate.toDateString())
-      ) {
-        dispatch({
-          type: "SELECT_DATE",
-          year,
-          month,
-          day,
-        });
-      }
-    }
-
-    if (!props.minDate && !props.maxDate) {
-      dispatch({
-        type: "SELECT_DATE",
-        year,
-        month,
-        day,
-      });
-    }
-
-    if (show === "show") {
-      props.onChange && props.onChange(startInputValue);
-    } else {
-      props.onChange && props.onChange(`${startInputValue}To ${endInputValue}`);
     }
   };
 
@@ -2186,6 +2090,77 @@ export default function ReactDateTimePicker(props) {
     startInputValue = selectedStart && `${startDate}`;
   }
 
+  const handleDayClick = (day) => {
+    if (show === "show") {
+      previousSelectedStartDate.push(`${year}-${month + 1}-${day}`);
+      dispatch({ type: "UNDO_STATE", payload: "start" });
+    } else {
+      previousSelectedEndDate.push(`${year}-${month + 1}-${day}`);
+      dispatch({ type: "UNDO_STATE", payload: "end" });
+    }
+
+    if (props.minDate && !props.maxDate) {
+      if (
+        new Date(year, month, day) > minCalDate ||
+        new Date(year, month, day).toDateString() === minCalDate.toDateString()
+      ) {
+        dispatch({
+          type: "SELECT_DATE",
+          year,
+          month,
+          day,
+        });
+      }
+    }
+
+    if (!props.minDate && props.maxDate) {
+      if (
+        new Date(year, month, day) < maximumDate ||
+        new Date(year, month, day).toDateString() === maximumDate.toDateString()
+      ) {
+        dispatch({
+          type: "SELECT_DATE",
+          year,
+          month,
+          day,
+        });
+      }
+    }
+
+    if (props.minDate && props.maxDate) {
+      if (
+        (new Date(year, month, day) < maximumDate ||
+          new Date(year, month, day).toDateString() ===
+            maximumDate.toDateString()) &&
+        (new Date(year, month, day) > minCalDate ||
+          new Date(year, month, day).toDateString() ===
+            minCalDate.toDateString())
+      ) {
+        dispatch({
+          type: "SELECT_DATE",
+          year,
+          month,
+          day,
+        });
+      }
+    }
+
+    if (!props.minDate && !props.maxDate) {
+      dispatch({
+        type: "SELECT_DATE",
+        year,
+        month,
+        day,
+      });
+    }
+
+    if (!props.range) {
+      props.onChange && props.onChange(startInputValue);
+    } else {
+      props.onChange && props.onChange(`${startInputValue}To ${endInputValue}`);
+    }
+  };
+
   // ===============================================
 
   let endInputValue;
@@ -2199,7 +2174,11 @@ export default function ReactDateTimePicker(props) {
 
   useEffect(() => {
     // props.onChange && props.onChange(startInputValue);
-    if (selectedStart > selectedEnd) {
+    if (
+      selectedStart &&
+      (selectedStart > selectedEnd ||
+        selectedStart.toDateString() === selectedEnd.toDateString())
+    ) {
       dispatch({ type: "EMPTY_END_FIELD" });
     }
   }, [
@@ -2258,6 +2237,12 @@ export default function ReactDateTimePicker(props) {
   const handleDateChange = (event) => {
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
+
+    if (props.range) {
+      if (endInputValue) {
+        props.onChange && props.onChange(`${value}To ${endInputValue}`);
+      }
+    }
 
     props.onChange && props.onChange(value);
 
@@ -2420,6 +2405,7 @@ export default function ReactDateTimePicker(props) {
       ) {
         if (props.minDate) {
           if (selectedStart > minCalDate) {
+            console.log("cond 1");
             dispatch({
               type: "SET_TIME",
               format: capitalMeridiem,
@@ -2434,6 +2420,7 @@ export default function ReactDateTimePicker(props) {
               minute >= minCalDate.getMinutes() &&
               second >= minCalDate.getSeconds()
             ) {
+              console.log("cond 2");
               dispatch({
                 type: "SET_TIME",
                 format: capitalMeridiem,
@@ -2444,9 +2431,7 @@ export default function ReactDateTimePicker(props) {
             }
 
             if (hour > minCalDate.getHours()) {
-            console.log("testing....")
-            console.log(minCalDate.getHours())
-
+              console.log("cond 3");
               dispatch({
                 type: "SET_TIME",
                 format: capitalMeridiem,
@@ -2456,8 +2441,55 @@ export default function ReactDateTimePicker(props) {
               });
             }
 
+            if (selectedEnd && selectedEnd === selectedStart) {
+              console.log("working");
+              if (selectedEndHour) {
+                if (hour > selectedEndHour) {
+                  dispatch({ type: "CHANGE_END_HOUR", payload: hour });
+                  dispatch({
+                    type: "SET_END_TIME",
+                    hour,
+                    minute: minute,
+                    second: second,
+                    format: capitalMeridiem,
+                  });
+                }
+                if (hour === selectedEndHour) {
+                  if (selectedEndMinute) {
+                    if (minute > selectedEndMinute) {
+                      dispatch({ type: "CHANGE_END_MINUTE", payload: minute });
+                      dispatch({
+                        type: "SET_END_TIME",
+                        minute,
+                        hour: selectedEndHour,
+                        second: second,
+                        format: capitalMeridiem,
+                      });
+                    }
+
+                    if (minute === selectedEndMinute) {
+                      if (second > selectedEndSecond) {
+                        dispatch({
+                          type: "CHANGE_END_SECOND",
+                          payload: second,
+                        });
+                        dispatch({
+                          type: "SET_END_TIME",
+                          second,
+                          hour: selectedEndHour,
+                          minute: selectedEndMinute,
+                          format: capitalMeridiem,
+                        });
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             if (hour === minCalDate.getHours()) {
               if (minute > minCalDate.getMinutes()) {
+                console.log("cond 4");
                 dispatch({
                   type: "SET_TIME",
                   format: capitalMeridiem,
@@ -2469,6 +2501,7 @@ export default function ReactDateTimePicker(props) {
 
               if (minute === minCalDate.getMinutes()) {
                 if (second >= minCalDate.getSeconds()) {
+                  console.log("cond 5");
                   dispatch({
                     type: "SET_TIME",
                     format: capitalMeridiem,
@@ -2490,6 +2523,51 @@ export default function ReactDateTimePicker(props) {
             second,
           });
         }
+
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          if (selectedEndHour) {
+            if (hour > selectedEndHour.toString()) {
+              dispatch({ type: "CHANGE_END_HOUR", payload: hour });
+              dispatch({
+                type: "SET_END_TIME",
+                hour,
+                minute: selectedEndMinute,
+                second: selectedEndSecond,
+                format: capitalMeridiem,
+              });
+            }
+            if (hour === selectedEndHour.toString()) {
+              if (selectedEndMinute) {
+                if (minute > selectedEndMinute) {
+                  dispatch({ type: "CHANGE_END_MINUTE", payload: minute });
+                  dispatch({
+                    type: "SET_END_TIME",
+                    minute,
+                    hour: selectedEndHour,
+                    second: selectedEndSecond,
+                    format: capitalMeridiem,
+                  });
+                }
+
+                if (minute === selectedEndMinute.toString()) {
+                  if (second > selectedEndSecond.toString()) {
+                    dispatch({ type: "CHANGE_END_SECOND", payload: second });
+                    dispatch({
+                      type: "SET_END_TIME",
+                      second,
+                      hour: selectedEndHour,
+                      minute: selectedEndMinute,
+                      format: capitalMeridiem,
+                    });
+                  }
+                }
+              }
+            }
+          }
+        }
       } else if (
         props.clockTimeFormat === "am-pm" &&
         minute <= 60 &&
@@ -2502,6 +2580,7 @@ export default function ReactDateTimePicker(props) {
           if (hour <= 12) {
             if (props.minDate) {
               if (selectedStart > minCalDate) {
+                console.log("cond 7");
                 dispatch({
                   type: "SET_TIME",
                   format: capitalMeridiem,
@@ -2511,6 +2590,7 @@ export default function ReactDateTimePicker(props) {
                 });
               }
               if (selectedStart.toDateString() === minCalDate.toDateString()) {
+                console.log("cond 8");
                 dispatch({
                   type: "SET_TIME",
                   format: "PM",
@@ -2520,6 +2600,7 @@ export default function ReactDateTimePicker(props) {
                 });
               }
             } else {
+              console.log("cond 9");
               dispatch({
                 type: "SET_TIME",
                 format: capitalMeridiem,
@@ -2532,6 +2613,7 @@ export default function ReactDateTimePicker(props) {
         } else {
           if (props.minDate) {
             if (selectedStart > minCalDate || capitalMeridiem === "PM") {
+              console.log("cond 10");
               dispatch({
                 type: "SET_TIME",
                 format: capitalMeridiem,
@@ -2539,6 +2621,124 @@ export default function ReactDateTimePicker(props) {
                 minute,
                 second,
               });
+
+              if (
+                selectedEnd &&
+                selectedEnd.toDateString() === selectedStart.toDateString() &&
+                endTimeFormat === "PM"
+              ) {
+                if (selectedEndHour) {
+                  if (hour > selectedEndHour.toString()) {
+                    dispatch({ type: "CHANGE_END_HOUR", payload: hour });
+                    dispatch({
+                      type: "SET_END_TIME",
+                      hour,
+                      minute: selectedEndMinute,
+                      second: selectedEndSecond,
+                      format: capitalMeridiem,
+                    });
+                  }
+                  if (hour === selectedEndHour.toString()) {
+                    if (selectedEndMinute) {
+                      if (minute > selectedEndMinute) {
+                        dispatch({
+                          type: "CHANGE_END_MINUTE",
+                          payload: minute,
+                        });
+                        dispatch({
+                          type: "SET_END_TIME",
+                          minute,
+                          hour: selectedEndHour,
+                          second: selectedEndSecond,
+                          format: capitalMeridiem,
+                        });
+                      }
+
+                      if (minute === selectedEndMinute.toString()) {
+                        if (second > selectedEndSecond.toString()) {
+                          dispatch({
+                            type: "CHANGE_END_SECOND",
+                            payload: second,
+                          });
+                          dispatch({
+                            type: "SET_END_TIME",
+                            second,
+                            hour: selectedEndHour,
+                            minute: selectedEndMinute,
+                            format: capitalMeridiem,
+                          });
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            if (capitalMeridiem === "AM" || endTimeFormat === "AM") {
+              if (
+                selectedEnd &&
+                selectedEnd.toDateString() === selectedStart.toDateString()
+              ) {
+                if (selectedEndHour) {
+                  if (hour > selectedEndHour.toString()) {
+                    dispatch({ type: "CHANGE_END_HOUR", payload: hour });
+                    dispatch({
+                      type: "SET_END_TIME",
+                      hour,
+                      minute: selectedEndMinute,
+                      second: selectedEndSecond,
+                      format: capitalMeridiem,
+                    });
+                  }
+                  if (hour === selectedEndHour.toString()) {
+                    if (selectedEndMinute) {
+                      if (minute > selectedEndMinute) {
+                        dispatch({
+                          type: "CHANGE_END_MINUTE",
+                          payload: minute,
+                        });
+                        dispatch({
+                          type: "SET_END_TIME",
+                          minute,
+                          hour: selectedEndHour,
+                          second: selectedEndSecond,
+                          format: capitalMeridiem,
+                        });
+                      }
+
+                      if (minute === selectedEndMinute.toString()) {
+                        if (second > selectedEndSecond.toString()) {
+                          dispatch({
+                            type: "CHANGE_END_SECOND",
+                            payload: second,
+                          });
+                          dispatch({
+                            type: "SET_END_TIME",
+                            second,
+                            hour: selectedEndHour,
+                            minute: selectedEndMinute,
+                            format: capitalMeridiem,
+                          });
+                        }
+
+                        if (
+                          second === selectedEndSecond.toString() &&
+                          capitalMeridiem === "PM"
+                        ) {
+                          dispatch({
+                            type: "SET_END_TIME",
+                            second: selectedEndSecond,
+                            hour: selectedEndHour,
+                            minute: selectedEndMinute,
+                            format: capitalMeridiem,
+                          });
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
 
             if (selectedStart.toDateString() === minCalDate.toDateString()) {
@@ -2547,6 +2747,7 @@ export default function ReactDateTimePicker(props) {
                 minute >= minCalDate.getMinutes() &&
                 second >= minCalDate.getSeconds()
               ) {
+                console.log("cond 11");
                 dispatch({
                   type: "SET_TIME",
                   format: capitalMeridiem,
@@ -2557,6 +2758,7 @@ export default function ReactDateTimePicker(props) {
               }
 
               if (hour > minCalDate.getHours()) {
+                console.log("cond 12");
                 dispatch({
                   type: "SET_TIME",
                   format: capitalMeridiem,
@@ -2568,6 +2770,7 @@ export default function ReactDateTimePicker(props) {
 
               if (hour === minCalDate.getHours()) {
                 if (minute > minCalDate.getMinutes()) {
+                  console.log("cond 13");
                   dispatch({
                     type: "SET_TIME",
                     format: capitalMeridiem,
@@ -2579,6 +2782,7 @@ export default function ReactDateTimePicker(props) {
 
                 if (minute === minCalDate.getMinutes()) {
                   if (second >= minCalDate.getSeconds()) {
+                    console.log("cond 14");
                     dispatch({
                       type: "SET_TIME",
                       format: capitalMeridiem,
@@ -2591,6 +2795,7 @@ export default function ReactDateTimePicker(props) {
               }
             }
           } else {
+            console.log("cond 16");
             dispatch({
               type: "SET_TIME",
               format: capitalMeridiem,
@@ -2816,13 +3021,7 @@ export default function ReactDateTimePicker(props) {
           : minute <= 60 && hour <= 24 && second <= 60
       ) {
         if (selectedEnd.toDateString() === selectedStart.toDateString()) {
-          if (
-            hour > selectedHour ||
-            (hour === selectedHour &&
-              (minute > selectedMinute ||
-                (minute === selectedMinute && second >= selectedSecond)))
-          ) {
-            // console.log("1")
+          if (hour > selectedHour) {
             dispatch({
               type: "SET_END_TIME",
               format: capitalMeridiem,
@@ -2830,6 +3029,28 @@ export default function ReactDateTimePicker(props) {
               minute,
               second,
             });
+          }
+          if (hour === selectedHour.toString()) {
+            if (minute > selectedMinute) {
+              dispatch({
+                type: "SET_END_TIME",
+                format: capitalMeridiem,
+                hour,
+                minute,
+                second,
+              });
+            }
+            if (minute === selectedMinute.toString()) {
+              if (second > selectedSecond) {
+                dispatch({
+                  type: "SET_END_TIME",
+                  format: capitalMeridiem,
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+            }
           }
         } else if (selectedEnd > selectedStart) {
           dispatch({
@@ -2896,7 +3117,7 @@ export default function ReactDateTimePicker(props) {
               });
             }
 
-            if (hour === selectedHour) {
+            if (hour === selectedHour.toString()) {
               if (minute > selectedMinute) {
                 console.log("set4")
                 dispatch({
@@ -2908,7 +3129,7 @@ export default function ReactDateTimePicker(props) {
                 });
               }
 
-              if (minute === selectedMinute) {
+              if (minute === selectedMinute.toDateString()) {
                 if (second >= selectedSecond) {
                   console.log("set5")
                   dispatch({
@@ -2962,7 +3183,7 @@ export default function ReactDateTimePicker(props) {
                 });
               }
 
-              if (hour === selectedHour) {
+              if (hour === selectedHour.toString()) {
                 if (minute > selectedMinute) {
               console.log("set9")
 
@@ -2975,10 +3196,8 @@ export default function ReactDateTimePicker(props) {
                   });
                 }
 
-                if (minute === selectedMinute) {
-                  if (second >= selectedSecond) {
-              console.log("set10")
-
+                if (minute === selectedMinute.toString()) {
+                  if (second > selectedSecond) {
                     dispatch({
                       type: "SET_END_TIME",
                       format: capitalMeridiem,
