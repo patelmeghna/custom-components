@@ -933,10 +933,7 @@ export default function ReactDateTimePicker(props) {
                   : "show",
             };
           } else if (state.show === "show-end") {
-            if (
-              selected < state.selectedStart &&
-              state.selectedStart !== null
-            ) {
+            if (state.selectedStart === null) {
               return {
                 ...state,
                 selectedStart: selected,
@@ -947,6 +944,7 @@ export default function ReactDateTimePicker(props) {
               selected.toDateString() === state.selectedStart.toDateString() ||
               selected > state.selectedStart
             ) {
+              console.log("running?");
               return {
                 ...state,
                 selectedEnd: selected,
