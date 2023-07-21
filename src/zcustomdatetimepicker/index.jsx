@@ -25,6 +25,7 @@ function DatePicker() {
         clearClick={() => {alert("hello")}}
         // isSecondHide={true}
         clockTimeFormat="am-pm"
+        // isDisabled={true}
         error
         isUndo
         isMinCurrentTime

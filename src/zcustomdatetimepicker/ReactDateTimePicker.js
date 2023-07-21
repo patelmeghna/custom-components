@@ -1,5 +1,6 @@
 import "./zcustomdatetimepicker.css";
 import { useReducer, useEffect, useRef } from "react";
+import calendar from "./calendar.svg";
 
 export default function ReactDateTimePicker(props) {
   // initial value :: begin
@@ -3712,6 +3713,13 @@ export default function ReactDateTimePicker(props) {
             <p className={`error-msg-wrap${hideError ? " hide" : ""}`}>
               {props.errorMsg ? props.errorMsg : "Invalid value in input"}
             </p>
+            <button
+              onClick={handleShow}
+              disabled={props.isDisabled || props.isReadOnly}
+              className="calendar-btn"
+            >
+              <img src={calendar} />
+            </button>
           </div>
           <div
             className={
@@ -3820,6 +3828,13 @@ export default function ReactDateTimePicker(props) {
             <p className={`error-msg-wrap${hideErrorEnd ? " hide" : ""}`}>
               {props.errorMsg ? props.errorMsg : "Invalid value in input"}
             </p>
+            <button
+              onClick={handleShow}
+              disabled={props.isDisabled || props.isReadOnly}
+              className="calendar-btn"
+            >
+              <img src={calendar} />
+            </button>
           </div>
         </div>
         {/* ===== display value :: end ===== */}
