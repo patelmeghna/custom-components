@@ -2172,6 +2172,7 @@ export default function ReactDateTimePicker(props) {
     endInputValue = selectedEnd && `${endDate}`;
   }
   // form variables
+  console.log(selectedEnd && endInputValue)
 
   useEffect(() => {
     // props.onChange && props.onChange(startInputValue);

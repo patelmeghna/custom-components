@@ -23,7 +23,7 @@ function DatePicker() {
         minDate
         isClear
         clearClick={() => {alert("hello")}}
-        // isSecondHide={true}
+        isSecondHide={true}
         clockTimeFormat="am-pm"
         error
         isUndo
