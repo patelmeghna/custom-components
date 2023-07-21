@@ -23,11 +23,11 @@ function DatePicker() {
         minDate
         isClear
         clearClick={() => {alert("hello")}}
-        isSecondHide={true}
-        clockTimeFormat="am-pm"
+        // isSecondHide={true}
+        // clockTimeFormat="am-pm"
         error
         isUndo
-        // isMinCurrentTime
+        isMinCurrentTime
       />
 
       <h4>Month only</h4>

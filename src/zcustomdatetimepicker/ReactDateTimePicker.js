@@ -1732,7 +1732,6 @@ export default function ReactDateTimePicker(props) {
           }
         }
       }
-
       if ((props.isMinCurrentTime && props.minDate) || show === "show-end") {
         hourOptions.push(
           <option value={value} key={value} disabled={disabled}>
@@ -2164,6 +2163,8 @@ export default function ReactDateTimePicker(props) {
 
   // ===============================================
 
+  console.log('end',startInputValue)
+  console.log('endTIme' ,endTime)
   let endInputValue;
 
   if (showEndClock === "show") {
@@ -2172,7 +2173,7 @@ export default function ReactDateTimePicker(props) {
     endInputValue = selectedEnd && `${endDate}`;
   }
   // form variables
-  console.log(selectedEnd && endInputValue)
+  // console.log(selectedEnd && endInputValue)
 
   useEffect(() => {
     // props.onChange && props.onChange(startInputValue);
