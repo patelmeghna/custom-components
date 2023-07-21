@@ -1868,11 +1868,11 @@ export default function ReactDateTimePicker(props) {
         if (isStartDateSelected) {
           disabled = false;
         }
-
+console.log('com2',currentHour)
         if (
           selectedStart &&
           selectedStart.toDateString() === currentDate.toDateString() &&
-          currentHour === selectedHour
+          currentHour.toString() === selectedHour.toString()
         ) {
           disabled = i < currentMinute;
         }
@@ -1887,7 +1887,7 @@ export default function ReactDateTimePicker(props) {
           selectedEnd &&
           selectedEnd.toDateString() === selectedStart.toDateString()
         ) {
-          if (selectedEndHour === selectedHour) {
+          if (selectedEndHour.toString() === selectedHour.toString()) {
             disabled = i < selectedMinute;
           }
         }
@@ -2413,14 +2413,14 @@ export default function ReactDateTimePicker(props) {
           [hour, minute, second] = matches[0].split(":");
         }
       }
-
+      
       if (
         props.isSecondHide
-          ? minute <= 60 && hour <= 24
-          : minute <= 60 && hour <= 24 && second <= 60
-      ) {
-        if (props.minDate) {
-          if (selectedStart > minCalDate) {
+        ? minute <= 60 && hour <= 24
+        : minute <= 60 && hour <= 24 && second <= 60
+        ) {
+          if (props.minDate) {
+            if (selectedStart > minCalDate) {
             console.log("cond 1");
             dispatch({
               type: "SET_TIME",
@@ -2430,6 +2430,7 @@ export default function ReactDateTimePicker(props) {
               second,
             });
           }
+          
           if (selectedStart.toDateString() === minCalDate.toDateString()) {
             if (
               hour >= minCalDate.getHours() &&
@@ -2455,6 +2456,16 @@ export default function ReactDateTimePicker(props) {
                 minute,
                 second,
               });
+            }
+            if(hour < currentHour || minute < currentMinute || second < currentSecond){
+              console.log("heello")
+              dispatch({
+                type: "SET_TIME",
+                format: capitalMeridiem,
+                hour:currentHour,
+                minute:currentMinute,
+                second:currentSecond,
+              })
             }
 
             if (selectedEnd && selectedEnd === selectedStart) {
@@ -2823,6 +2834,7 @@ export default function ReactDateTimePicker(props) {
         }
       }
     }
+    console.log(hour);
 
     // check validity of input text
     if (props.error) {
