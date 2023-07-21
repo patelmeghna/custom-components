@@ -864,6 +864,16 @@ export default function ReactDateTimePicker(props) {
               show: "",
             };
           }
+          if (!props.isSecondHide) {
+            return {
+              ...state,
+              endTime: `${endHourTime}:${endMinuteTime}:${endSecondTime} ${newEndTimeFormat}`,
+              selectedEndHour: endHourTime,
+              selectedEndMinute: endMinuteTime,
+              selectedEndSecond: endSecondTime,
+              show: "",
+            };
+          }
 
           // end date selection :: end
 
