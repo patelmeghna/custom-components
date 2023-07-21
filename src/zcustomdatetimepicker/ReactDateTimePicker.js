@@ -1,5 +1,6 @@
 import "./zcustomdatetimepicker.css";
 import { useReducer, useEffect, useRef } from "react";
+import calendar from "./calendar.svg";
 
 export default function ReactDateTimePicker(props) {
   // initial value :: begin
@@ -845,24 +846,26 @@ export default function ReactDateTimePicker(props) {
             }
           }
 
-          if (!props.isSecondHide) {
-            return {
-              ...state,
-              endTime: `${endHourTime}:${endMinuteTime}:${endSecondTime} ${newEndTimeFormat}`,
-              selectedEndHour: endHourTime,
-              selectedEndMinute: endMinuteTime,
-              selectedEndSecond: endSecondTime,
-              show: "",
-            };
-          }
-          if (props.isSecondHide) {
-            return {
-              ...state,
-              endTime: `${endHourTime}:${endMinuteTime} ${newEndTimeFormat}`,
-              selectedEndHour: endHourTime,
-              selectedEndMinute: endMinuteTime,
-              show: "",
-            };
+          if (state.showEndClock === "show") {
+            if (!props.isSecondHide) {
+              return {
+                ...state,
+                endTime: `${endHourTime}:${endMinuteTime}:${endSecondTime} ${newEndTimeFormat}`,
+                selectedEndHour: endHourTime,
+                selectedEndMinute: endMinuteTime,
+                selectedEndSecond: endSecondTime,
+                show: "",
+              };
+            }
+            if (props.isSecondHide) {
+              return {
+                ...state,
+                endTime: `${endHourTime}:${endMinuteTime} ${newEndTimeFormat}`,
+                selectedEndHour: endHourTime,
+                selectedEndMinute: endMinuteTime,
+                show: "",
+              };
+            }
           }
 
           // end date selection :: end
@@ -879,6 +882,12 @@ export default function ReactDateTimePicker(props) {
             };
           }
         }
+
+        return {
+          ...state,
+          endTime: ``,
+          show: "",
+        };
       // apply event handler :: end
 
       // apply start date :: begin
@@ -1076,7 +1085,7 @@ export default function ReactDateTimePicker(props) {
       // empty end field :: end
 
       case "REMOVE_END_DATE":
-        return { ...state, selectedEnd: null };
+        return { ...state, selectedEnd: state.selectedStart };
 
       case "FOCUS":
         return { ...state, isFocused: true };
@@ -1413,6 +1422,8 @@ export default function ReactDateTimePicker(props) {
     }
   }
 
+  console.log("end-date", selectedEnd);
+  console.log("start-date", selectedStart);
   // disable select dropodwn :: end
 
   // handle event listeners :: begin
@@ -1596,6 +1607,8 @@ export default function ReactDateTimePicker(props) {
     if (props.isMinCurrentTime) {
       dispatch({ type: "CHANGE_TIME_FORMAT" });
     }
+
+    dispatch({ type: "REMOVE_END_DATE" });
   }, []);
 
   // useEffect(() => {
@@ -3707,6 +3720,13 @@ export default function ReactDateTimePicker(props) {
             <p className={`error-msg-wrap${hideError ? " hide" : ""}`}>
               {props.errorMsg ? props.errorMsg : "Invalid value in input"}
             </p>
+            <button
+              onClick={handleShow}
+              disabled={props.isDisabled || props.isReadOnly}
+              className="calendar-btn"
+            >
+              <img src={calendar} />
+            </button>
           </div>
           <div
             className={
@@ -3815,6 +3835,13 @@ export default function ReactDateTimePicker(props) {
             <p className={`error-msg-wrap${hideErrorEnd ? " hide" : ""}`}>
               {props.errorMsg ? props.errorMsg : "Invalid value in input"}
             </p>
+            <button
+              onClick={handleShow}
+              disabled={props.isDisabled || props.isReadOnly}
+              className="calendar-btn"
+            >
+              <img src={calendar} />
+            </button>
           </div>
         </div>
         {/* ===== display value :: end ===== */}

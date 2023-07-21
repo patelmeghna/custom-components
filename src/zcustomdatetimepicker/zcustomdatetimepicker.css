@@ -245,13 +245,33 @@ button svg {
   display: flex;
   align-items: center;
   outline: none;
-  padding: 10px;
+  padding: 10px 30px 10px 10px;
   position: relative;
-  background-image: url("./calendar.svg");
+  /* background-image: url("./calendar.svg");
   background-repeat: no-repeat;
   background-size: 15px;
-  background-position: right 1% center;
+  background-position: right 1% center; */
   border: 1px solid #d8d8d8;
+}
+
+.calendar-wrap .text-box .calendar-btn {
+  border: none;
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  right: 2%;
+  top: 25%;
+  z-index: 3;
+  background-color: transparent;
+  height: 15px;
+}
+
+.calendar-wrap .text-box.disabled .calendar-btn {
+  cursor: not-allowed;
+}
+
+.calendar-wrap .text-box .calendar-btn img {
+  height: 100%;
 }
 
 .calendar-wrap .text-box p.error-msg-wrap {
