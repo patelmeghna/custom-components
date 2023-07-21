@@ -1061,7 +1061,6 @@ export default function ReactDateTimePicker(props) {
                   selectedEndHour: state.selectedHour,
                 };
               }
-              console.log(state.selectedEndHour == state.selectedHour);
               if (state.selectedEndHour == state.selectedHour) {
                 if (state.selectedEndMinute.toString() < state.selectedMinute) {
                   return {
@@ -1178,7 +1177,6 @@ export default function ReactDateTimePicker(props) {
             endHour = action.hour;
             endMinute = action.minute;
             endSecond = action.second;
-            console.log("check me");
             inputEndTimeFormat = "";
             endTimeValue = `${endHour}:${endMinute}:${endSecond}`;
           }
@@ -1422,8 +1420,6 @@ export default function ReactDateTimePicker(props) {
     }
   }
 
-  console.log("end-date", selectedEnd);
-  console.log("start-date", selectedStart);
   // disable select dropodwn :: end
 
   // handle event listeners :: begin
@@ -2415,12 +2411,12 @@ console.log('com2',currentHour)
       }
       
       if (
-        props.isSecondHide
-        ? minute <= 60 && hour <= 24
-        : minute <= 60 && hour <= 24 && second <= 60
-        ) {
-          if (props.minDate) {
-            if (selectedStart > minCalDate) {
+        !props.clockTimeFormat && props.isSecondHide
+          ? minute <= 60 && hour <= 24
+          : minute <= 60 && hour <= 24 && second <= 60
+      ) {
+        if (props.minDate) {
+          if (selectedStart.toDateString() > minCalDate.toDateString()) {
             console.log("cond 1");
             dispatch({
               type: "SET_TIME",
@@ -2432,22 +2428,7 @@ console.log('com2',currentHour)
           }
           
           if (selectedStart.toDateString() === minCalDate.toDateString()) {
-            if (
-              hour >= minCalDate.getHours() &&
-              minute >= minCalDate.getMinutes() &&
-              second >= minCalDate.getSeconds()
-            ) {
-              console.log("cond 2");
-              dispatch({
-                type: "SET_TIME",
-                format: capitalMeridiem,
-                hour,
-                minute,
-                second,
-              });
-            }
-
-            if (hour > minCalDate.getHours()) {
+            if (parseInt(hour) > new Date().getHours()) {
               console.log("cond 3");
               dispatch({
                 type: "SET_TIME",
@@ -2514,8 +2495,8 @@ console.log('com2',currentHour)
               }
             }
 
-            if (hour === minCalDate.getHours()) {
-              if (minute > minCalDate.getMinutes()) {
+            if (parseInt(hour) === new Date().getHours()) {
+              if (parseInt(minute) > new Date().getMinutes()) {
                 console.log("cond 4");
                 dispatch({
                   type: "SET_TIME",
@@ -2526,8 +2507,8 @@ console.log('com2',currentHour)
                 });
               }
 
-              if (minute === minCalDate.getMinutes()) {
-                if (second >= minCalDate.getSeconds()) {
+              if (parseInt(minute) === new Date().getMinutes()) {
+                if (parseInt(second) > new Date().getSeconds()) {
                   console.log("cond 5");
                   dispatch({
                     type: "SET_TIME",
@@ -2595,29 +2576,52 @@ console.log('com2',currentHour)
             }
           }
         }
-      } else if (
+      }
+      if (
         props.clockTimeFormat === "am-pm" &&
         minute <= 60 &&
         second <= 60 &&
         hour <= 12
       ) {
-        if (hour > 12) {
-          hour -= 12;
+        if (selectedStart.toDateString() > minCalDate.toDateString()) {
+          console.log("cond 7");
+          dispatch({
+            type: "SET_TIME",
+            format: capitalMeridiem,
+            hour,
+            minute,
+            second,
+          });
+        }
+        if (selectedStart.toDateString() === minCalDate.toDateString()) {
+          if (new Date().getHours() > 12) {
+            if (
+              parseInt(hour) + 12 >= new Date().getHours() &&
+              parseInt(minute) >= new Date().getMinutes() &&
+              parseInt(second) >= new Date().getSeconds()
+            ) {
+              dispatch({
+                type: "SET_TIME",
+                format: "PM",
+                hour,
+                minute,
+                second,
+              });
+            }
 
-          if (hour <= 12) {
-            if (props.minDate) {
-              if (selectedStart > minCalDate) {
-                console.log("cond 7");
-                dispatch({
-                  type: "SET_TIME",
-                  format: capitalMeridiem,
-                  hour,
-                  minute,
-                  second,
-                });
-              }
-              if (selectedStart.toDateString() === minCalDate.toDateString()) {
-                console.log("cond 8");
+            if (parseInt(hour) + 12 > new Date().getHours()) {
+              console.log("new data");
+              dispatch({
+                type: "SET_TIME",
+                format: "PM",
+                hour,
+                minute,
+                second,
+              });
+            }
+
+            if (parseInt(hour) + 12 === new Date().getHours()) {
+              if (parseInt(minute) > new Date().getMinutes()) {
                 dispatch({
                   type: "SET_TIME",
                   format: "PM",
@@ -2626,155 +2630,36 @@ console.log('com2',currentHour)
                   second,
                 });
               }
-            } else {
-              console.log("cond 9");
-              dispatch({
-                type: "SET_TIME",
-                format: capitalMeridiem,
-                hour,
-                minute,
-                second,
-              });
+
+              if (parseInt(minute) === new Date().getMinutes()) {
+                if (parseInt(second) > new Date().getSeconds()) {
+                  dispatch({
+                    type: "SET_TIME",
+                    format: "PM",
+                    hour,
+                    minute,
+                    second,
+                  });
+                }
+              }
             }
           }
-        } else {
-          if (props.minDate) {
-            if (selectedStart > minCalDate || capitalMeridiem === "PM") {
-              console.log("cond 10");
+          if (new Date().getHours() < 12) {
+            if (capitalMeridiem === "PM") {
               dispatch({
-                type: "SET_TIME",
+                type: "SET_END_TIME",
                 format: capitalMeridiem,
                 hour,
                 minute,
                 second,
               });
-
-              if (
-                selectedEnd &&
-                selectedEnd.toDateString() === selectedStart.toDateString() &&
-                endTimeFormat === "PM"
-              ) {
-                if (selectedEndHour) {
-                  if (hour > selectedEndHour.toString()) {
-                    dispatch({ type: "CHANGE_END_HOUR", payload: hour });
-                    dispatch({
-                      type: "SET_END_TIME",
-                      hour,
-                      minute: selectedEndMinute,
-                      second: selectedEndSecond,
-                      format: capitalMeridiem,
-                    });
-                  }
-                  if (hour === selectedEndHour.toString()) {
-                    if (selectedEndMinute) {
-                      if (minute > selectedEndMinute) {
-                        dispatch({
-                          type: "CHANGE_END_MINUTE",
-                          payload: minute,
-                        });
-                        dispatch({
-                          type: "SET_END_TIME",
-                          minute,
-                          hour: selectedEndHour,
-                          second: selectedEndSecond,
-                          format: capitalMeridiem,
-                        });
-                      }
-
-                      if (minute === selectedEndMinute.toString()) {
-                        if (second > selectedEndSecond.toString()) {
-                          dispatch({
-                            type: "CHANGE_END_SECOND",
-                            payload: second,
-                          });
-                          dispatch({
-                            type: "SET_END_TIME",
-                            second,
-                            hour: selectedEndHour,
-                            minute: selectedEndMinute,
-                            format: capitalMeridiem,
-                          });
-                        }
-                      }
-                    }
-                  }
-                }
-              }
             }
-
-            if (capitalMeridiem === "AM" || endTimeFormat === "AM") {
+            if (capitalMeridiem === "AM") {
               if (
-                selectedEnd &&
-                selectedEnd.toDateString() === selectedStart.toDateString()
+                parseInt(hour) >= new Date().getHours() &&
+                parseInt(minute) >= new Date().getMinutes() &&
+                parseInt(second) >= new Date().getSeconds()
               ) {
-                if (selectedEndHour) {
-                  if (hour > selectedEndHour.toString()) {
-                    dispatch({ type: "CHANGE_END_HOUR", payload: hour });
-                    dispatch({
-                      type: "SET_END_TIME",
-                      hour,
-                      minute: selectedEndMinute,
-                      second: selectedEndSecond,
-                      format: capitalMeridiem,
-                    });
-                  }
-                  if (hour === selectedEndHour.toString()) {
-                    if (selectedEndMinute) {
-                      if (minute > selectedEndMinute) {
-                        dispatch({
-                          type: "CHANGE_END_MINUTE",
-                          payload: minute,
-                        });
-                        dispatch({
-                          type: "SET_END_TIME",
-                          minute,
-                          hour: selectedEndHour,
-                          second: selectedEndSecond,
-                          format: capitalMeridiem,
-                        });
-                      }
-
-                      if (minute === selectedEndMinute.toString()) {
-                        if (second > selectedEndSecond.toString()) {
-                          dispatch({
-                            type: "CHANGE_END_SECOND",
-                            payload: second,
-                          });
-                          dispatch({
-                            type: "SET_END_TIME",
-                            second,
-                            hour: selectedEndHour,
-                            minute: selectedEndMinute,
-                            format: capitalMeridiem,
-                          });
-                        }
-
-                        if (
-                          second === selectedEndSecond.toString() &&
-                          capitalMeridiem === "PM"
-                        ) {
-                          dispatch({
-                            type: "SET_END_TIME",
-                            second: selectedEndSecond,
-                            hour: selectedEndHour,
-                            minute: selectedEndMinute,
-                            format: capitalMeridiem,
-                          });
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-
-            if (selectedStart.toDateString() === minCalDate.toDateString()) {
-              if (
-                hour >= minCalDate.getHours() &&
-                minute >= minCalDate.getMinutes() &&
-                second >= minCalDate.getSeconds()
-              ) {
-                console.log("cond 11");
                 dispatch({
                   type: "SET_TIME",
                   format: capitalMeridiem,
@@ -2784,8 +2669,7 @@ console.log('com2',currentHour)
                 });
               }
 
-              if (hour > minCalDate.getHours()) {
-                console.log("cond 12");
+              if (parseInt(hour) > new Date().getHours()) {
                 dispatch({
                   type: "SET_TIME",
                   format: capitalMeridiem,
@@ -2795,9 +2679,8 @@ console.log('com2',currentHour)
                 });
               }
 
-              if (hour === minCalDate.getHours()) {
-                if (minute > minCalDate.getMinutes()) {
-                  console.log("cond 13");
+              if (parseInt(hour) === new Date().getHours()) {
+                if (parseInt(minute) > new Date().getMinutes()) {
                   dispatch({
                     type: "SET_TIME",
                     format: capitalMeridiem,
@@ -2807,9 +2690,8 @@ console.log('com2',currentHour)
                   });
                 }
 
-                if (minute === minCalDate.getMinutes()) {
-                  if (second >= minCalDate.getSeconds()) {
-                    console.log("cond 14");
+                if (parseInt(minute) === new Date().getMinutes()) {
+                  if (parseInt(second) > new Date().getSeconds()) {
                     dispatch({
                       type: "SET_TIME",
                       format: capitalMeridiem,
@@ -2821,18 +2703,241 @@ console.log('com2',currentHour)
                 }
               }
             }
-          } else {
-            console.log("cond 16");
-            dispatch({
-              type: "SET_TIME",
-              format: capitalMeridiem,
-              hour,
-              minute,
-              second,
-            });
           }
         }
+        // if (hour > 12) {
+        //   hour -= 12;
+
+        //   if (hour <= 12) {
+        //     if (props.minDate) {
+        //       if (selectedStart > minCalDate) {
+        //         console.log("cond 7");
+        //         dispatch({
+        //           type: "SET_TIME",
+        //           format: capitalMeridiem,
+        //           hour,
+        //           minute,
+        //           second,
+        //         });
+        //       }
+        //       if (selectedStart.toDateString() === minCalDate.toDateString()) {
+        //         console.log("cond 8");
+        //         dispatch({
+        //           type: "SET_TIME",
+        //           format: "PM",
+        //           hour,
+        //           minute,
+        //           second,
+        //         });
+        //       }
+        //     } else {
+        //       console.log("cond 9");
+        //       dispatch({
+        //         type: "SET_TIME",
+        //         format: capitalMeridiem,
+        //         hour,
+        //         minute,
+        //         second,
+        //       });
+        //     }
+        //   }
+        // } else {
+        //   if (props.minDate) {
+        //     if (selectedStart > minCalDate || capitalMeridiem === "PM") {
+        //       console.log("cond 10");
+        //       dispatch({
+        //         type: "SET_TIME",
+        //         format: capitalMeridiem,
+        //         hour,
+        //         minute,
+        //         second,
+        //       });
+
+        //       if (
+        //         selectedEnd &&
+        //         selectedEnd.toDateString() === selectedStart.toDateString() &&
+        //         endTimeFormat === "PM"
+        //       ) {
+        //         if (selectedEndHour) {
+        //           if (hour > selectedEndHour.toString()) {
+        //             dispatch({ type: "CHANGE_END_HOUR", payload: hour });
+        //             dispatch({
+        //               type: "SET_END_TIME",
+        //               hour,
+        //               minute: selectedEndMinute,
+        //               second: selectedEndSecond,
+        //               format: capitalMeridiem,
+        //             });
+        //           }
+        //           if (hour === selectedEndHour.toString()) {
+        //             if (selectedEndMinute) {
+        //               if (minute > selectedEndMinute) {
+        //                 dispatch({
+        //                   type: "CHANGE_END_MINUTE",
+        //                   payload: minute,
+        //                 });
+        //                 dispatch({
+        //                   type: "SET_END_TIME",
+        //                   minute,
+        //                   hour: selectedEndHour,
+        //                   second: selectedEndSecond,
+        //                   format: capitalMeridiem,
+        //                 });
+        //               }
+
+        //               if (minute === selectedEndMinute.toString()) {
+        //                 if (second > selectedEndSecond.toString()) {
+        //                   dispatch({
+        //                     type: "CHANGE_END_SECOND",
+        //                     payload: second,
+        //                   });
+        //                   dispatch({
+        //                     type: "SET_END_TIME",
+        //                     second,
+        //                     hour: selectedEndHour,
+        //                     minute: selectedEndMinute,
+        //                     format: capitalMeridiem,
+        //                   });
+        //                 }
+        //               }
+        //             }
+        //           }
+        //         }
+        //       }
+        //     }
+
+        //     if (capitalMeridiem === "AM" || endTimeFormat === "AM") {
+        //       if (
+        //         selectedEnd &&
+        //         selectedEnd.toDateString() === selectedStart.toDateString()
+        //       ) {
+        //         if (selectedEndHour) {
+        //           if (hour > selectedEndHour.toString()) {
+        //             dispatch({ type: "CHANGE_END_HOUR", payload: hour });
+        //             dispatch({
+        //               type: "SET_END_TIME",
+        //               hour,
+        //               minute: selectedEndMinute,
+        //               second: selectedEndSecond,
+        //               format: capitalMeridiem,
+        //             });
+        //           }
+        //           if (hour === selectedEndHour.toString()) {
+        //             if (selectedEndMinute) {
+        //               if (minute > selectedEndMinute) {
+        //                 dispatch({
+        //                   type: "CHANGE_END_MINUTE",
+        //                   payload: minute,
+        //                 });
+        //                 dispatch({
+        //                   type: "SET_END_TIME",
+        //                   minute,
+        //                   hour: selectedEndHour,
+        //                   second: selectedEndSecond,
+        //                   format: capitalMeridiem,
+        //                 });
+        //               }
+
+        //               if (minute === selectedEndMinute.toString()) {
+        //                 if (second > selectedEndSecond.toString()) {
+        //                   dispatch({
+        //                     type: "CHANGE_END_SECOND",
+        //                     payload: second,
+        //                   });
+        //                   dispatch({
+        //                     type: "SET_END_TIME",
+        //                     second,
+        //                     hour: selectedEndHour,
+        //                     minute: selectedEndMinute,
+        //                     format: capitalMeridiem,
+        //                   });
+        //                 }
+
+        //                 if (
+        //                   second === selectedEndSecond.toString() &&
+        //                   capitalMeridiem === "PM"
+        //                 ) {
+        //                   dispatch({
+        //                     type: "SET_END_TIME",
+        //                     second: selectedEndSecond,
+        //                     hour: selectedEndHour,
+        //                     minute: selectedEndMinute,
+        //                     format: capitalMeridiem,
+        //                   });
+        //                 }
+        //               }
+        //             }
+        //           }
+        //         }
+        //       }
+        //     }
+
+        //     if (selectedStart.toDateString() === minCalDate.toDateString()) {
+        //       if (
+        //         hour >= minCalDate.getHours() &&
+        //         minute >= minCalDate.getMinutes() &&
+        //         second >= minCalDate.getSeconds()
+        //       ) {
+        //         console.log("cond 11");
+        //         dispatch({
+        //           type: "SET_TIME",
+        //           format: capitalMeridiem,
+        //           hour,
+        //           minute,
+        //           second,
+        //         });
+        //       }
+
+        //       if (hour > minCalDate.getHours()) {
+        //         console.log("cond 12");
+        //         dispatch({
+        //           type: "SET_TIME",
+        //           format: capitalMeridiem,
+        //           hour,
+        //           minute,
+        //           second,
+        //         });
+        //       }
+
+        //       if (hour === minCalDate.getHours()) {
+        //         if (minute > minCalDate.getMinutes()) {
+        //           console.log("cond 13");
+        //           dispatch({
+        //             type: "SET_TIME",
+        //             format: capitalMeridiem,
+        //             hour,
+        //             minute,
+        //             second,
+        //           });
+        //         }
+
+        //         if (minute === minCalDate.getMinutes()) {
+        //           if (second >= minCalDate.getSeconds()) {
+        //             console.log("cond 14");
+        //             dispatch({
+        //               type: "SET_TIME",
+        //               format: capitalMeridiem,
+        //               hour,
+        //               minute,
+        //               second,
+        //             });
+        //           }
+        //         }
+        //       }
+        //     }
+        //   } else {
+        //     console.log("cond 16");
+        //     dispatch({
+        //       type: "SET_TIME",
+        //       format: capitalMeridiem,
+        //       hour,
+        //       minute,
+        //       second,
+        //     });
+        //   }
+        // }
       }
+      // console.log(new Date().getHours());
     }
     console.log(hour);
 
@@ -2921,6 +3026,7 @@ console.log('com2',currentHour)
   //  =========================================================
 
   // Handle the change event of the EndDate input
+  // console.log("selectedEndHour", selectedEndHour);
 
   const handleEndDateChange = (event) => {
     const value = event.target.value;
