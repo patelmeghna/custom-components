@@ -1075,6 +1075,9 @@ export default function ReactDateTimePicker(props) {
         }
       // empty end field :: end
 
+      case "REMOVE_END_DATE":
+        return { ...state, selectedEnd: null };
+
       case "FOCUS":
         return { ...state, isFocused: true };
       case "BLUR":
@@ -1921,8 +1924,8 @@ export default function ReactDateTimePicker(props) {
         if (
           selectedStart &&
           selectedStart.toDateString() === currentDate.toDateString() &&
-          currentHour === selectedHour &&
-          currentMinute === selectedMinute
+          currentHour.toString() === selectedHour.toString() &&
+          currentMinute.toString() === selectedMinute.toString()
         ) {
           if (timeFormat === "AM") {
             disabled = i < currentSecond;
@@ -1964,8 +1967,8 @@ export default function ReactDateTimePicker(props) {
         if (
           selectedStart &&
           selectedStart.toDateString() === currentDate.toDateString() &&
-          currentHour === selectedHour &&
-          currentMinute === selectedMinute
+          currentHour.toString() === selectedHour.toString() &&
+          currentMinute.toString() === selectedMinute.toString()
         ) {
           disabled = i < currentSecond;
         }
@@ -1980,8 +1983,8 @@ export default function ReactDateTimePicker(props) {
           selectedEnd &&
           selectedEnd.toDateString() === selectedStart.toDateString()
         ) {
-          if (selectedEndHour === selectedHour) {
-            if (selectedEndMinute === selectedMinute) {
+          if (selectedEndHour.toString() === selectedHour.toString()) {
+            if (selectedEndMinute.toString() === selectedMinute.toString()) {
               disabled = i < selectedSecond;
             }
           }

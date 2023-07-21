@@ -1,7 +1,7 @@
 import "./zcustomdatetimepicker.css";
-import { useReducer, useEffect } from "react";
+import { useReducer, useEffect, useRef } from "react";
 
-export default function ModifiedDatePicker(props) {
+export default function ReactDateTimePicker(props) {
   // initial value :: begin
   const initialState = {
     currentDate: new Date(),
@@ -12,12 +12,12 @@ export default function ModifiedDatePicker(props) {
     selectedMonth: new Date().getMonth(),
     selectedYear: new Date().getFullYear(),
     show: "",
-    selectedHour: null,
-    selectedMinute: null,
-    selectedEndHour: null,
-    selectedEndMinute: null,
-    time: "hh:mm",
-    endTime: "hh:mm",
+    selectedHour: new Date().getHours(),
+    selectedMinute: new Date().getMinutes(),
+    selectedEndHour: new Date().getHours(),
+    selectedEndMinute: new Date().getMinutes(),
+    time: "",
+    endTime: "",
     showClock: "",
     showEndClock: "",
     presentYear: new Date().getFullYear(),
@@ -28,14 +28,120 @@ export default function ModifiedDatePicker(props) {
     value: "hi",
     isFocused: false,
     isEndFocused: false,
+    previousSelectedStartDate: [],
+    previousSelectedEndDate: [],
+    undoDate: "",
+    selectedSecond: new Date().getSeconds(),
+    selectedEndSecond: new Date().getSeconds(),
+    validateStart: true,
+    validateEnd: true,
+    hideError: true,
+    hideErrorEnd: true,
   };
   // initial value :: end
 
-  const minDate = new Date(props.minimumDate);
-  const maxDate = new Date(props.maximumDate);
-  const defaultDate = new Date(props.defaultSelectedDate);
-  const defaultEnd = new Date(props.defaultEndDate);
-  const defaultMonth = new Date(props.defaultSelectedMonth);
+  const renderCount = useRef(0);
+
+  const maximumDate = new Date(props.maxDate);
+  let minCalDate = props.minDate;
+
+  let defaultDate,
+    defaultEnd,
+    defaultTime,
+    defaultEndTime,
+    defaultStartDate,
+    startDateTime,
+    defaultEndDate,
+    endDateTime;
+
+  const dateTimeRange = props.value;
+
+  // ============ Default value :: begin ============
+  const inputChangedValue = (value) => {
+    const format = props.format || "DD/MM/YYYY";
+
+    let isDateValid;
+    let dateValue;
+    let rearrangedDateStr;
+
+    const lowercaseFormat = format.toLowerCase();
+    const lowercaseValue = value.toLowerCase();
+
+    const str = lowercaseFormat
+      .replace("dd", "\\d{2}")
+      .replace("mm", "\\d{2}")
+      .replace("yyyy", "\\d{4}");
+
+    const regex = new RegExp(`^${str}$`);
+    isDateValid = lowercaseValue.match(regex);
+
+    if (lowercaseValue.includes(" ")) {
+      [dateValue] = lowercaseValue.split(" ");
+
+      isDateValid = dateValue.match(regex);
+    }
+
+    if (isDateValid) {
+      const dd = value.slice(
+        lowercaseFormat.indexOf("dd"),
+        lowercaseFormat.indexOf("dd") + 2
+      );
+      const mm = value.slice(
+        lowercaseFormat.indexOf("mm"),
+        lowercaseFormat.indexOf("mm") + 2
+      );
+      const yyyy = value.slice(
+        lowercaseFormat.indexOf("yyyy"),
+        lowercaseFormat.indexOf("yyyy") + 4
+      );
+
+      const dateArr = [yyyy, mm, dd];
+      rearrangedDateStr = dateArr.join("-");
+    }
+
+    return new Date(rearrangedDateStr);
+  };
+  // ============ Default value :: end ============
+
+  if (props.value && props.value.length !== null) {
+    if (dateTimeRange.includes(" To ")) {
+      [startDateTime, endDateTime] = dateTimeRange.split(" To ");
+
+      if (startDateTime.includes(" ")) {
+        [defaultStartDate, defaultTime] = startDateTime.split(" ");
+
+        defaultDate = inputChangedValue(defaultStartDate);
+      } else {
+        defaultDate = inputChangedValue(startDateTime);
+      }
+
+      if (endDateTime.includes(" ")) {
+        [defaultEndDate, defaultEndTime] = endDateTime.split(" ");
+        defaultEnd = inputChangedValue(defaultEndDate);
+      } else {
+        defaultEnd = inputChangedValue(endDateTime);
+      }
+    } else {
+      if (dateTimeRange.includes(" ")) {
+        [defaultStartDate, defaultTime] = dateTimeRange.split(" ");
+        defaultDate = inputChangedValue(defaultStartDate);
+      } else {
+        defaultDate = inputChangedValue(dateTimeRange);
+      }
+    }
+  }
+
+  if (typeof props.minDate !== "boolean") {
+    const date = `${new Date(props.minDate).getFullYear()}-${
+      new Date(props.minDate).getMonth() + 1
+    }-${new Date(props.minDate).getDate()}`;
+    minCalDate = new Date(date);
+  } else {
+    const date = `${new Date().getFullYear()}-${
+      new Date().getMonth() + 1
+    }-${new Date().getDate()}`;
+    minCalDate = new Date(date);
+  }
 
   // reducer :: begin
   const reducer = (state, action) => {
@@ -55,43 +161,91 @@ export default function ModifiedDatePicker(props) {
           month: action.payload.getMonth(),
         };
 
-      case "DEFAULT_SELECTED_DATE":
+      case "DEFAULT_VALUES":
+        let hour,
+          endTimeHour,
+          minute,
+          endTimeMinute,
+          second,
+          endTimeSecond,
+          showStartClock,
+          showEndClock,
+          defaultStartTime,
+          defaultEndSelectedTime,
+          rangeEndDate,
+          rangeStartDate;
+
+        if (defaultTime !== undefined) {
+          [hour, minute, second] = defaultTime.split(":");
+
+          if (!props.isSecondHide) {
+            defaultStartTime = defaultTime;
+          } else {
+            defaultStartTime = `${hour}:${minute}`;
+          }
+          showStartClock = "show";
+        } else {
+          defaultStartTime = "";
+        }
+
+        if (defaultEndTime !== undefined) {
+          [endTimeHour, endTimeMinute, endTimeSecond] =
+            defaultEndTime.split(":");
+
+          if (!props.isSecondHide) {
+            defaultEndSelectedTime = defaultEndTime;
+          } else {
+            defaultEndSelectedTime = `${endTimeHour}:${endTimeMinute}`;
+          }
+
+          showEndClock = "show";
+        } else {
+          defaultEndSelectedTime = "";
+        }
+
+        let defaultMonth = defaultDate.getMonth();
+        let defaultYear = defaultDate.getFullYear();
+
+        rangeStartDate = defaultDate;
+
+        if (props.range && defaultEnd !== undefined) {
+          if (defaultEnd > defaultDate) {
+            defaultMonth = defaultEnd.getMonth();
+            defaultYear = defaultEnd.getFullYear();
+            rangeEndDate = defaultEnd;
+          } else {
+            defaultMonth = rangeStartDate.getMonth();
+            defaultYear = rangeStartDate.getFullYear();
+            rangeEndDate = rangeStartDate;
+          }
+        }
+
         return {
           ...state,
-          selectedStart: defaultDate,
-          month: defaultDate.getMonth(),
-          year: defaultDate.getFullYear(),
-        };
-
-      case "MIN_DATE":
-        return {
-          ...state,
-          month: minDate.getMonth(),
-          year: minDate.getFullYear(),
-        };
-
-      case "DEFAULT_END":
-        return {
-          ...state,
-          selectedEnd: defaultEnd,
-        };
-
-      case "MONTH_IN_MONTHONLY":
-        return {
-          ...state,
-          month: defaultMonth.getMonth(),
-          presentYear: defaultMonth.getFullYear(),
-          changedYear: defaultMonth.getFullYear(),
-        };
-
-      case "DEFAULT_TIME":
-        return {
-          time: props.defaultSelectedTime,
-          selectedHour: state.hour,
-          selectedMinute: state.minute,
-          selectedStart: defaultDate,
-          month: defaultDate.getMonth(),
-          year: defaultDate.getFullYear(),
+          selectedStart: rangeStartDate,
+          selectedEnd: rangeEndDate,
+          month: defaultMonth,
+          year: defaultYear,
+          time: defaultStartTime,
+          endTime: defaultEndSelectedTime,
+          hour: hour,
+          minute: minute,
+          endHour: endTimeHour,
+          endMinute: endTimeMinute,
+          showClock: showStartClock,
+          showEndClock: showEndClock,
+          selectedHour: hour,
+          selectedMinute: minute,
+          selectedEndHour: endTimeHour,
+          selectedEndMinute: endTimeMinute,
+          selectedSecond: second,
+          selectedEndSecond: endTimeSecond,
+          previousSelectedStartDate: state.previousSelectedStartDate
+            ? [...state.previousSelectedStartDate, rangeStartDate]
+            : [rangeStartDate],
+          previousSelectedEndDate: state.previousSelectedEndDate
+            ? [...state.previousSelectedEndDate, rangeEndDate]
+            : [rangeEndDate],
         };
 
       case "CHANGE_END_HOUR":
@@ -106,6 +260,12 @@ export default function ModifiedDatePicker(props) {
           selectedEndMinute: action.payload,
         };
 
+      case "CHANGE_END_SECOND":
+        return {
+          ...state,
+          selectedEndSecond: action.payload,
+        };
+
       case "CHANGE_HOUR":
         return {
           ...state,
@@ -116,6 +276,12 @@ export default function ModifiedDatePicker(props) {
         return {
           ...state,
           selectedMinute: action.payload,
+        };
+
+      case "CHANGE_SECOND":
+        return {
+          ...state,
+          selectedSecond: action.payload,
         };
 
       case "PREVIOUS":
@@ -143,7 +309,7 @@ export default function ModifiedDatePicker(props) {
           month: nextMonth,
           year: nextYear,
         };
-
+      // Toggle the showStart value based on various conditions
       case "TOGGLE_SHOW":
         let showStart = !state.show;
         if (props.isDisabled || props.isReadOnly) {
@@ -152,18 +318,28 @@ export default function ModifiedDatePicker(props) {
           showStart =
             state.show === "" || state.show === "show-end" ? "show" : "";
         }
+
+        if (!props.range) {
+          if (state.show === "show-end") {
+            showStart = "";
+          }
+        }
         return {
           ...state,
           show: showStart,
         };
-
+      // Toggle the showEnd value based on various conditions
       case "TOGGLE_SHOW_END":
         let showEnd = !state.show;
         if (props.isDisabled || props.isReadOnly) {
           showEnd = "";
         } else {
-          showEnd =
-            state.show === "" || state.show === "show" ? "show-end" : "";
+          if (state.selectedStart === null) {
+            showEnd = "show";
+          } else {
+            showEnd =
+              state.show === "" || state.show === "show" ? "show-end" : "";
+          }
         }
         return {
           ...state,
@@ -187,18 +363,39 @@ export default function ModifiedDatePicker(props) {
           ...state,
           selectedStart: null,
           selectedEnd: null,
+          previousSelectedDate: state.selectedStart,
           month: state.currentDate.getMonth(),
           year: state.currentDate.getFullYear(),
-          time: "hh:mm",
-          endTime: "hh:mm",
+          time: "",
+          endTime: "",
           selectedHour: null,
           selectedMinute: null,
           selectedEndHour: null,
           selectedEndMinute: null,
+          selectedSecond: null,
+          selectedEndSecond: null,
           show: "",
           showClock: "",
           showEndClock: "",
           showYear: "",
+        };
+
+      case "UNDO_START":
+        return {
+          ...state,
+          selectedStart: new Date(action.payload),
+        };
+
+      case "UNDO_END":
+        return {
+          ...state,
+          selectedEnd: new Date(action.payload),
+        };
+
+      case "UNDO_STATE":
+        return {
+          ...state,
+          undoDate: action.payload,
         };
 
       case "CHANGE_YEAR":
@@ -265,16 +462,16 @@ export default function ModifiedDatePicker(props) {
         let newChangeMonth = parseInt(action.payload);
         let newSelectedMonth = parseInt(action.payload);
 
-        if (minDate.getFullYear() === state.year) {
-          if (minDate.getMonth() > newChangeMonth) {
-            newChangeMonth = minDate.getMonth();
-            newSelectedMonth = minDate.getMonth();
+        if (minCalDate.getFullYear() === state.year) {
+          if (minCalDate.getMonth() > newChangeMonth) {
+            newChangeMonth = minCalDate.getMonth();
+            newSelectedMonth = minCalDate.getMonth();
           }
         }
-        if (maxDate.getFullYear() === state.year) {
-          if (maxDate.getMonth() < newChangeMonth) {
-            newChangeMonth = maxDate.getMonth();
-            newSelectedMonth = maxDate.getMonth();
+        if (maximumDate.getFullYear() === state.year) {
+          if (maximumDate.getMonth() < newChangeMonth) {
+            newChangeMonth = maximumDate.getMonth();
+            newSelectedMonth = maximumDate.getMonth();
           }
         }
         if (state.show === "show-end") {
@@ -295,27 +492,28 @@ export default function ModifiedDatePicker(props) {
       // year change :: begin
       case "CHANGE_YEAR_LIST":
         let setYear = parseInt(action.payload);
+
         let setSelectedYear = parseInt(action.payload);
         let listChangeMonth = state.month;
         let listSelectedMonth = state.selectedMonth;
-        if (minDate.getFullYear() > setYear) {
-          setYear = minDate.getFullYear();
-          setSelectedYear = minDate.getFullYear();
+        if (minCalDate.getFullYear() > setYear) {
+          setYear = minCalDate.getFullYear();
+          setSelectedYear = minCalDate.getFullYear();
         }
-        if (maxDate.getFullYear() < setYear) {
-          setYear = maxDate.getFullYear();
-          setSelectedYear = maxDate.getFullYear();
+        if (maximumDate.getFullYear() < setYear) {
+          setYear = maximumDate.getFullYear();
+          setSelectedYear = maximumDate.getFullYear();
         }
-        if (setYear === maxDate.getFullYear()) {
-          if (state.month > maxDate.getMonth()) {
-            listChangeMonth = maxDate.getMonth();
-            listSelectedMonth = maxDate.getMonth();
+        if (setYear === maximumDate.getFullYear()) {
+          if (state.month > maximumDate.getMonth()) {
+            listChangeMonth = maximumDate.getMonth();
+            listSelectedMonth = maximumDate.getMonth();
           }
         }
-        if (setYear === minDate.getFullYear()) {
-          if (state.month < minDate.getMonth()) {
-            listChangeMonth = minDate.getMonth();
-            listSelectedMonth = minDate.getMonth();
+        if (setYear === minCalDate.getFullYear()) {
+          if (state.month < minCalDate.getMonth()) {
+            listChangeMonth = minCalDate.getMonth();
+            listSelectedMonth = minCalDate.getMonth();
           }
         }
         if (state.show === "show-end") {
@@ -345,7 +543,10 @@ export default function ModifiedDatePicker(props) {
         if (props.clockTimeFormat === "am-pm") {
           return {
             ...state,
-            timeFormat: state.timeFormat === "AM" ? "PM" : "AM",
+            timeFormat:
+              state.timeFormat === "AM" || state.timeFormat === ""
+                ? "PM"
+                : "AM",
           };
         } else {
           return {
@@ -354,7 +555,7 @@ export default function ModifiedDatePicker(props) {
           };
         }
 
-      case "FORMAT_END_CHANGE":
+      case "END_FORMAT_CHANGE":
         if (props.clockTimeFormat === "am-pm") {
           return {
             ...state,
@@ -373,357 +574,390 @@ export default function ModifiedDatePicker(props) {
         let toggleTime = state.show;
         let newTimeFormat = state.timeFormat;
         let newEndTimeFormat = state.endTimeFormat;
+        let startHourTime = state.selectedHour;
+        let startSecondTime = state.selectedSecond;
+        let startMinuteTime = state.selectedMinute;
+        let endHourTime = state.selectedEndHour;
+        let endMinuteTime = state.selectedEndMinute;
+        let endSecondTime = state.selectedEndSecond;
+
         if (props.clockTimeFormat !== "am-pm") {
           newTimeFormat = "";
           newEndTimeFormat = "";
         }
-        if (props.selectedMode === "dateTime") {
+        if (!props.range) {
           toggleTime = "";
         } else {
           toggleTime = "show-end";
         }
         if (state.show === "show") {
           // start date selection :: begin
-          if (state.selectedHour && state.selectedMinute) {
-            if (state.selectedHour < 10 && state.selectedHour.length === 1) {
-              return {
-                ...state,
-                time: `0${state.selectedHour}:${state.selectedMinute} ${newTimeFormat}`,
-                show: toggleTime,
-              };
+          if (props.clockTimeFormat === "am-pm") {
+            if (startHourTime === undefined) {
+              // start
+              if (new Date().getHours() > 12) {
+                if ((new Date().getHours() - 12).toString().length === 1) {
+                  startHourTime = `0${new Date().getHours() - 12}`;
+                } else {
+                  startHourTime = new Date().getHours() - 12;
+                }
+              } else {
+                if (new Date().getHours().toString().length === 1) {
+                  startHourTime = `0${new Date().getHours()}`;
+                } else {
+                  startHourTime = new Date().getHours();
+                }
+              }
+              // end
+            } else {
+              if (startHourTime > 12) {
+                if (
+                  startHourTime - 12 >= 0 &&
+                  startHourTime - 12 < 10 &&
+                  (state.selectedHour - 12).toString().length === 1
+                ) {
+                  startHourTime = `0${state.selectedHour - 12}`;
+                } else {
+                  startHourTime = state.selectedHour - 12;
+                }
+              } else {
+                if (
+                  startHourTime >= 0 &&
+                  startHourTime < 10 &&
+                  state.selectedHour.toString().length === 1
+                ) {
+                  startHourTime = `0${state.selectedHour}`;
+                } else {
+                  startHourTime = state.selectedHour;
+                }
+              }
             }
+          } else {
+            if (startHourTime === undefined) {
+              if (new Date().getHours().toString().length === 1) {
+                startHourTime = `0${new Date().getHours()}`;
+              } else {
+                startHourTime = new Date().getHours();
+              }
+            } else {
+              if (
+                startHourTime >= 0 &&
+                startHourTime < 10 &&
+                (state.selectedHour - 12).toString().length === 1
+              ) {
+                startHourTime = `0${state.selectedHour}`;
+              } else {
+                startHourTime = state.selectedHour;
+              }
+            }
+          }
+          if (startMinuteTime === undefined) {
+            if (new Date().getMinutes().toString().length === 1) {
+              startMinuteTime = `0${new Date().getMinutes()}`;
+            } else {
+              startMinuteTime = new Date().getMinutes();
+            }
+          } else {
             if (
-              state.selectedMinute < 10 &&
-              state.selectedMinute.length === 1
+              startMinuteTime >= 0 &&
+              startMinuteTime < 10 &&
+              startMinuteTime.toString().length === 1
             ) {
-              return {
-                ...state,
-                time: `${state.selectedHour}:0${state.selectedMinute} ${newTimeFormat}`,
-                show: toggleTime,
-              };
+              startMinuteTime = `0${state.selectedMinute}`;
+            } else {
+              startMinuteTime = state.selectedMinute;
             }
+          }
+          if (startSecondTime === undefined) {
+            if (new Date().getSeconds().toString().length === 1) {
+              startSecondTime = `0${new Date().getSeconds()}`;
+            } else {
+              startSecondTime = new Date().getSeconds();
+            }
+          } else {
             if (
-              state.selectedHour < 10 &&
-              state.selectedHour.length === 1 &&
-              state.selectedMinute < 10 &&
-              state.selectedMinute.length === 1
+              startSecondTime >= 0 &&
+              startSecondTime < 10 &&
+              state.selectedSecond.toString().length === 1
             ) {
-              return {
-                ...state,
-                time: `0${state.selectedHour}:0${state.selectedMinute} ${newTimeFormat}`,
-                show: toggleTime,
-              };
+              startSecondTime = `0${state.selectedSecond}`;
+            } else {
+              startSecondTime = state.selectedSecond;
             }
+          }
 
+          if (!props.isSecondHide) {
             return {
               ...state,
-              time: `${state.selectedHour}:${state.selectedMinute} ${newTimeFormat}`,
+              time: `${startHourTime}:${startMinuteTime}:${startSecondTime} ${newTimeFormat}`,
+              selectedHour: startHourTime,
+              selectedMinute: startMinuteTime,
+              selectedSecond: startSecondTime,
               show: toggleTime,
-            };
-          }
-          if (state.selectedHour !== null && state.selectedMinute === null) {
-            if (state.selectedHour < 10 && state.selectedHour.length === 1) {
-              return {
-                ...state,
-                time: `0${state.selectedHour}:00 ${newTimeFormat}`,
-                show: toggleTime,
-              };
-            }
-
-            return {
-              ...state,
-              time: `${state.selectedHour}:00 ${newTimeFormat}`,
-              show: toggleTime,
-            };
-          }
-          if (state.selectedHour === null && state.selectedMinute !== null) {
-            if (
-              state.selectedMinute < 10 &&
-              state.selectedMinute.length === 1
-            ) {
-              return {
-                ...state,
-                time: `24:0${state.selectedMinute} ${newTimeFormat}`,
-                show: toggleTime,
-                selectedHour: "24",
-              };
-            }
-
-            return {
-              ...state,
-              time: `24:${state.selectedMinute} ${newTimeFormat}`,
-              show: toggleTime,
-              selectedHour: "24",
-            };
-          }
-          if (
-            (state.time === null && state.selectedStart === null) ||
-            (state.time === "hh:mm" && state.selectedStart === null) ||
-            state.selectedStart === null
-          ) {
-            if (props.clockTimeFormat === "am-pm") {
-              return {
-                ...state,
-                selectedStart: new Date(),
-                selectedHour: "12",
-                selectedMinute: "00",
-                time: `12:00 ${newTimeFormat}`,
-                show: toggleTime,
-              };
-            } else {
-              return {
-                ...state,
-                selectedStart: new Date(),
-                selectedHour: "00",
-                selectedMinute: "00",
-                time: `00:00 ${newTimeFormat}`,
-                show: toggleTime,
-              };
-            }
-          }
-          if (state.selectedStart !== null) {
-            if (state.time === null || state.time === "hh:mm") {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  selectedHour: "12",
-                  selectedMinute: "00",
-                  time: `12:00 ${newTimeFormat}`,
-                  show: toggleTime,
-                };
-              } else {
-                return {
-                  ...state,
-                  selectedHour: "00",
-                  selectedMinute: "00",
-                  time: `00:00 ${newTimeFormat}`,
-                  show: toggleTime,
-                };
-              }
-            }
-            if (state.time !== null || state.time !== "hh:mm") {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  selectedHour: state.selectedHour,
-                  selectedMinute: state.selectedMinute,
-                  time: `${state.selectedHour}:${state.selectedMinute} ${newTimeFormat}`,
-                  show: toggleTime,
-                };
-              } else {
-                return {
-                  ...state,
-                  selectedHour: state.selectedHour,
-                  selectedMinute: state.selectedMinute,
-                  time: `${state.selectedHour}:${state.selectedMinute} ${newTimeFormat}`,
-                  show: toggleTime,
-                };
-              }
-            }
-          }
-          // start date selection :: end
-        } else {
-          // end date selection :: begin
-          if (state.selectedEndHour && state.selectedEndMinute) {
-            if (
-              state.selectedEndHour < 10 &&
-              state.selectedEndHour.length === 1
-            ) {
-              return {
-                ...state,
-                endTime: `0${state.selectedEndHour}:${state.selectedEndMinute} ${newEndTimeFormat}`,
-                show: "",
-              };
-            }
-            if (
-              state.selectedEndMinute < 10 &&
-              state.selectedEndMinute.length === 1
-            ) {
-              return {
-                ...state,
-                endTime: `${state.selectedEndHour}:0${state.selectedEndMinute} ${newEndTimeFormat}`,
-                show: "",
-              };
-            }
-            if (
-              state.selectedEndHour < 10 &&
-              state.selectedEndHour.length === 1 &&
-              state.selectedEndMinute < 10 &&
-              state.selectedEndMinute.length === 1
-            ) {
-              return {
-                ...state,
-                endTime: `0${state.selectedEndHour}:0${state.selectedEndMinute} ${newEndTimeFormat}`,
-                show: "",
-              };
-            }
-
-            return {
-              ...state,
-              endTime: `${state.selectedEndHour}:${state.selectedEndMinute} ${newEndTimeFormat}`,
-              show: "",
-            };
-          }
-          if (
-            state.selectedEndHour !== null &&
-            state.selectedEndMinute === null
-          ) {
-            if (
-              state.selectedEndHour < 10 &&
-              state.selectedEndHour.length === 1
-            ) {
-              return {
-                ...state,
-                endTime: `0${state.selectedEndHour}:00 ${newEndTimeFormat}`,
-                show: "",
-              };
-            }
-            return {
-              ...state,
-              endTime: `${state.selectedEndHour}:00 ${newEndTimeFormat}`,
-              show: "",
-            };
-          }
-          if (
-            state.selectedEndHour === null &&
-            state.selectedEndMinute !== null
-          ) {
-            if (
-              state.selectedEndMinute < 10 &&
-              state.selectedEndMinute.length === 1
-            ) {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  endTime: `11:0${state.selectedEndMinute} ${newEndTimeFormat}`,
-                  selectedHour: "11",
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  endTime: `23:0${state.selectedEndMinute} ${newEndTimeFormat}`,
-                  selectedHour: "23",
-                  show: "",
-                };
-              }
-            }
-            if (props.clockTimeFormat === "am-pm") {
-              return {
-                ...state,
-                endTime: `11:${state.selectedEndMinute} ${newEndTimeFormat}`,
-                selectedHour: "11",
-                show: "",
-              };
-            } else {
-              return {
-                ...state,
-                endTime: `23:${state.selectedEndMinute} ${newEndTimeFormat}`,
-                selectedHour: "23",
-                show: "",
-              };
-            }
-          }
-          if (
-            (state.endTime === null && state.selectedEnd === null) ||
-            (state.endTime === "hh:mm" && state.selectedEnd === null) ||
-            state.selectedEnd === null
-          ) {
-            if (props.clockTimeFormat === "am-pm") {
-              return {
-                ...state,
-                selectedEnd: state.selectedStart,
-                selectedEndHour: "11",
-                selectedEndMinute: "59",
-                endTime: `11:59 ${newTimeFormat}`,
-                show: "",
-              };
-            } else {
-              return {
-                ...state,
-                selectedEnd: state.selectedStart,
-                selectedEndHour: "23",
-                selectedEndMinute: "59",
-                endTime: `23:59 ${newTimeFormat}`,
-                show: "",
-              };
-            }
-          }
-          if (state.selectedEnd) {
-            if (state.endTime === null || state.endTime === "hh:mm") {
-              if (props.clockTimeFormat === "am-pm") {
-                return {
-                  ...state,
-                  selectedEndHour: "11",
-                  selectedEndMinute: "59",
-                  endTime: `11:59 ${newTimeFormat}`,
-                  show: "",
-                };
-              } else {
-                return {
-                  ...state,
-                  selectedEndHour: "23",
-                  selectedEndMinute: "59",
-                  endTime: `23:59 ${newTimeFormat}`,
-                  show: "",
-                };
-              }
-            }
-          }
-          if (state.endTime !== null || state.endTime !== "hh:mm") {
-            if (props.clockTimeFormat === "am-pm") {
-              return {
-                ...state,
-                selectedEndHour: state.selectedEndHour,
-                selectedEndMinute: state.selectedEndMinute,
-                endTime: `${state.selectedEndHour}:${state.selectedEndMinute} ${newTimeFormat}`,
-                show: "",
-              };
-            } else {
-              return {
-                ...state,
-                selectedEndHour: state.selectedEndHour,
-                selectedEndMinute: state.selectedEndMinute,
-                endTime: `${state.selectedEndHour}:${state.selectedEndMinute} ${newTimeFormat}`,
-                show: "",
-              };
-            }
-          }
-          // end date selection :: end
-        }
-      // apply event handler :: end
-
-      // date select :: begin
-      case "SELECT_DATE":
-        let toggle = state.show;
-        if (state.showClock === "") {
-          toggle = "";
-        }
-        const selected = new Date(action.year, action.month, action.day);
-        if (
-          props.selectedMode === "range" ||
-          props.selectedMode === "dateTimeRange"
-        ) {
-          if (state.show === "show") {
-            return {
-              ...state,
-              selectedStart: selected,
-              show: state.showClock === "" ? "show-end" : "show",
             };
           } else {
             return {
               ...state,
-              selectedEnd: selected,
-              show: state.showEndClock === "" ? "" : state.show,
+              time: `${startHourTime}:${startMinuteTime} ${newTimeFormat}`,
+              selectedHour: startHourTime,
+              selectedMinute: startMinuteTime,
+              show: toggleTime,
             };
           }
+
+          // start date selection :: end
         } else {
+          if (props.clockTimeFormat === "am-pm") {
+            if (endHourTime === undefined) {
+              // start
+              if (startHourTime === undefined) {
+                if (new Date().getHours() > 12) {
+                  if ((new Date().getHours() - 12).toString().length === 1) {
+                    startHourTime = `0${new Date().getHours() - 12}`;
+                    endHourTime = `0${new Date().getHours() - 12}`;
+                  } else {
+                    startHourTime = new Date().getHours() - 12;
+                    endHourTime = new Date().getHours() - 12;
+                  }
+                } else {
+                  if (new Date().getHours().toString().length === 1) {
+                    startHourTime = `0${new Date().getHours()}`;
+                  } else {
+                    startHourTime = new Date().getHours();
+                  }
+                }
+              } else {
+                if (startHourTime.toString().length === 1) {
+                  endHourTime = `0${startHourTime}`;
+                } else {
+                  endHourTime = startHourTime;
+                }
+              }
+              // end
+            } else {
+              if (endHourTime > 12) {
+                if (
+                  endHourTime - 12 >= 0 &&
+                  endHourTime - 12 < 10 &&
+                  (state.selectedEndHour - 12).toString().length === 1
+                ) {
+                  endHourTime = `0${state.selectedEndHour - 12}`;
+                } else {
+                  endHourTime = state.selectedEndHour - 12;
+                }
+              } else {
+                if (
+                  endHourTime >= 0 &&
+                  endHourTime < 10 &&
+                  state.selectedEndHour.toString().length === 1
+                ) {
+                  endHourTime = `0${state.selectedEndHour}`;
+                } else {
+                  endHourTime = state.selectedEndHour;
+                }
+              }
+            }
+          } else {
+            if (endHourTime === undefined) {
+              // start
+              if (startHourTime === undefined) {
+                if (new Date().getHours().toString().length === 1) {
+                  startHourTime = `0${new Date().getHours()}`;
+                  endHourTime = `0${new Date().getHours()}`;
+                } else {
+                  endHourTime = new Date().getHours();
+                  startHourTime = new Date().getHours();
+                }
+              } else {
+                if (startHourTime.toString().length === 1) {
+                  endHourTime = `0${startHourTime}`;
+                } else {
+                  endHourTime = startHourTime;
+                }
+              }
+              // end
+            } else {
+              if (
+                endHourTime >= 0 &&
+                endHourTime < 10 &&
+                state.selectedEndHour.toString().length === 1
+              ) {
+                endHourTime = `0${state.selectedEndHour}`;
+              } else {
+                endHourTime = state.selectedEndHour;
+              }
+            }
+          }
+
+          if (endMinuteTime === undefined) {
+            if (startMinuteTime === undefined) {
+              if (new Date().getMinutes().toString().length === 1) {
+                startMinuteTime = `0${new Date().getMinutes()}`;
+                endMinuteTime = `0${new Date().getMinutes()}`;
+              } else {
+                endMinuteTime = new Date().getMinutes();
+                startMinuteTime = new Date().getMinutes();
+              }
+            } else {
+              if (startMinuteTime.toString().length === 1) {
+                endMinuteTime = `0${startMinuteTime}`;
+              } else {
+                endMinuteTime = startMinuteTime;
+              }
+            }
+          } else {
+            if (
+              endMinuteTime >= 0 &&
+              endMinuteTime < 10 &&
+              state.selectedEndMinute.toString().length === 1
+            ) {
+              endMinuteTime = `0${state.selectedEndMinute}`;
+            } else {
+              endMinuteTime = state.selectedEndMinute;
+            }
+          }
+
+          if (endSecondTime === undefined) {
+            if (startSecondTime === undefined) {
+              if (new Date().getSeconds().toString().length === 1) {
+                startSecondTime = `0${new Date().getSeconds()}`;
+                endSecondTime = `0${new Date().getSeconds()}`;
+              } else {
+                startSecondTime = new Date().getSeconds();
+                endSecondTime = new Date().getSeconds();
+              }
+            } else {
+              if (startSecondTime.toString().length === 1) {
+                endSecondTime = `0${startSecondTime}`;
+              } else {
+                endSecondTime = startSecondTime;
+              }
+            }
+          } else {
+            if (
+              endSecondTime >= 0 &&
+              endSecondTime < 10 &&
+              state.selectedEndSecond.toString().length === 1
+            ) {
+              endSecondTime = `0${state.selectedEndSecond}`;
+            } else {
+              endSecondTime = state.selectedEndSecond;
+            }
+          }
+
+          if (!props.isSecondHide) {
+            return {
+              ...state,
+              endTime: `${endHourTime}:${endMinuteTime}:${endSecondTime} ${newEndTimeFormat}`,
+              selectedEndHour: endHourTime,
+              selectedEndMinute: endMinuteTime,
+              selectedEndSecond: endSecondTime,
+              show: "",
+            };
+          }
+          if (props.isSecondHide) {
+            return {
+              ...state,
+              endTime: `${endHourTime}:${endMinuteTime} ${newEndTimeFormat}`,
+              selectedEndHour: endHourTime,
+              selectedEndMinute: endMinuteTime,
+              show: "",
+            };
+          }
+
+          // end date selection :: end
+
+          if (
+            state.selectedEnd &&
+            state.selectedStart &&
+            state.selectedStart > state.selectedEnd &&
+            props.range
+          ) {
+            return {
+              ...state,
+              selectedEnd: null,
+              endTime: "",
+            };
+          }
+        }
+      // apply event handler :: end
+
+      // apply start date :: begin
+      case "APPLY_START_DATE":
+        if (state.show === "show" && state.selectedStart === null) {
+          return {
+            ...state,
+            selectedStart: new Date(),
+          };
+        }
+      // apply start date :: end
+
+      // apply end date :: begin
+      case "APPLY_END_DATE":
+        if (state.show === "show-end" && state.selectedEnd === null) {
+          return {
+            ...state,
+            selectedEnd: state.selectedStart,
+          };
+        }
+      // apply end date :: end
+
+      // date select :: begin
+      case "SELECT_DATE":
+        let toggle = state.show;
+        let selectedDate;
+        if (state.showClock === "" || state.showClock === undefined) {
+          if (props.range) {
+            toggle = "show-end";
+          } else {
+            toggle = "";
+          }
+        }
+        const selected =
+          new Date(action.year, action.month, action.day) ||
+          (props.minDate && minCalDate);
+        if (!props.range) {
           return {
             ...state,
             selectedStart: selected,
             selectedEnd: null,
             show: toggle,
           };
+        } else {
+          if (state.show === "show") {
+            return {
+              ...state,
+              selectedStart: selected,
+              show:
+                state.showClock === undefined || state.showClock === ""
+                  ? "show-end"
+                  : "show",
+            };
+          } else if (state.show === "show-end") {
+            if (
+              selected < state.selectedStart &&
+              state.selectedStart !== null
+            ) {
+              return {
+                ...state,
+                selectedStart: selected,
+                show: "show",
+              };
+            }
+            if (
+              selected.toDateString() === state.selectedStart.toDateString() ||
+              selected > state.selectedStart
+            ) {
+              return {
+                ...state,
+                selectedEnd: selected,
+                show:
+                  state.showEndClock === "" || state.showEndClock === undefined
+                    ? ""
+                    : "show-end",
+              };
+            }
+          }
         }
       // date select :: end
 
@@ -766,6 +1000,80 @@ export default function ModifiedDatePicker(props) {
         };
       // set input value into selectedEnd :: end
 
+      // empty end field :: begin
+      case "EMPTY_END_FIELD":
+        if (props.range) {
+          if (state.selectedEnd && state.selectedStart > state.selectedEnd) {
+            return {
+              ...state,
+              selectedEnd: state.selectedStart,
+            };
+          }
+
+          if (
+            state.selectedStart &&
+            state.selectedEnd &&
+            state.selectedStart.toDateString() ===
+              state.selectedEnd.toDateString()
+          ) {
+            if (props.clockTimeFormat === "am-pm") {
+              if (state.endTimeFormat === state.timeFormat) {
+                if (state.selectedEndHour < state.selectedHour) {
+                  return {
+                    ...state,
+                    selectedEndHour: state.selectedHour,
+                  };
+                } else if (state.selectedEndHour === state.selectedHour) {
+                  if (state.selectedEndMinute < state.selectedMinute) {
+                    return {
+                      ...state,
+                      selectedEndMinute: state.selectedMinute,
+                    };
+                  } else if (state.selectedEndMinute === state.selectedMinute) {
+                    if (state.selectedSecond > state.selectedEndSecond) {
+                      return {
+                        ...state,
+                        selectedEndSecond: state.selectedSecond,
+                      };
+                    }
+                  }
+                }
+              } else if (
+                state.endTimeFormat === "AM" &&
+                state.timeFormat === "PM"
+              ) {
+                return {
+                  ...state,
+                  endTime: "",
+                  endTimeFormat: state.timeFormat,
+                };
+              }
+            } else {
+              if (state.selectedEndHour < state.selectedHour) {
+                return {
+                  ...state,
+                  selectedEndHour: state.selectedHour,
+                };
+              } else if (state.selectedEndHour === state.selectedHour) {
+                if (state.selectedEndMinute < state.selectedMinute) {
+                  return {
+                    ...state,
+                    selectedEndMinute: state.selectedMinute,
+                  };
+                } else if (state.selectedEndMinute === state.selectedMinute) {
+                  if (state.selectedSecond > state.selectedEndSecond) {
+                    return {
+                      ...state,
+                      selectedEndSecond: state.selectedSecond,
+                    };
+                  }
+                }
+              }
+            }
+          }
+        }
+      // empty end field :: end
+
       case "REMOVE_END_DATE":
         return { ...state, selectedEnd: null };
 
@@ -780,50 +1088,106 @@ export default function ModifiedDatePicker(props) {
 
       // find time from input field text :: begin
       case "SET_TIME":
-        let startTimeFormat = state.timeFormat;
-        let startHour = state.selectedHour;
-        let startMinute = state.selectedMinute;
-        if (props.clockTimeFormat === "am-pm") {
-          startTimeFormat = action.format;
-          startMinute = action.minute;
-          if (action.hour <= 12) {
-            startHour = action.hour;
-          } else {
+        let startTimeFormat;
+        let startHour;
+        let startMinute;
+        let startSecond;
+        let startTime;
+        if (!props.isSecondHide) {
+          if (props.clockTimeFormat === "am-pm") {
+            startTimeFormat = action.format;
             startMinute = action.minute;
+            startSecond = action.second;
+            if (action.hour <= 12) {
+              startHour = action.hour;
+            } else {
+              startMinute = action.minute;
+            }
+            startTime = `${startHour}:${startMinute}:${startSecond} ${startTimeFormat}`;
+          } else {
+            startHour = action.hour;
+            startMinute = action.minute;
+            startSecond = action.second;
+            startTimeFormat = "";
+            startTime = `${startHour}:${startMinute}:${startSecond}`;
           }
         } else {
-          startHour = action.hour;
-          startMinute = action.minute;
-          startTimeFormat = "";
+          if (props.clockTimeFormat === "am-pm") {
+            startTimeFormat = action.format;
+            startMinute = action.minute;
+            startSecond = action.second;
+
+            if (action.hour <= 12) {
+              startHour = action.hour;
+            } else {
+              startMinute = action.minute;
+            }
+            startTime = `${startHour}:${startMinute} ${startTimeFormat}`;
+          } else {
+            startHour = action.hour;
+            startMinute = action.minute;
+            startSecond = action.second;
+            startTimeFormat = "";
+            startTime = `${startHour}:${startMinute}`;
+          }
         }
+
         return {
           ...state,
           selectedHour: startHour,
           selectedMinute: startMinute,
+          selectedSecond: startSecond,
           timeFormat: startTimeFormat,
-          time: `${state.selectedHour}:${state.selectedMinute} ${state.timeFormat}`,
+          time: startTime,
           showClock: "show",
-          show: "",
+          // show: "",
         };
       // find time from input field text :: end
 
       // find end time from input field text :: begin
       case "SET_END_TIME":
-        let endTimeFormat = state.endTimeFormat;
+        let inputEndTimeFormat = state.endTimeFormat;
         let endHour = state.selectedEndHour;
         let endMinute = state.selectedEndMinute;
-        if (props.clockTimeFormat === "am-pm") {
-          endTimeFormat = action.format;
-          endMinute = action.minute;
-          if (action.hour <= 12) {
-            endHour = action.hour;
-          } else {
+        let endSecond = state.selectedEndSecond;
+        let endTimeValue;
+
+        if (!props.isSecondHide) {
+          if (props.clockTimeFormat === "am-pm") {
+            inputEndTimeFormat = action.format;
             endMinute = action.minute;
+            endSecond = action.second;
+            if (action.hour <= 12) {
+              endHour = action.hour;
+            } else {
+              endMinute = action.minute;
+            }
+            endTimeValue = `${endHour}:${endMinute}:${endSecond} ${inputEndTimeFormat}`;
+          } else {
+            endHour = action.hour;
+            endMinute = action.minute;
+            endSecond = action.second;
+            inputEndTimeFormat = "";
+            endTimeValue = `${endHour}:${endMinute}:${endSecond}`;
           }
         } else {
-          endHour = action.hour;
-          endMinute = action.minute;
-          endTimeFormat = "";
+          if (props.clockTimeFormat === "am-pm") {
+            inputEndTimeFormat = action.format;
+            endMinute = action.minute;
+            endSecond = action.second;
+            if (action.hour <= 12) {
+              endHour = action.hour;
+            } else {
+              endMinute = action.minute;
+            }
+            endTimeValue = `${endHour}:${endMinute} ${inputEndTimeFormat}`;
+          } else {
+            endHour = action.hour;
+            endMinute = action.minute;
+            endSecond = action.second;
+            inputEndTimeFormat = "";
+            endTimeValue = `${endHour}:${endMinute}`;
+          }
         }
         return {
           ...state,
@@ -831,7 +1195,9 @@ export default function ModifiedDatePicker(props) {
           show: "",
           selectedEndHour: endHour,
           selectedEndMinute: endMinute,
-          endTime: `${state.selectedEndHour}:${state.selectedEndMinute} ${state.endTimeFormat}`,
+          selectedEndSecond: endSecond,
+          endTime: endTimeValue,
+          endTimeFormat: inputEndTimeFormat,
         };
       case "SET_END_HOUR":
         return {
@@ -850,6 +1216,60 @@ export default function ModifiedDatePicker(props) {
           show: "",
         };
       // find end time from input field text :: end
+      // validate start input field :: start
+      case "VALIDATE_START":
+        return {
+          ...state,
+          validateStart: action.payload,
+        };
+      // validate start input field :: end
+      // validate end input field :: start
+      case "VALIDATE_END":
+        return {
+          ...state,
+          validateEnd: action.payload,
+        };
+      // validate end input field :: end
+      case "SHOW_ERROR_MSG":
+        const errorToggle = !state.hideError;
+        return {
+          ...state,
+          hideError: errorToggle,
+        };
+      case "SHOW_END_ERROR_MSG":
+        const errorEndToggle = !state.hideErrorEnd;
+        return {
+          ...state,
+          hideErrorEnd: errorEndToggle,
+        };
+
+      case "HIDE_ERROR_MSG":
+        return {
+          ...state,
+          hideError: true,
+          hideErrorEnd: true,
+        };
+
+      case "CHANGE_TIME_FORMAT":
+        let changedFormat = "AM";
+        if (props.isMinCurrentTime && props.minDate) {
+          if (props.clockTimeFormat) {
+            if (state.currentDate.getHours() >= 12) {
+              changedFormat = "PM";
+            }
+          }
+        }
+        return {
+          ...state,
+          timeFormat: changedFormat,
+          endTimeFormat: changedFormat,
+        };
+
+      case "HIDE_CALENDAR_AT_START":
+        return {
+          ...state,
+          show: "",
+        };
       default:
         return state;
     }
@@ -868,16 +1288,64 @@ export default function ModifiedDatePicker(props) {
     selectedEnd,
     selectedHour,
     selectedMinute,
+    selectedSecond,
     selectedEndHour,
     selectedEndMinute,
+    selectedEndSecond,
     time,
     endTime,
     showEndClock,
     presentYear,
     timeFormat,
     endTimeFormat,
+    previousSelectedStartDate,
+    previousSelectedEndDate,
+    undoDate,
+    validateStart,
+    validateEnd,
+    hideError,
+    hideErrorEnd,
+    isFocused,
+    isEndFocused,
   } = state;
   // reducer hook :: end
+
+  let day;
+
+  // Determine the day value based on the selectedStart date or the current date
+  if (selectedStart === null) {
+    day = new Date().getDate();
+  } else {
+    day = selectedStart.getDate();
+  }
+
+  // Create a new Date object with the full date and time information
+
+  const fullDateFormat = new Date(
+    year,
+    month,
+    day,
+    selectedHour,
+    selectedMinute,
+    selectedSecond
+  );
+
+  const dateWithTime = `${year}-${
+    month + 1
+  }-${day} ${selectedHour}:${selectedMinute}:${selectedSecond}`;
+
+  const endDay = selectedEnd && selectedEnd.getDate();
+  // Create a new Date object with the full end date and time information if endDay is available
+  const fullEndDateFormat =
+    endDay &&
+    new Date(
+      year,
+      month,
+      endDay,
+      selectedEndHour,
+      selectedEndMinute,
+      selectedEndSecond
+    );
 
   // default variables :: begin
   const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -889,45 +1357,60 @@ export default function ModifiedDatePicker(props) {
   const currentYear = new Date().getFullYear();
   const minYear = currentYear - 20;
   const maxYear = currentYear + 40;
-  // const monthFormat = new Intl.DateTimeFormat("en-US", { month: "numeric" });
-  // const monthName = monthFormat.format(new Date(year, month));
-  // const yearFormat = new Intl.DateTimeFormat("en-US", { year: "numeric" });
-  // const yearValue = yearFormat.format(new Date(year, month));
   const years = [];
   const yearOptions = [];
   const hourOptions = [];
   const minuteOptions = [];
+  const secondsOptions = [];
   let startDate = "";
   let endDate = "";
+  let disableSelect = false;
   const id = props.id;
   // default variables :: end
 
-  // form variables
-  const startTime =
-    props.selectedMode === "dateTime" || props.selectedMode === "dateTimeRange"
-      ? `${selectedHour}:${selectedMinute}`
-      : "";
-  const startTimeFormat = props.clockTimeFormat === "am-pm" ? timeFormat : "";
-  const startInputValue =
-    selectedStart &&
-    `${selectedStart.getDate()}/${
-      selectedStart.getMonth() + 1
-    }/${selectedStart.getFullYear()} ${startTime} ${startTimeFormat}`;
+  // disable select dropodwn :: begin
+  if (props.isMinCurrentTime && props.minDate && selectedStart) {
+    // Extract the year, month, and day components from the dates
+    var currentYear2 = currentDate.getFullYear();
+    var currentMonth = currentDate.getMonth();
+    var currentDay = currentDate.getDate();
 
-  // ===============================================
+    var selectedYear = selectedStart.getFullYear();
+    var selectedMonth = selectedStart.getMonth();
+    var selectedDay = selectedStart.getDate();
 
-  const endTimeValue =
-    props.selectedMode === "dateTime" || props.selectedMode === "dateTimeRange"
-      ? `${selectedEndHour}:${selectedEndMinute}`
-      : "";
-  const endTimeFormatValue =
-    props.clockTimeFormat === "am-pm" ? endTimeFormat : "";
-  const endInputValue =
-    selectedEnd &&
-    `${selectedEnd.getDate()}/${
-      selectedEnd.getMonth() + 1
-    }/${selectedEnd.getFullYear()} ${endTimeValue} ${endTimeFormatValue}`;
-  // form variables
+    // Compare the dates
+    if (show === "show") {
+      if (
+        selectedYear > currentYear2 ||
+        (selectedYear === currentYear2 && selectedMonth > currentMonth) ||
+        (selectedYear === currentYear2 &&
+          selectedMonth === currentMonth &&
+          selectedDay > currentDay)
+      ) {
+        disableSelect = false;
+      } else if (
+        selectedYear < currentYear2 ||
+        (selectedYear === currentYear2 && selectedMonth < currentMonth) ||
+        (selectedYear === currentYear2 &&
+          selectedMonth === currentMonth &&
+          selectedDay < currentDay)
+      ) {
+        disableSelect = true;
+      } else {
+        disableSelect = false;
+      }
+    }
+    if (show === "show-end" && selectedEnd) {
+      disableSelect = false;
+    }
+  } else if (!props.isMinCurrentTime) {
+    if (show === "show" || (show === "show-end" && selectedEnd)) {
+      disableSelect = false;
+    }
+  }
+
+  // disable select dropodwn :: end
 
   // handle event listeners :: begin
   const handleFormatChange = () => {
@@ -948,10 +1431,30 @@ export default function ModifiedDatePicker(props) {
 
   const handleHourChange = (e) => {
     dispatch({ type: "CHANGE_HOUR", payload: e.target.value });
+
+    if (selectedEndHour && e.target.value > selectedEndHour) {
+      dispatch({ type: "CHANGE_END_HOUR", payload: e.target.value });
+    }
   };
 
   const handleMinuteChange = (e) => {
     dispatch({ type: "CHANGE_MINUTE", payload: e.target.value });
+
+    if (selectedEndMinute && e.target.value > selectedEndMinute) {
+      dispatch({ type: "CHANGE_END_MINUTE", payload: e.target.value });
+    }
+  };
+
+  const handleSecondChange = (e) => {
+    dispatch({ type: "CHANGE_SECOND", payload: e.target.value });
+
+    if (selectedEndHour && e.target.value > selectedEndSecond) {
+      dispatch({ type: "CHANGE_END_SECOND", payload: e.target.value });
+    }
+  };
+
+  const handleEndSecondChange = (e) => {
+    dispatch({ type: "CHANGE_END_SECOND", payload: e.target.value });
   };
 
   const handlePrevious = () => {
@@ -984,8 +1487,21 @@ export default function ModifiedDatePicker(props) {
 
   const handleReset = () => {
     dispatch({ type: "RESET" });
+    props.reset && props.reset();
   };
 
+  const handleStartUndo = () => {
+    props.undoClick && props.undoClick();
+  };
+
+  const handleEndUndo = () => {
+    let next = previousSelectedEndDate[previousSelectedEndDate.length - 2];
+
+    if (previousSelectedEndDate.length > 1) {
+      previousSelectedEndDate.pop();
+      dispatch({ type: "UNDO_END", payload: next });
+    }
+  };
   const handleEnable = () => {
     props.setIsDisabled(!props.isDisabled);
   };
@@ -999,42 +1515,148 @@ export default function ModifiedDatePicker(props) {
   };
 
   const handleApply = () => {
-    dispatch({ type: "APPLY" });
+    if (show === "show" && selectedStart !== null) {
+      if (props.isMinCurrentTime && props.minDate) {
+        if (selectedStart >= minCalDate) {
+          dispatch({ type: "APPLY" });
+        }
+
+        if (props.clockTimeFormat === "am-pm") {
+          if (selectedStart >= minCalDate) {
+            dispatch({ type: "APPLY" });
+          }
+          if (minCalDate.getHours() <= 11) {
+            if (timeFormat === "AM") {
+              if (selectedStart.toDateString() === minCalDate.toDateString()) {
+                if (selectedHour >= minCalDate.getHours()) {
+                  dispatch({ type: "APPLY" });
+                }
+              }
+            }
+          } else {
+            if (timeFormat === "PM") {
+              if (selectedStart.toDateString() === minCalDate.toDateString()) {
+                if (parseInt(selectedHour) + 12 >= minCalDate.getHours()) {
+                  dispatch({ type: "APPLY" });
+                }
+              }
+            }
+          }
+        } else {
+          dispatch({ type: "APPLY" });
+        }
+      } else {
+        dispatch({ type: "APPLY" });
+      }
+    } else if (show === "show-end" && selectedEnd !== null) {
+      if (selectedStart.toDateString() === selectedEnd.toDateString()) {
+        if (timeFormat === endTimeFormat) {
+          if (selectedEndHour >= selectedHour) {
+            dispatch({ type: "APPLY" });
+          }
+        }
+
+        if (timeFormat === "AM" && endTimeFormat === "PM") {
+          dispatch({ type: "APPLY" });
+        }
+      }
+
+      if (selectedEnd >= selectedStart) {
+        dispatch({ type: "APPLY" });
+      }
+    }
   };
 
   const handleDayClick = (day) => {
-    dispatch({
-      type: "SELECT_DATE",
-      year,
-      month,
-      day,
-    });
+    if (show === "show") {
+      previousSelectedStartDate.push(`${year}-${month + 1}-${day}`);
+      dispatch({ type: "UNDO_STATE", payload: "start" });
+    } else {
+      previousSelectedEndDate.push(`${year}-${month + 1}-${day}`);
+      dispatch({ type: "UNDO_STATE", payload: "end" });
+    }
+
+    if (props.minDate && !props.maxDate) {
+      if (
+        new Date(year, month, day) > minCalDate ||
+        new Date(year, month, day).toDateString() === minCalDate.toDateString()
+      ) {
+        dispatch({
+          type: "SELECT_DATE",
+          year,
+          month,
+          day,
+        });
+      }
+    }
+
+    if (!props.minDate && props.maxDate) {
+      if (
+        new Date(year, month, day) < maximumDate ||
+        new Date(year, month, day).toDateString() === maximumDate.toDateString()
+      ) {
+        dispatch({
+          type: "SELECT_DATE",
+          year,
+          month,
+          day,
+        });
+      }
+    }
+
+    if (props.minDate && props.maxDate) {
+      if (
+        (new Date(year, month, day) < maximumDate ||
+          new Date(year, month, day).toDateString() ===
+            maximumDate.toDateString()) &&
+        (new Date(year, month, day) > minCalDate ||
+          new Date(year, month, day).toDateString() ===
+            minCalDate.toDateString())
+      ) {
+        dispatch({
+          type: "SELECT_DATE",
+          year,
+          month,
+          day,
+        });
+      }
+    }
+
+    if (!props.minDate && !props.maxDate) {
+      dispatch({
+        type: "SELECT_DATE",
+        year,
+        month,
+        day,
+      });
+    }
+
+    if (show === "show") {
+      props.onChange && props.onChange(startInputValue);
+    } else {
+      props.onChange && props.onChange(`${startInputValue}To ${endInputValue}`);
+    }
   };
 
   const handleDocumentClick = (e) => {
     if (!e.target.closest(`#${id}`)) {
       dispatch({ type: "HIDE_CALENDAR" });
+      dispatch({ type: "HIDE_ERROR_MSG" });
+      dispatch({ type: "VALIDATE_START", payload: true });
+      dispatch({ type: "VALIDATE_END", payload: true });
     }
+  };
+
+  const handleShowError = () => {
+    dispatch({ type: "SHOW_ERROR_MSG" });
+  };
+
+  const handleShowEndError = () => {
+    dispatch({ type: "SHOW_END_ERROR_MSG" });
   };
   // handle event listeners :: end
 
   // useEffect hook :: begin
-  useEffect(() => {
-    props.onChange && props.onChange(startInputValue);
-  }, [selectedStart, selectedHour, selectedMinute, timeFormat]);
-
-  useEffect(() => {
-    props.onEndChange && props.onEndChange(endInputValue);
-  }, [selectedEnd, selectedEndHour, selectedEndMinute, endTimeFormat]);
-
-  useEffect(() => {
-    if (
-      props.selectedMode !== "range" ||
-      props.selectedMode !== "dateTimeRange"
-    ) {
-      dispatch({ type: "REMOVE_END_DATE" });
-    }
-  }, [props.selectedMode]);
 
   useEffect(() => {
     document.addEventListener("click", handleDocumentClick);
@@ -1044,41 +1666,39 @@ export default function ModifiedDatePicker(props) {
   }, []);
 
   let prevBtn = (
-    <button className="table-btn" onClick={handlePrevious}>
+    <button className="table-btn prev" onClick={handlePrevious}>
       &#x276E;
     </button>
   );
 
   useEffect(() => {
-    if (props.defaultSelectedDate) {
-      dispatch({ type: "DEFAULT_SELECTED_DATE" });
+    if (props.value && props.value.length !== null) {
+      dispatch({ type: "DEFAULT_VALUES" });
     }
-  }, [props.defaultSelectedDate]);
+
+    if (props.isMinCurrentTime) {
+      dispatch({ type: "CHANGE_TIME_FORMAT" });
+    }
+  }, []);
+
+  // useEffect(() => {
+  //   renderCount.current += 1;
+
+  //   if (renderCount.current === 3) {
+  //     dispatch({ type: "HIDE_CALENDAR_AT_START" });
+  //   }
+  // });
+
+  // useEffect(() => {
+  //   if (props.value) {
+  //     dispatch({ type: "DEFAULT_VALUES" });
+  //   }
+  // }, [props.value, props.range, props.isSecondHide]);
 
   useEffect(() => {
-    if (props.minimumDate) {
-      dispatch({ type: "MIN_DATE" });
-    }
-  }, [props.minimumDate]);
+    dispatch({ type: "TOGGLE_SHOW" });
+  }, [props.range]);
 
-  useEffect(() => {
-    if (props.defaultEndDate) {
-      dispatch({ type: "DEFAULT_END" });
-    }
-  }, [props.defaultEndDate]);
-
-  useEffect(() => {
-    if (props.defaultSelectedMonth && props.monthOnly) {
-      dispatch({ type: "MONTH_IN_MONTHONLY" });
-    }
-  }, [props.defaultSelectedMonth, props.monthOnly]);
-
-  useEffect(() => {
-    if (props.defaultSelectedTime) {
-      const [hour, minute] = props.defaultSelectedTime.split(":");
-      dispatch({ type: "DEFAULT_TIME" });
-    }
-  }, [props.defaultSelectedTime]);
   // useEffect hook :: end
 
   // logics for calendar :: begin
@@ -1090,19 +1710,269 @@ export default function ModifiedDatePicker(props) {
     );
   }
 
+  let currentHour = currentDate.getHours();
+  let currentMinute = currentDate.getMinutes();
+  let currentSecond = currentDate.getSeconds();
+  let currentPmHour = null;
+  let eveHour;
+
+  // Check if selected date is greater than current date
+  const isStartDateSelected = selectedStart > currentDate;
+
+  // Generate options for hour selection based on condition
   if (props.clockTimeFormat) {
     for (let i = 1; i <= 12; i++) {
       const value = i < 10 ? `0${i}` : i.toString();
-      hourOptions.push(
-        <option value={value} key={value}>
-          {value}
-        </option>
-      );
+      let disabled = true;
+      if (timeFormat === "PM") {
+        eveHour = parseInt(selectedHour) + 12;
+      } else {
+        eveHour = parseInt(selectedHour);
+      }
+
+      if (show === "show") {
+        if (isStartDateSelected) {
+          disabled = false;
+        }
+      }
+
+      if (currentHour > 11 && show === "show") {
+        currentPmHour = currentHour - 12;
+
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString()
+        ) {
+          if (timeFormat === "PM") {
+            disabled = i < currentPmHour;
+          } else if (timeFormat === "AM") {
+            disabled = true;
+          } else {
+            disabled = i < currentPmHour;
+          }
+        }
+      } else {
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString()
+        ) {
+          if (timeFormat === "AM") {
+            disabled = i < currentHour;
+          } else {
+            disabled = false;
+          }
+        }
+      }
+
+      if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
+
+        if (selectedHour < 12) {
+          if (timeFormat === "AM") {
+            if (
+              selectedEnd &&
+              selectedEnd.toDateString() === selectedStart.toDateString()
+            ) {
+              if (endTimeFormat === "AM") {
+                disabled = i < selectedHour;
+              } else {
+                disabled = false;
+              }
+            }
+          } else {
+            if (
+              selectedEnd &&
+              selectedEnd.toDateString() === selectedStart.toDateString()
+            ) {
+              if (endTimeFormat === "PM") {
+                disabled = i < selectedHour;
+
+                if (i === 12) {
+                  disabled = true;
+                }
+              } else {
+                disabled = true;
+              }
+            }
+          }
+        }
+
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          if (selectedHour >= 12) {
+            eveHour = selectedHour - 12;
+            if (endTimeFormat === "PM") {
+              disabled = i < eveHour;
+            } else if (endTimeFormat === "AM") {
+              disabled = true;
+            } else {
+              disabled = i < eveHour;
+            }
+          }
+        }
+      }
+
+      if ((props.isMinCurrentTime && props.minDate) || show === "show-end") {
+        hourOptions.push(
+          <option value={value} key={value} disabled={disabled}>
+            {value}
+          </option>
+        );
+      } else {
+        hourOptions.push(
+          <option value={value} key={value}>
+            {value}
+          </option>
+        );
+      }
     }
   } else {
     for (let i = 0; i < 24; i++) {
       const value = i < 10 ? `0${i}` : i.toString();
-      hourOptions.push(
+      let disabled = true;
+
+      if (show === "show") {
+        if (isStartDateSelected) {
+          disabled = false; // Enable all options if selected date is greater than current date
+        }
+
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString()
+        ) {
+          disabled = i < currentHour;
+        }
+      }
+
+      if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
+
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          disabled = i < selectedHour;
+        }
+      }
+
+      if ((props.isMinCurrentTime && props.minDate) || show === "show-end") {
+        hourOptions.push(
+          <option value={value} key={value} disabled={disabled}>
+            {value}
+          </option>
+        );
+      } else {
+        hourOptions.push(
+          <option value={value} key={value}>
+            {value}
+          </option>
+        );
+      }
+    }
+  }
+  // Generate options for minutes selection based on condition
+  for (let i = 0; i < 60; i++) {
+    const value = i < 10 ? `0${i}` : i.toString();
+    let disabled = false;
+
+    if (props.clockTimeFormat) {
+      if (currentHour > 11 && show === "show") {
+        if (isStartDateSelected) {
+          disabled = false; // Enable all options if selected date is greater than current date
+        }
+
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour
+        ) {
+          if (timeFormat === "PM") {
+            disabled = i < currentMinute;
+          } else if (timeFormat === "AM") {
+            disabled = true;
+          }
+        }
+      } else if (currentHour < 12 && show === "show") {
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour
+        ) {
+          if (timeFormat === "AM") {
+            disabled = i < currentMinute;
+          } else {
+            disabled = false;
+          }
+        }
+      } else if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
+
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          if (timeFormat === "PM" && endTimeFormat === "PM") {
+            disabled = i < selectedMinute;
+          } else if (timeFormat === "PM" && endTimeFormat === "AM") {
+            disabled = true;
+          }
+
+          if (timeFormat === "AM") {
+            if (endTimeFormat === "AM") {
+              disabled = i < selectedMinute;
+            } else {
+              disabled = false;
+            }
+          }
+        }
+      }
+    } else {
+      if (show === "show") {
+        if (isStartDateSelected) {
+          disabled = false;
+        }
+
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour
+        ) {
+          disabled = i < currentMinute;
+        }
+      }
+
+      if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
+
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          if (selectedEndHour === selectedHour) {
+            disabled = i < selectedMinute;
+          }
+        }
+      }
+    }
+
+    if ((props.isMinCurrentTime && props.minDate) || show === "show-end") {
+      minuteOptions.push(
+        <option value={value} key={value} disabled={disabled}>
+          {value}
+        </option>
+      );
+    } else {
+      minuteOptions.push(
         <option value={value} key={value}>
           {value}
         </option>
@@ -1110,16 +1980,120 @@ export default function ModifiedDatePicker(props) {
     }
   }
 
+  // Generate options for seconds selection based on condition
   for (let i = 0; i < 60; i++) {
     const value = i < 10 ? `0${i}` : i.toString();
-    minuteOptions.push(
-      <option value={value} key={value}>
-        {value}
-      </option>
-    );
+    let disabled = false;
+
+    if (props.clockTimeFormat) {
+      if (currentHour > 11 && show === "show") {
+        if (isStartDateSelected) {
+          disabled = false;
+        }
+
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour &&
+          currentMinute === selectedMinute
+        ) {
+          if (timeFormat === "PM") {
+            disabled = i < currentSecond;
+          } else if (timeFormat === "AM") {
+            disabled = true;
+          }
+        }
+      } else if (currentHour < 12 && show === "show") {
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour &&
+          currentMinute === selectedMinute
+        ) {
+          if (timeFormat === "AM") {
+            disabled = i < currentSecond;
+          } else {
+            disabled = false;
+          }
+        }
+      } else if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
+
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString() &&
+          selectedMinute === selectedEndMinute
+        ) {
+          if (timeFormat === "PM" && endTimeFormat === "PM") {
+            disabled = i < selectedSecond;
+          } else if (timeFormat === "PM" && endTimeFormat === "AM") {
+            disabled = true;
+          }
+
+          if (timeFormat === "AM") {
+            if (endTimeFormat === "AM") {
+              disabled = i < selectedSecond;
+            } else {
+              disabled = false;
+            }
+          }
+        }
+      }
+    } else {
+      if (show === "show") {
+        if (isStartDateSelected) {
+          disabled = false;
+        }
+
+        if (
+          selectedStart &&
+          selectedStart.toDateString() === currentDate.toDateString() &&
+          currentHour === selectedHour &&
+          currentMinute === selectedMinute
+        ) {
+          disabled = i < currentSecond;
+        }
+      }
+
+      if (show === "show-end") {
+        if (selectedEnd && selectedEnd > selectedStart) {
+          disabled = false;
+        }
+
+        if (
+          selectedEnd &&
+          selectedEnd.toDateString() === selectedStart.toDateString()
+        ) {
+          if (selectedEndHour === selectedHour) {
+            if (selectedEndMinute === selectedMinute) {
+              disabled = i < selectedSecond;
+            }
+          }
+        }
+      }
+    }
+
+    if ((props.isMinCurrentTime && props.minDate) || show === "show-end") {
+      secondsOptions.push(
+        <option value={value} key={value} disabled={disabled}>
+          {value}
+        </option>
+      );
+    } else {
+      secondsOptions.push(
+        <option value={value} key={value}>
+          {value}
+        </option>
+      );
+    }
   }
 
+  // Determine the date format based on the props or use default "DD/MM/YYYY"
   const str = props.format || "DD/MM/YYYY";
+
+  // Determine the separator based on the date format
   const separator = str.includes("/")
     ? "/"
     : str.includes("-")
@@ -1142,6 +2116,7 @@ export default function ModifiedDatePicker(props) {
     startMonthNumber = selectedStart?.getMonth() + 1;
   }
 
+  // Format the start date based on the given date format
   const startDateFormat = (str, separator) => {
     const stringMap = {
       DD: startDateNumber || "DD",
@@ -1158,6 +2133,7 @@ export default function ModifiedDatePicker(props) {
 
   startDate = startDateFormat(str, separator);
 
+  // Format the end date based on the given date format
   let endDateNumber;
   if (selectedEnd?.getDate() < 10) {
     endDateNumber = `0${selectedEnd?.getDate()}`;
@@ -1188,10 +2164,57 @@ export default function ModifiedDatePicker(props) {
 
   endDate = endDateFormat(str, separator);
 
+  // form variables
+  // Assign the start time based on selected hour, minute, and second
+  let startInputValue;
+
+  if (showClock === "show") {
+    startInputValue = selectedStart && `${startDate} ${time}`;
+  } else {
+    startInputValue = selectedStart && `${startDate}`;
+  }
+
+  // ===============================================
+
+  let endInputValue;
+
+  if (showEndClock === "show") {
+    endInputValue = selectedEnd && `${endDate} ${endTime}`;
+  } else {
+    endInputValue = selectedEnd && `${endDate}`;
+  }
+  // form variables
+
+  useEffect(() => {
+    // props.onChange && props.onChange(startInputValue);
+    if (selectedStart > selectedEnd) {
+      dispatch({ type: "EMPTY_END_FIELD" });
+    }
+  }, [
+    selectedStart,
+    selectedHour,
+    selectedMinute,
+    timeFormat,
+    selectedSecond,
+    time,
+  ]);
+
+  useEffect(() => {
+    props.onEndChange && props.onEndChange(endInputValue);
+  }, [
+    selectedEnd,
+    selectedEndHour,
+    selectedEndMinute,
+    endTimeFormat,
+    selectedEndSecond,
+    endTime,
+  ]);
+
+  // Determine the previous button state based on the "show" value and current month/year
   if (show === "show") {
-    if (month === minDate.getMonth() && year === minDate.getFullYear()) {
+    if (month === minCalDate.getMonth() && year === minCalDate.getFullYear()) {
       prevBtn = (
-        <button disabled className="table-btn" onClick={handlePrevious}>
+        <button disabled className="table-btn prev" onClick={handlePrevious}>
           &#x276E;
         </button>
       );
@@ -1199,13 +2222,14 @@ export default function ModifiedDatePicker(props) {
   } else if (show === "show-end") {
     if (month === new Date(selectedStart).getMonth()) {
       prevBtn = (
-        <button disabled className="table-btn" onClick={handlePrevious}>
+        <button disabled className="table-btn prev" onClick={handlePrevious}>
           &#x276E;
         </button>
       );
     }
   }
 
+  // Generate an array of years for selection
   for (let i = 0; i < 12; i++) {
     years.push(presentYear + i);
   }
@@ -1216,45 +2240,511 @@ export default function ModifiedDatePicker(props) {
      function for input value :: begin
      =================================
      ================================= */
+
+  // Handle the change event of the date input
+
   const handleDateChange = (event) => {
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
 
-    const str = format
-      .replace("DD", "\\d{2}")
-      .replace("MM", "\\d{2}")
-      .replace("YYYY", "\\d{4}");
+    props.onChange && props.onChange(value);
+
+    let isDateValid;
+    let isTimeValid;
+    let dateValue;
+
+    const lowercaseFormat = format.toLowerCase();
+    const lowercaseValue = value.toLowerCase();
+
+    const str = lowercaseFormat
+      .replace("dd", "\\d{2}")
+      .replace("mm", "\\d{2}")
+      .replace("yyyy", "\\d{4}");
 
     const regex = new RegExp(`^${str}$`);
+    isDateValid = lowercaseValue.match(regex);
 
-    if (value.match(regex)) {
-      const dd = value.slice(format.indexOf("DD"), format.indexOf("DD") + 2);
-      const mm = value.slice(format.indexOf("MM"), format.indexOf("MM") + 2);
+    if (showClock === "show") {
+      if (lowercaseValue.includes(" ")) {
+        [dateValue] = lowercaseValue.split(" ");
+
+        isDateValid = dateValue.match(regex);
+      }
+    }
+
+    if (isDateValid) {
+      const dd = value.slice(
+        lowercaseFormat.indexOf("dd"),
+        lowercaseFormat.indexOf("dd") + 2
+      );
+      const mm = value.slice(
+        lowercaseFormat.indexOf("mm"),
+        lowercaseFormat.indexOf("mm") + 2
+      );
       const yyyy = value.slice(
-        format.indexOf("YYYY"),
-        format.indexOf("YYYY") + 4
+        lowercaseFormat.indexOf("yyyy"),
+        lowercaseFormat.indexOf("yyyy") + 4
       );
 
       const dateArr = [yyyy, mm, dd];
       const rearrangedDateStr = dateArr.join("-");
 
-      dispatch({
-        type: "SET_SELECTED_START",
-        payload: new Date(rearrangedDateStr),
-      });
+      if (
+        parseInt(dd) <= 31 &&
+        parseInt(mm) <= 12 &&
+        yyyy.length === 4 &&
+        parseInt(yyyy) >= minYear &&
+        parseInt(yyyy) <= maxYear
+      ) {
+        if (props.minDate && !props.maxDate) {
+          if (
+            minCalDate < new Date(rearrangedDateStr) ||
+            new Date(rearrangedDateStr).toDateString() ===
+              minCalDate.toDateString()
+          ) {
+            dispatch({
+              type: "SET_SELECTED_START",
+              payload: new Date(rearrangedDateStr),
+            });
+            previousSelectedStartDate.push(rearrangedDateStr);
+          }
+        }
+
+        if (!props.minDate && props.maxDate) {
+          if (
+            maximumDate > new Date(rearrangedDateStr) ||
+            new Date(rearrangedDateStr).toDateString() ===
+              maximumDate.toDateString()
+          ) {
+            dispatch({
+              type: "SET_SELECTED_START",
+              payload: new Date(rearrangedDateStr),
+            });
+            previousSelectedStartDate.push(rearrangedDateStr);
+          }
+        }
+
+        if (props.minDate && props.maxDate) {
+          if (
+            (minCalDate < new Date(rearrangedDateStr) ||
+              new Date(rearrangedDateStr).toDateString() ===
+                minCalDate.toDateString()) &&
+            (maximumDate > new Date(rearrangedDateStr) ||
+              new Date(rearrangedDateStr).toDateString() ===
+                maximumDate.toDateString())
+          ) {
+            dispatch({
+              type: "SET_SELECTED_START",
+              payload: new Date(rearrangedDateStr),
+            });
+            previousSelectedStartDate.push(rearrangedDateStr);
+          }
+        }
+
+        if (!props.minDate && !props.maxDate) {
+          dispatch({
+            type: "SET_SELECTED_START",
+            payload: new Date(rearrangedDateStr),
+          });
+          previousSelectedStartDate.push(rearrangedDateStr);
+        }
+      }
     }
 
-    const timeRegex = /(\d{2}:\d{2})/;
+    // Handle the change event of the time input
+    let timeRegex;
+    let amPm = "";
+    let capitalMeridiem;
 
-    const matches = value.match(timeRegex);
+    if (props.isSecondHide) {
+      timeRegex = /(\d{2}:\d{2})/;
+    } else {
+      timeRegex = /(\d{2}:\d{2}:\d{2})/;
+    }
 
-    if (matches && matches.length > 1) {
-      var time = matches[0];
-      var hour = value.substr(matches.index, 2);
-      var minute = value.substr(matches.index + 3, 2);
-      const amPm = value.substr(matches.index + 6, 2);
+    const matches = lowercaseValue.match(timeRegex);
+    isTimeValid = matches && matches.length > 1;
 
-      dispatch({ type: "SET_TIME", format: amPm, hour, minute });
+    if (isTimeValid) {
+      var time;
+      var hour;
+      var minute;
+      let second;
+
+      if (props.clockTimeFormat === "am-pm") {
+        let newDate;
+        if (lowercaseValue.includes(" ")) {
+          [newDate, time, amPm] = lowercaseValue.split(" ");
+        }
+
+        capitalMeridiem = amPm.toUpperCase();
+
+        if (time.includes(":")) {
+          [hour, minute, second] = matches[0].split(":");
+        }
+      } else {
+        if (matches[0].includes(":")) {
+          [hour, minute, second] = matches[0].split(":");
+        }
+      }
+
+      if (selectedEnd && selectedEnd === selectedStart) {
+        if (selectedEndHour) {
+          if (hour > selectedEndHour) {
+            console.log("working");
+            dispatch({ type: "CHANGE_END_HOUR", payload: hour });
+            dispatch({
+              type: "SET_END_TIME",
+              hour,
+              minute: selectedEndMinute,
+              second: selectedEndSecond,
+              format: capitalMeridiem,
+            });
+          }
+          if (hour === selectedEndHour) {
+            if (selectedEndMinute) {
+              if (minute > selectedEndMinute) {
+                dispatch({ type: "CHANGE_END_MINUTE", payload: minute });
+                dispatch({
+                  type: "SET_END_TIME",
+                  minute,
+                  hour: selectedEndHour,
+                  second: selectedEndSecond,
+                  format: capitalMeridiem,
+                });
+              }
+
+              if (minute === selectedEndMinute) {
+                console.log(second > selectedEndSecond);
+                if (second > selectedEndSecond) {
+                  console.log("working");
+                  dispatch({ type: "CHANGE_END_SECOND", payload: second });
+                  dispatch({
+                    type: "SET_END_TIME",
+                    second,
+                    hour: selectedEndHour,
+                    minute: selectedEndMinute,
+                    format: capitalMeridiem,
+                  });
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (
+        props.isSecondHide
+          ? minute <= 60 && hour <= 24
+          : minute <= 60 && hour <= 24 && second <= 60
+      ) {
+        if (props.minDate) {
+          if (selectedStart > minCalDate) {
+            console.log("cond 1");
+            dispatch({
+              type: "SET_TIME",
+              format: capitalMeridiem,
+              hour,
+              minute,
+              second,
+            });
+          }
+          if (selectedStart.toDateString() === minCalDate.toDateString()) {
+            if (
+              hour >= minCalDate.getHours() &&
+              minute >= minCalDate.getMinutes() &&
+              second >= minCalDate.getSeconds()
+            ) {
+              console.log("cond 2");
+              dispatch({
+                type: "SET_TIME",
+                format: capitalMeridiem,
+                hour,
+                minute,
+                second,
+              });
+            }
+
+            if (hour > minCalDate.getHours()) {
+              console.log("cond 3");
+              dispatch({
+                type: "SET_TIME",
+                format: capitalMeridiem,
+                hour,
+                minute,
+                second,
+              });
+            }
+
+            if (selectedEnd && selectedEnd === selectedStart) {
+              console.log("working");
+              if (selectedEndHour) {
+                if (hour > selectedEndHour) {
+                  dispatch({ type: "CHANGE_END_HOUR", payload: hour });
+                  dispatch({
+                    type: "SET_END_TIME",
+                    hour,
+                    minute: minute,
+                    second: second,
+                    format: capitalMeridiem,
+                  });
+                }
+                if (hour === selectedEndHour) {
+                  if (selectedEndMinute) {
+                    if (minute > selectedEndMinute) {
+                      dispatch({ type: "CHANGE_END_MINUTE", payload: minute });
+                      dispatch({
+                        type: "SET_END_TIME",
+                        minute,
+                        hour: selectedEndHour,
+                        second: second,
+                        format: capitalMeridiem,
+                      });
+                    }
+
+                    if (minute === selectedEndMinute) {
+                      if (second > selectedEndSecond) {
+                        dispatch({
+                          type: "CHANGE_END_SECOND",
+                          payload: second,
+                        });
+                        dispatch({
+                          type: "SET_END_TIME",
+                          second,
+                          hour: selectedEndHour,
+                          minute: selectedEndMinute,
+                          format: capitalMeridiem,
+                        });
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            if (hour === minCalDate.getHours()) {
+              if (minute > minCalDate.getMinutes()) {
+                console.log("cond 4");
+                dispatch({
+                  type: "SET_TIME",
+                  format: capitalMeridiem,
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+
+              if (minute === minCalDate.getMinutes()) {
+                if (second >= minCalDate.getSeconds()) {
+                  console.log("cond 5");
+                  dispatch({
+                    type: "SET_TIME",
+                    format: capitalMeridiem,
+                    hour,
+                    minute,
+                    second,
+                  });
+                }
+              }
+            }
+          }
+        } else {
+          console.log("cond 6");
+          dispatch({
+            type: "SET_TIME",
+            format: capitalMeridiem,
+            hour,
+            minute,
+            second,
+          });
+        }
+      } else if (
+        props.clockTimeFormat === "am-pm" &&
+        minute <= 60 &&
+        second <= 60 &&
+        hour <= 12
+      ) {
+        if (hour > 12) {
+          hour -= 12;
+
+          if (hour <= 12) {
+            if (props.minDate) {
+              if (selectedStart > minCalDate) {
+                console.log("cond 7");
+                dispatch({
+                  type: "SET_TIME",
+                  format: capitalMeridiem,
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+              if (selectedStart.toDateString() === minCalDate.toDateString()) {
+                console.log("cond 8");
+                dispatch({
+                  type: "SET_TIME",
+                  format: "PM",
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+            } else {
+              console.log("cond 9");
+              dispatch({
+                type: "SET_TIME",
+                format: capitalMeridiem,
+                hour,
+                minute,
+                second,
+              });
+            }
+          }
+        } else {
+          if (props.minDate) {
+            if (selectedStart > minCalDate || capitalMeridiem === "PM") {
+              console.log("cond 10");
+              dispatch({
+                type: "SET_TIME",
+                format: capitalMeridiem,
+                hour,
+                minute,
+                second,
+              });
+            }
+
+            if (selectedStart.toDateString() === minCalDate.toDateString()) {
+              if (
+                hour >= minCalDate.getHours() &&
+                minute >= minCalDate.getMinutes() &&
+                second >= minCalDate.getSeconds()
+              ) {
+                console.log("cond 11");
+                dispatch({
+                  type: "SET_TIME",
+                  format: capitalMeridiem,
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+
+              if (hour > minCalDate.getHours()) {
+                console.log("cond 12");
+                dispatch({
+                  type: "SET_TIME",
+                  format: capitalMeridiem,
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+
+              if (hour === minCalDate.getHours()) {
+                if (minute > minCalDate.getMinutes()) {
+                  console.log("cond 13");
+                  dispatch({
+                    type: "SET_TIME",
+                    format: capitalMeridiem,
+                    hour,
+                    minute,
+                    second,
+                  });
+                }
+
+                if (minute === minCalDate.getMinutes()) {
+                  if (second >= minCalDate.getSeconds()) {
+                    console.log("cond 14");
+                    dispatch({
+                      type: "SET_TIME",
+                      format: capitalMeridiem,
+                      hour,
+                      minute,
+                      second,
+                    });
+                  }
+                }
+              }
+            }
+          } else {
+            console.log("cond 16");
+            dispatch({
+              type: "SET_TIME",
+              format: capitalMeridiem,
+              hour,
+              minute,
+              second,
+            });
+          }
+        }
+      }
+    }
+
+    // check validity of input text
+    if (props.error) {
+      let dateTimeRegex = regex;
+
+      if (props.selectedMode === "dateTime") {
+        dateTimeRegex = new RegExp(/^\d{2}-\d{2}-\d{4} \d{2}:\d{2}:\d{2}$/);
+
+        if (props.isSecondHide) {
+          dateTimeRegex = new RegExp(/^\d{2}-\d{2}-\d{4} \d{2}:\d{2}$/);
+        }
+
+        if (props.clockTimeFormat === "am-pm") {
+          dateTimeRegex = new RegExp(
+            /^\d{2}-\d{2}-\d{4} \d{2}:\d{2}:\d{2} (AM|PM)$/i
+          );
+
+          if (props.isSecondHide) {
+            dateTimeRegex = new RegExp(
+              /^\d{2}-\d{2}-\d{4} \d{2}:\d{2} (AM|PM)$/i
+            );
+          }
+        }
+      }
+
+      const validate = value.match(dateTimeRegex);
+
+      if (validate) {
+        const year = parseInt(validate[0].substring(6, 11));
+        const month = parseInt(validate[0].substring(3, 5)); // Months are zero-based (0-11)
+        const day = parseInt(validate[0].substring(0, 2));
+        let hour = parseInt("00");
+        let minute = parseInt("00");
+        let second = parseInt("00");
+        let meridiem;
+
+        if (props.selectedMode === "dateTime") {
+          hour = parseInt(validate[0].substring(11, 13));
+          minute = parseInt(validate[0].substring(14, 16));
+
+          if (props.clockTimeFormat === "am-pm") {
+            if (!props.isSecondHide) {
+              second = parseInt(validate[0].substring(17, 19));
+              meridiem = validate[0].substring(20, 23);
+            } else {
+              meridiem = validate[0].substring(17, 19);
+            }
+
+            if (meridiem === "PM") {
+              hour += 12; // Convert to 24-hour format
+            }
+          }
+        } else {
+          if (!props.isSecondHide) {
+            second = parseInt(validate[0].substring(17, 19));
+          }
+        }
+
+        const dateObject = new Date(year, month, day, hour, minute, second);
+        const isValidDateTime =
+          !isNaN(dateObject) || dateObject instanceof Date;
+
+        dispatch({ type: "VALIDATE_START", payload: isValidDateTime });
+      } else {
+        dispatch({ type: "VALIDATE_START", payload: false });
+      }
     }
   };
 
@@ -1268,47 +2758,369 @@ export default function ModifiedDatePicker(props) {
     props.onBlur && props.onBlur();
   }
 
+  function handleClearClick() {
+    props.clearClick && props.clearClick();
+  }
+
   //  =========================================================
+
+  // Handle the change event of the EndDate input
 
   const handleEndDateChange = (event) => {
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
 
-    const str = format
-      .replace("DD", "\\d{2}")
-      .replace("MM", "\\d{2}")
-      .replace("YYYY", "\\d{4}");
+    props.onChange && props.onChange(`${startInputValue}To ${value}`);
+
+    let isDateValid;
+    let isTimeValid;
+    let dateValue;
+
+    const lowercaseFormat = format.toLowerCase();
+    const lowercaseValue = value.toLowerCase();
+
+    const str = lowercaseFormat
+      .replace("dd", "\\d{2}")
+      .replace("mm", "\\d{2}")
+      .replace("yyyy", "\\d{4}");
 
     const regex = new RegExp(`^${str}$`);
+    isDateValid = lowercaseValue.match(regex);
 
-    if (value.match(regex)) {
-      const dd = value.slice(format.indexOf("DD"), format.indexOf("DD") + 2);
-      const mm = value.slice(format.indexOf("MM"), format.indexOf("MM") + 2);
-      const yyyy = value.slice(
-        format.indexOf("YYYY"),
-        format.indexOf("YYYY") + 4
+    if (showEndClock === "show") {
+      if (lowercaseValue.includes(" ")) {
+        [dateValue] = lowercaseValue.split(" ");
+
+        isDateValid = dateValue.match(regex);
+      }
+    }
+
+    if (isDateValid) {
+      const dd = lowercaseValue.slice(
+        lowercaseFormat.indexOf("dd"),
+        lowercaseFormat.indexOf("dd") + 2
+      );
+      const mm = lowercaseValue.slice(
+        lowercaseFormat.indexOf("mm"),
+        lowercaseFormat.indexOf("mm") + 2
+      );
+      const yyyy = lowercaseValue.slice(
+        lowercaseFormat.indexOf("yyyy"),
+        lowercaseFormat.indexOf("yyyy") + 4
       );
 
       const dateArr = [yyyy, mm, dd];
       const rearrangedDateStr = dateArr.join("-");
 
-      dispatch({
-        type: "SET_SELECTED_END",
-        payload: new Date(rearrangedDateStr),
-      });
+      if (props.maxDate && selectedStart) {
+        if (
+          (new Date(rearrangedDateStr) > selectedStart ||
+            new Date(rearrangedDateStr).toDateString() ===
+              selectedStart.toDateString()) &&
+          (new Date(rearrangedDateStr) < maximumDate ||
+            new Date(rearrangedDateStr).toDateString() ===
+              maximumDate.toDateString())
+        ) {
+          dispatch({
+            type: "SET_SELECTED_END",
+            payload: new Date(rearrangedDateStr),
+          });
+        }
+      }
+      if (parseInt(yyyy) <= maxYear && !props.maxDate) {
+        if (
+          new Date(rearrangedDateStr) > selectedStart ||
+          new Date(rearrangedDateStr).toDateString() ===
+            selectedStart.toDateString()
+        ) {
+          dispatch({
+            type: "SET_SELECTED_END",
+            payload: new Date(rearrangedDateStr),
+          });
+        } else {
+          dispatch({
+            type: "SET_SELECTED_END",
+            payload: selectedStart,
+          });
+        }
+      }
+
+      previousSelectedEndDate.push(rearrangedDateStr);
     }
 
-    const timeRegex = /(\d{2}:\d{2})/;
+    // Handle the change event of the Endtime input
 
-    const matches = value.match(timeRegex);
+    let timeRegex;
+    let amPm = "";
+    let capitalMeridiem;
 
-    if (matches && matches.length > 1) {
-      var time = matches[0];
-      var hour = value.substr(matches.index, 2);
-      var minute = value.substr(matches.index + 3, 2);
-      const amPm = value.substr(matches.index + 6, 2);
+    if (props.isSecondHide) {
+      timeRegex = /(\d{2}:\d{2})/;
+    } else {
+      timeRegex = /(\d{2}:\d{2}:\d{2})/;
+    }
 
-      dispatch({ type: "SET_END_TIME", format: amPm, hour, minute });
+    const matches = lowercaseValue.match(timeRegex);
+    isTimeValid = matches && matches.length > 1;
+
+    if (isTimeValid) {
+      var time;
+      var hour;
+      var minute;
+      let second;
+
+      if (props.clockTimeFormat === "am-pm") {
+        let newDate;
+        if (lowercaseValue.includes(" ")) {
+          [newDate, time, amPm] = lowercaseValue.split(" ");
+        }
+
+        capitalMeridiem = amPm.toUpperCase();
+
+        if (time.includes(":")) {
+          [hour, minute, second] = matches[0].split(":");
+        }
+      } else {
+        if (matches[0].includes(":")) {
+          [hour, minute, second] = matches[0].split(":");
+        }
+      }
+
+      if (
+        props.isSecondHide
+          ? minute <= 60 && hour <= 24
+          : minute <= 60 && hour <= 24 && second <= 60
+      ) {
+        if (selectedEnd.toDateString() === selectedStart.toDateString()) {
+          if (
+            hour > selectedHour ||
+            (hour === selectedHour &&
+              (minute > selectedMinute ||
+                (minute === selectedMinute && second >= selectedSecond)))
+          ) {
+            dispatch({
+              type: "SET_END_TIME",
+              format: capitalMeridiem,
+              hour,
+              minute,
+              second,
+            });
+          }
+        } else if (selectedEnd > selectedStart) {
+          dispatch({
+            type: "SET_END_TIME",
+            format: capitalMeridiem,
+            hour,
+            minute,
+            second,
+          });
+        }
+      } else if (
+        props.clockTimeFormat === "am-pm" &&
+        minute <= 60 &&
+        second <= 60 &&
+        hour <= 12
+      ) {
+        if (
+          new Date(
+            selectedEnd.getFullYear(),
+            selectedEnd.getMonth(),
+            selectedEnd.getDate()
+          ) >
+          new Date(
+            selectedStart.getFullYear(),
+            selectedStart.getMonth(),
+            selectedStart.getDate()
+          )
+        ) {
+          dispatch({
+            type: "SET_END_TIME",
+            format: capitalMeridiem,
+            hour,
+            minute,
+            second,
+          });
+        }
+
+        if (selectedEnd.toDateString() === selectedStart.toDateString()) {
+          if (timeFormat === "PM") {
+            if (
+              hour >= selectedHour &&
+              minute >= selectedMinute &&
+              second >= selectedSecond
+            ) {
+              dispatch({
+                type: "SET_END_TIME",
+                format: "PM",
+                hour,
+                minute,
+                second,
+              });
+            }
+
+            if (hour > selectedHour) {
+              dispatch({
+                type: "SET_END_TIME",
+                format: "PM",
+                hour,
+                minute,
+                second,
+              });
+            }
+
+            if (hour === selectedHour) {
+              if (minute > selectedMinute) {
+                dispatch({
+                  type: "SET_END_TIME",
+                  format: "PM",
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+
+              if (minute === selectedMinute) {
+                if (second >= selectedSecond) {
+                  dispatch({
+                    type: "SET_END_TIME",
+                    format: "PM",
+                    hour,
+                    minute,
+                    second,
+                  });
+                }
+              }
+            }
+          }
+          if (timeFormat === "AM") {
+            if (capitalMeridiem === "PM") {
+              dispatch({
+                type: "SET_END_TIME",
+                format: capitalMeridiem,
+                hour,
+                minute,
+                second,
+              });
+            }
+            if (capitalMeridiem === "AM") {
+              if (
+                hour >= selectedHour &&
+                minute >= selectedMinute &&
+                second >= selectedSecond
+              ) {
+                dispatch({
+                  type: "SET_END_TIME",
+                  format: capitalMeridiem,
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+
+              if (hour > selectedHour) {
+                dispatch({
+                  type: "SET_END_TIME",
+                  format: capitalMeridiem,
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+
+              if (hour === selectedHour) {
+                if (minute > selectedMinute) {
+                  dispatch({
+                    type: "SET_END_TIME",
+                    format: capitalMeridiem,
+                    hour,
+                    minute,
+                    second,
+                  });
+                }
+
+                if (minute === selectedMinute) {
+                  if (second >= selectedSecond) {
+                    dispatch({
+                      type: "SET_END_TIME",
+                      format: capitalMeridiem,
+                      hour,
+                      minute,
+                      second,
+                    });
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // check validity of input text
+    if (props.error) {
+      let dateTimeRegex = regex;
+
+      if (props.selectedMode === "dateTime") {
+        dateTimeRegex = new RegExp(/^\d{2}-\d{2}-\d{4} \d{2}:\d{2}:\d{2}$/);
+
+        if (props.isSecondHide) {
+          dateTimeRegex = new RegExp(/^\d{2}-\d{2}-\d{4} \d{2}:\d{2}$/);
+        }
+
+        if (props.clockTimeFormat === "am-pm") {
+          dateTimeRegex = new RegExp(
+            /^\d{2}-\d{2}-\d{4} \d{2}:\d{2}:\d{2} (AM|PM)$/i
+          );
+
+          if (props.isSecondHide) {
+            dateTimeRegex = new RegExp(
+              /^\d{2}-\d{2}-\d{4} \d{2}:\d{2} (AM|PM)$/i
+            );
+          }
+        }
+      }
+
+      const validate = value.match(dateTimeRegex);
+
+      if (validate && validate.length > 0) {
+        const year = parseInt(validate[0].substring(6, 11));
+        const month = parseInt(validate[0].substring(3, 5)); // Months are zero-based (0-11)
+        const day = parseInt(validate[0].substring(0, 2));
+        let hour = parseInt("00");
+        let minute = parseInt("00");
+        let second = parseInt("00");
+        let meridiem;
+
+        if (props.selectedMode === "dateTime") {
+          hour = parseInt(validate[0].substring(11, 13));
+          minute = parseInt(validate[0].substring(14, 16));
+
+          if (props.clockTimeFormat === "am-pm") {
+            if (!props.isSecondHide) {
+              second = parseInt(validate[0].substring(17, 19));
+              meridiem = validate[0].substring(20, 23);
+            } else {
+              meridiem = validate[0].substring(17, 19);
+            }
+
+            if (meridiem === "PM") {
+              hour += 12; // Convert to 24-hour format
+            }
+          }
+        } else {
+          if (!props.isSecondHide) {
+            second = parseInt(validate[0].substring(17, 19));
+          }
+        }
+
+        const dateObject = new Date(year, month, day, hour, minute, second);
+        const isValidDateTime =
+          !isNaN(dateObject) && dateObject instanceof Date;
+
+        dispatch({ type: "VALIDATE_END", payload: isValidDateTime });
+      } else {
+        dispatch({ type: "VALIDATE_END", payload: false });
+      }
     }
   };
   function handleEndFocus() {
@@ -1321,20 +3133,41 @@ export default function ModifiedDatePicker(props) {
     props.onEndBlur && props.onEndBlur();
   }
 
+  function handleClearClickEnd() {
+    props.clearClickEnd && props.clearClickEnd();
+  }
+
   /* =================================
      =================================
      function for input value :: end
      =================================
      ================================= */
+
   return (
-    <div className={props.className} style={props.style}>
+    <div
+      className={`date-time-range-picker ${props.className}`}
+      style={props.style}
+    >
       <div className="calendar-wrap" id={id}>
         <div className={`calendar ${show}`}>
           <>
             {/* ===== calendar :: begin ===== */}
             <div className="calendar-header">
               <>
-                {prevBtn}
+                {month === minCalDate.getMonth() &&
+                year === minCalDate.getFullYear() ? (
+                  <button
+                    disabled
+                    className="table-btn prev"
+                    onClick={handlePrevious}
+                  >
+                    &#x276E;
+                  </button>
+                ) : (
+                  <button className="table-btn prev" onClick={handlePrevious}>
+                    &#x276E;
+                  </button>
+                )}
                 <div>
                   <select
                     className="table-select"
@@ -1342,7 +3175,11 @@ export default function ModifiedDatePicker(props) {
                     onChange={handleMonthChange}
                   >
                     {months.map((month, index) => {
-                      return <option value={index}>{month}</option>;
+                      return (
+                        <option key={index} value={index}>
+                          {month}
+                        </option>
+                      );
                     })}
                   </select>
 
@@ -1354,13 +3191,17 @@ export default function ModifiedDatePicker(props) {
                     {yearOptions}
                   </select>
                 </div>
-                {month === maxDate.getMonth() &&
-                year === maxDate.getFullYear() ? (
-                  <button disabled className="table-btn" onClick={handleNext}>
+                {month === maximumDate.getMonth() &&
+                year === maximumDate.getFullYear() ? (
+                  <button
+                    disabled
+                    className="table-btn next"
+                    onClick={handleNext}
+                  >
                     &#x276F;
                   </button>
                 ) : (
-                  <button className="table-btn" onClick={handleNext}>
+                  <button className="table-btn next" onClick={handleNext}>
                     &#x276F;
                   </button>
                 )}
@@ -1369,7 +3210,7 @@ export default function ModifiedDatePicker(props) {
             {/* ===== calendar :: end ===== */}
 
             {/* ===== date time table :: begin ===== */}
-            <table className="date-time-table">
+            <table className="date-time-table alltd">
               <thead>
                 <tr className="table-head">
                   {weekdays.map((weekday) => (
@@ -1390,14 +3231,14 @@ export default function ModifiedDatePicker(props) {
                           const day = i * 7 + j + 1 - firstDayOfMonth;
                           if (i === 0 && day < 1) {
                             return (
-                              <td key={j} className="next-prev-month">
+                              <td key={j} className="next-prev-month ">
                                 {daysInPrevMonth + day}
                               </td>
                             );
                           }
                           if (day > lastDayOfMonth) {
                             return (
-                              <td key={j} className="disabled next-prev-month">
+                              <td key={j} className="disabled next-prev-month ">
                                 {day - lastDayOfMonth}
                               </td>
                             );
@@ -1409,7 +3250,10 @@ export default function ModifiedDatePicker(props) {
                             <td
                               key={j}
                               className={`day ${
-                                day < 1 || day > lastDayOfMonth
+                                day < 1 ||
+                                day > lastDayOfMonth ||
+                                currentDate < minCalDate ||
+                                currentDate > maximumDate
                                   ? "disabled"
                                   : selectedStart &&
                                     selectedEnd &&
@@ -1422,9 +3266,10 @@ export default function ModifiedDatePicker(props) {
                                     ? "first-date"
                                     : day === selectedEnd.getDate() &&
                                       month === selectedEnd.getMonth() &&
-                                      year === selectedEnd.getFullYear()
+                                      year === selectedEnd.getFullYear() &&
+                                      props.range
                                     ? "last-date"
-                                    : "in-range"
+                                    : props.range && "in-range"
                                   : selectedStart &&
                                     selectedStart.getDate() === day &&
                                     selectedStart.getMonth() === month &&
@@ -1439,12 +3284,16 @@ export default function ModifiedDatePicker(props) {
                                     year === currentDate.getFullYear()
                                   ? "current"
                                   : ""
-                              } ${currentDate < minDate ? "disabled" : ""} ${
-                                currentDate > maxDate ? "disabled" : ""
+                              } ${currentDate < minCalDate ? "disabled" : ""} ${
+                                currentDate > maximumDate ? "disabled" : ""
                               }${
                                 selectedStart &&
-                                new Date(year, month, day) < selectedStart
-                                  ? show === "show-end" && "disabled"
+                                new Date(year, month, day) < selectedStart &&
+                                new Date(year, month, day).toDateString() !==
+                                  selectedStart.toDateString()
+                                  ? show === "show-end"
+                                    ? "disabled"
+                                    : ""
                                   : ""
                               }`}
                               onClick={() => handleDayClick(day)}
@@ -1470,8 +3319,7 @@ export default function ModifiedDatePicker(props) {
               }`}
             >
               <div className="time-wrap">
-                {(props.selectedMode === "dateTimeRange" ||
-                  props.selectedMode === "dateTime") && (
+                {props.selectedMode === "dateTime" && (
                   <div className="clock-wrap">
                     <button
                       className="clock-btn"
@@ -1480,15 +3328,17 @@ export default function ModifiedDatePicker(props) {
                           ? handleShowClock
                           : show === "show-end"
                           ? handleShowEndClock
-                          : ""
+                          : undefined
                       }
                     >
                       🕒
                     </button>
+
                     {showClock === "show" ? (
                       <div className="show-clock">
                         <select
-                          className="table-select"
+                          disabled={disableSelect}
+                          className="table-select "
                           value={selectedHour}
                           onChange={handleHourChange}
                         >
@@ -1496,14 +3346,29 @@ export default function ModifiedDatePicker(props) {
                         </select>
                         <span>:</span>
                         <select
-                          className="table-select"
+                          disabled={disableSelect}
+                          className="table-select "
                           value={selectedMinute}
                           onChange={handleMinuteChange}
                         >
                           {minuteOptions}
                         </select>
+                        {!props.isSecondHide && (
+                          <>
+                            <span>:</span>
+                            <select
+                              disabled={disableSelect}
+                              className="table-select "
+                              value={selectedSecond}
+                              onChange={handleSecondChange}
+                            >
+                              {secondsOptions}
+                            </select>
+                          </>
+                        )}
                         {props.clockTimeFormat === "am-pm" && (
                           <button
+                            disabled={disableSelect}
                             className="format-btn"
                             onClick={handleFormatChange}
                           >
@@ -1517,20 +3382,49 @@ export default function ModifiedDatePicker(props) {
                     {showEndClock === "show" ? (
                       <div className="show-end-clock">
                         <select
-                          className="table-select"
-                          value={selectedEndHour}
+                          disabled={disableSelect}
+                          className="table-select "
+                          value={
+                            selectedEndHour && selectedEndHour > selectedHour
+                              ? selectedEndHour
+                              : selectedHour
+                          }
                           onChange={handleEndHourChange}
                         >
                           {hourOptions}
                         </select>
                         <span>:</span>
                         <select
-                          className="table-select"
-                          value={selectedEndMinute}
+                          disabled={disableSelect}
+                          className="table-select "
+                          value={
+                            selectedEndMinute &&
+                            selectedEndMinute > selectedMinute
+                              ? selectedEndMinute
+                              : selectedMinute
+                          }
                           onChange={handleEndMinuteChange}
                         >
                           {minuteOptions}
                         </select>
+                        {!props.isSecondHide && (
+                          <>
+                            <span>:</span>
+                            <select
+                              disabled={disableSelect}
+                              className="table-select "
+                              value={
+                                selectedEndSecond &&
+                                selectedEndSecond > selectedSecond
+                                  ? selectedEndSecond
+                                  : selectedSecond
+                              }
+                              onChange={handleEndSecondChange}
+                            >
+                              {secondsOptions}
+                            </select>
+                          </>
+                        )}
 
                         {props.clockTimeFormat === "am-pm" && (
                           <button
@@ -1560,502 +3454,252 @@ export default function ModifiedDatePicker(props) {
           </>
         </div>
         {/* ===== display value :: begin ===== */}
-        <div
-          className={
-            (props.selectedMode === "range" ||
-              props.selectedMode === "dateTimeRange") &&
-            "date-selection-input-wrap"
-          }
-        >
+        <div className={props.range && "date-selection-input-wrap"}>
           <div
-            className={
-              props.monthOnly
-                ? "d-none"
-                : `text-box ${props.isDisabled ? "disabled" : ""} ${
-                    show === "show" ? "focus" : ""
-                  } ${props.isReadOnly ? "read-only" : ""}`
-            }
-            onClick={handleShow}
+            className={`text-box ${props.isDisabled ? "disabled" : ""} ${
+              show === "show" ? "focus" : ""
+            } ${props.isReadOnly ? "read-only" : ""} ${
+              validateStart ? "" : "error"
+            }`}
             disabled={props.isDisabled || props.isReadOnly}
           >
             {state.isFocused ? (
               <input
-                style={{ padding: "12px" }}
                 type="text"
                 onChange={handleDateChange}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                className={selectedStart ? "selected" : ""}
-                placeholder={props.format ? props.format : "DD/MM/YYYY"}
+                onClick={handleShow}
+                autoComplete="off"
+                className={`${selectedStart ? "selected" : ""} ${
+                  validateStart ? "error" : ""
+                }`}
+                placeholder={
+                  props.placeholder
+                    ? props.placeholder
+                    : props.format
+                    ? props.format
+                    : "DD/MM/YYYY"
+                }
                 disabled={props.isDisabled || props.isReadOnly}
+                name={props.name}
+                tabIndex={props.startTabIndex}
               />
             ) : (
               <input
-                style={{ padding: "12px" }}
                 type="text"
-                value={`${selectedStart ? startDate : ""}${
-                  props.selectedMode ? (showClock !== "" ? ` ${time}` : "") : ""
-                }`}
+                onChange={handleDateChange}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                className={selectedStart ? "selected" : ""}
-                placeholder={props.format ? props.format : "DD/MM/YYYY"}
+                onClick={handleShow}
+                autoComplete="off"
+                className={`${selectedStart ? "selected" : ""} ${
+                  validateStart ? "error" : ""
+                }`}
+                placeholder={
+                  props.placeholder
+                    ? props.placeholder
+                    : props.format
+                    ? props.format
+                    : "DD/MM/YYYY"
+                }
                 disabled={props.isDisabled || props.isReadOnly}
+                name={props.name}
+                tabIndex={props.startTabIndex}
+                value={startInputValue !== null ? startInputValue : ""}
               />
             )}
+
+            {props.isUndo && isFocused && (
+              <button className="icon-btn" onClick={handleStartUndo}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 512 512"
+                  id="undo"
+                >
+                  <path d="M447.9 368.2c0-16.8 3.6-83.1-48.7-135.7-35.2-35.4-80.3-53.4-143.3-56.2V96L64 224l192 128v-79.8c40 1.1 62.4 9.1 86.7 20 30.9 13.8 55.3 44 75.8 76.6l19.2 31.2H448c0-10.1-.1-22.9-.1-31.8z"></path>
+                </svg>
+              </button>
+            )}
+
+            {props.isClear && isFocused && (
+              <button onClick={handleClearClick} className="clear-btn">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="64"
+                  height="64"
+                  viewBox="0 0 16.933 16.933"
+                  id="eraser-rubber"
+                >
+                  <path
+                    d="m 11.113018,281.82981 c -0.338971,0 -0.677844,0.12749 -0.935342,0.38499 l -5.9443407,5.94434 5.1366367,5.13664 5.944341,-5.94434 c 0.515001,-0.515 0.515001,-1.35621 0,-1.8712 l -3.265435,-3.26544 c -0.2575,-0.2575 -0.596887,-0.38499 -0.93586,-0.38499 z m -0.0036,1.67587 a 0.26460982,0.26460982 0 0 1 0.189135,0.078 l 2.646868,2.64687 a 0.26460982,0.26460982 0 0 1 0,0.3731 l -4.7619843,4.76354 a 0.26460982,0.26460982 0 0 1 -0.3751686,0 l -2.646377,-2.64633 a 0.26460982,0.26460982 0 0 1 0,-0.37516 l 4.7635349,-4.76199 a 0.26460982,0.26460982 0 0 1 0.183967,-0.078 z m 0.0036,0.63872 -4.3883607,4.38888 2.271178,2.27118 4.3888787,-4.38836 z m -7.2538194,4.38888 -2.2809984,2.281 c -0.514975,0.51497 -0.514975,1.35622 0,1.8712 l 2.6499678,2.65049 a 0.26460982,0.26460982 0 0 0 0.1875842,0.076 h 2.7285157 a 0.26460982,0.26460982 0 0 0 0.1855179,-0.076 l 1.6660495,-1.66605 z"
+                    color="#000"
+                    fontFamily="sans-serif"
+                    fontWeight="400"
+                    overflow="visible"
+                    transform="translate(0 -280.067)"
+                  ></path>
+                </svg>
+              </button>
+            )}
+            {!validateStart && (
+              <button onClick={handleShowError} className="error-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="32.002"
+                  height="32"
+                  viewBox="0 0 32.002 32"
+                  id="error"
+                >
+                  <path d="M2.062 32h27.812a2 2 0 0 0 1.766-2.942l-13.876-26A1.997 1.997 0 0 0 16.002 2H16c-.738 0-1.414.406-1.762 1.056L.3 29.056a2.004 2.004 0 0 0 .046 1.972A2.005 2.005 0 0 0 2.062 32zM16 24a2 2 0 1 1-.001 4.001A2 2 0 0 1 16 24zm-2-3.968v-8a2 2 0 0 1 4 0v8a2 2 0 0 1-4 0z"></path>
+                </svg>
+              </button>
+            )}
+            <p className={`error-msg-wrap${hideError ? " hide" : ""}`}>
+              {props.errorMsg ? props.errorMsg : "Invalid value in input"}
+            </p>
           </div>
           <div
             className={
-              props.selectedMode === "range" ||
-              props.selectedMode === "dateTimeRange"
+              props.range
                 ? `text-box ${props.isDisabled ? "disabled" : ""} ${
                     show === "show-end" ? "focus" : ""
-                  } ${props.isReadOnly ? "read-only" : ""}`
+                  } ${props.isReadOnly ? "read-only" : ""} ${
+                    validateEnd ? "" : "error"
+                  }`
                 : "d-none"
             }
-            onClick={handleShowEnd}
             disabled={props.isDisabled || props.isReadOnly}
           >
             {state.isEndFocused ? (
               <input
-                style={{ padding: "12px" }}
                 type="text"
+                onClick={handleShowEnd}
                 onChange={handleEndDateChange}
                 onBlur={handleEndBlur}
                 onFocus={handleEndFocus}
+                autoComplete="off"
                 className={selectedEnd ? "selected" : ""}
-                placeholder={props.format ? props.format : "DD/MM/YYYY"}
+                placeholder={
+                  props.placeholder
+                    ? props.placeholder
+                    : props.format
+                    ? props.format
+                    : "DD/MM/YYYY"
+                }
                 disabled={props.isDisabled || props.isReadOnly}
+                readOnly={selectedStart === null ? true : false}
+                name={props.eName}
+                tabIndex={props.endTabIndex}
               />
             ) : (
               <input
-                style={{ padding: "12px" }}
                 type="text"
+                onClick={handleShowEnd}
+                onChange={handleEndDateChange}
                 disabled={props.isDisabled || props.isReadOnly}
-                value={`${
-                  selectedEnd >= selectedStart && selectedEnd
-                    ? `${endDate}`
-                    : ""
-                }${
-                  props.selectedMode
-                    ? showEndClock !== ""
-                      ? ` ${endTime}`
-                      : ""
-                    : ""
-                }`}
+                readOnly={selectedStart === null ? true : false}
+                name={props.eName}
+                value={endInputValue !== null ? endInputValue : ""}
                 onBlur={handleEndBlur}
                 onFocus={handleEndFocus}
+                autoComplete="off"
                 className={selectedEnd ? "selected" : ""}
-                placeholder={props.format ? props.format : "DD/MM/YYYY"}
+                placeholder={
+                  props.placeholder
+                    ? props.placeholder
+                    : props.format
+                    ? props.format
+                    : "DD/MM/YYYY"
+                }
+                tabIndex={props.endTabIndex}
               />
             )}
+
+            {props.isUndo && isEndFocused && (
+              <button className="icon-btn" onClick={handleEndUndo}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 512 512"
+                  id="undo"
+                >
+                  <path d="M447.9 368.2c0-16.8 3.6-83.1-48.7-135.7-35.2-35.4-80.3-53.4-143.3-56.2V96L64 224l192 128v-79.8c40 1.1 62.4 9.1 86.7 20 30.9 13.8 55.3 44 75.8 76.6l19.2 31.2H448c0-10.1-.1-22.9-.1-31.8z"></path>
+                </svg>
+              </button>
+            )}
+
+            {props.isClear && isEndFocused && (
+              <button onClick={handleClearClickEnd} className="clear-btn">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="64"
+                  height="64"
+                  viewBox="0 0 16.933 16.933"
+                  id="eraser-rubber"
+                >
+                  <path
+                    d="m 11.113018,281.82981 c -0.338971,0 -0.677844,0.12749 -0.935342,0.38499 l -5.9443407,5.94434 5.1366367,5.13664 5.944341,-5.94434 c 0.515001,-0.515 0.515001,-1.35621 0,-1.8712 l -3.265435,-3.26544 c -0.2575,-0.2575 -0.596887,-0.38499 -0.93586,-0.38499 z m -0.0036,1.67587 a 0.26460982,0.26460982 0 0 1 0.189135,0.078 l 2.646868,2.64687 a 0.26460982,0.26460982 0 0 1 0,0.3731 l -4.7619843,4.76354 a 0.26460982,0.26460982 0 0 1 -0.3751686,0 l -2.646377,-2.64633 a 0.26460982,0.26460982 0 0 1 0,-0.37516 l 4.7635349,-4.76199 a 0.26460982,0.26460982 0 0 1 0.183967,-0.078 z m 0.0036,0.63872 -4.3883607,4.38888 2.271178,2.27118 4.3888787,-4.38836 z m -7.2538194,4.38888 -2.2809984,2.281 c -0.514975,0.51497 -0.514975,1.35622 0,1.8712 l 2.6499678,2.65049 a 0.26460982,0.26460982 0 0 0 0.1875842,0.076 h 2.7285157 a 0.26460982,0.26460982 0 0 0 0.1855179,-0.076 l 1.6660495,-1.66605 z"
+                    color="#000"
+                    fontFamily="sans-serif"
+                    fontWeight="400"
+                    overflow="visible"
+                    transform="translate(0 -280.067)"
+                  ></path>
+                </svg>
+              </button>
+            )}
+            {!validateEnd && (
+              <button onClick={handleShowEndError} className="error-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="32.002"
+                  height="32"
+                  viewBox="0 0 32.002 32"
+                  id="error"
+                >
+                  <path d="M2.062 32h27.812a2 2 0 0 0 1.766-2.942l-13.876-26A1.997 1.997 0 0 0 16.002 2H16c-.738 0-1.414.406-1.762 1.056L.3 29.056a2.004 2.004 0 0 0 .046 1.972A2.005 2.005 0 0 0 2.062 32zM16 24a2 2 0 1 1-.001 4.001A2 2 0 0 1 16 24zm-2-3.968v-8a2 2 0 0 1 4 0v8a2 2 0 0 1-4 0z"></path>
+                </svg>
+              </button>
+            )}
+            <p className={`error-msg-wrap${hideErrorEnd ? " hide" : ""}`}>
+              {props.errorMsg ? props.errorMsg : "Invalid value in input"}
+            </p>
           </div>
         </div>
         {/* ===== display value :: end ===== */}
       </div>
-      {props.disableControl && (
-        <button className="table-btn" onClick={handleEnable}>
+      {/* {props.disableControl && (
+        <button className="table-btn functional" onClick={handleEnable}>
           {!props.isDisabled ? "Disable" : "Enable"}
         </button>
       )}
 
       {props.resetControl && (
-        <button className="table-btn" onClick={handleReset}>
+        <button className="table-btn functional" onClick={handleReset}>
           Reset
         </button>
-      )}
+      )} */}
     </div>
   );
 }
 
-const MonthOnly = (props) => {
-  const initialState = {
-    show: false,
-    presentYear: new Date().getFullYear(),
-    changedYear: new Date().getFullYear(),
-    showYear: false,
-    month: new Date().getMonth(),
-    selectedMonth: new Date().getMonth(),
-    isFocused: false,
-  };
-
-  const years = [];
-
-  const id = props.id;
-
-  const reducer = (state, action) => {
-    switch (action.type) {
-      case "MONTH_IN_MONTHONLY":
-        const defaultDate = props.defaultSelectedMonth
-          ? new Date(props.defaultSelectedMonth)
-          : new Date();
-        return {
-          ...state,
-          month: defaultDate.getMonth(),
-          selectedMonth: defaultDate.getMonth(),
-          presentYear: defaultDate.getFullYear(),
-          changedYear: defaultDate.getFullYear(),
-        };
-      case "RESET":
-        return {
-          ...state,
-          presentYear: new Date().getFullYear(),
-          changedYear: new Date().getFullYear(),
-          showYear: false,
-          month: new Date().getMonth(),
-          selectedMonth: new Date().getMonth(),
-          show: "",
-        };
-      case "PREVIOUS_YEAR":
-        if (state.showYear) {
-          return {
-            ...state,
-            presentYear: state.presentYear - 12,
-            changedYear: state.changedYear - 12,
-          };
-        } else {
-          if (state.changedYear === state.presentYear) {
-            return {
-              ...state,
-              presentYear: state.presentYear - 12,
-              changedYear: state.changedYear - 1,
-            };
-          } else {
-            return {
-              ...state,
-              changedYear: state.changedYear - 1,
-            };
-          }
-        }
-
-      case "NEXT_YEAR":
-        if (state.showYear) {
-          return {
-            ...state,
-            presentYear: state.presentYear + 12,
-            changedYear: state.changedYear + 12,
-          };
-        } else {
-          if (state.changedYear === state.presentYear + 11) {
-            return {
-              ...state,
-              presentYear: state.presentYear + 12,
-              changedYear: state.changedYear + 1,
-            };
-          } else {
-            return {
-              ...state,
-              changedYear: state.changedYear + 1,
-            };
-          }
-        }
-
-      case "TOGGLE_SHOW":
-        let showMonth = !state.show;
-        if (props.isDisabled || props.isReadOnly) {
-          showMonth = "";
-        }
-        return {
-          ...state,
-          show: showMonth,
-        };
-
-      case "TOGGLE_YEAR":
-        return {
-          ...state,
-          showYear: !state.showYear,
-        };
-
-      case "CHANGE_YEAR":
-        return {
-          ...state,
-          changedYear: action.payload,
-        };
-
-      case "SELECT_MONTH":
-        return {
-          ...state,
-          month: action.selectedMonth,
-          selectedMonth: action.selectedMonth,
-          show: false,
-        };
-
-      case "CHANGE_MONTH_AND_YEAR":
-        const [year, month] = action.payload.split("-").map(Number);
-        const newDate = new Date(year, month, 1);
-
-        return {
-          ...state,
-          month: newDate.getMonth(),
-          selectedMonth: newDate.getMonth(),
-          changedYear: year,
-          presentYear: year,
-          show: false,
-        };
-
-      case "FOCUS":
-        return { ...state, isFocused: true };
-      case "BLUR":
-        return { ...state, isFocused: false };
-
-      case "HIDE_CALENDAR":
-        return { ...state, show: "" };
-
-      default:
-        return state;
-    }
-  };
-
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const { month, show, showYear, presentYear, changedYear, selectedMonth } =
-    state;
-
-  const handleMonthChange = (event) => {
-    const value = event.target.value;
-
-    const regex = /(\d{2})\/(\d{4})/;
-    const matches = value.match(regex);
-
-    if (matches && matches.length > 2) {
-      const month = parseInt(matches[1]) - 1;
-      const year = parseInt(matches[2]);
-
-      dispatch({ type: "CHANGE_MONTH_AND_YEAR", payload: `${year}-${month}` });
-    }
-  };
-
-  const handleReset = () => {
-    dispatch({ type: "RESET" });
-  };
-
-  const handleEnable = () => {
-    props.setIsDisabled(!props.isDisabled);
-  };
-
-  const handleFocus = () => {
-    dispatch({ type: "FOCUS" });
-    props.onFocus && props.onFocus();
-  };
-
-  const handleBlur = () => {
-    dispatch({ type: "BLUR" });
-    props.onBlur && props.onBlur();
-  };
-
-  const handleShow = () => {
-    if (!props.isDisabled || !props.isReadOnly) {
-      dispatch({ type: "TOGGLE_SHOW" });
-    }
-  };
-
-  const handleSelectYear = (year) => {
-    dispatch({ type: "CHANGE_YEAR", payload: year });
-  };
-
-  const handleYearShow = () => {
-    dispatch({ type: "TOGGLE_YEAR" });
-  };
-
-  const handlePreviousYear = () => {
-    dispatch({ type: "PREVIOUS_YEAR" });
-  };
-
-  const handleNextYear = () => {
-    dispatch({ type: "NEXT_YEAR" });
-  };
-
-  const handleMonthClick = (selectedMonth) => {
-    dispatch({ type: "SELECT_MONTH", selectedMonth });
-  };
-
-  const handleDocumentClick = (e) => {
-    if (!e.target.closest(`#${id}`)) {
-      dispatch({ type: "HIDE_CALENDAR" });
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("click", handleDocumentClick);
-    return () => {
-      document.removeEventListener("click", handleDocumentClick);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (props.defaultSelectedMonth) {
-      dispatch({ type: "MONTH_IN_MONTHONLY" });
-    }
-  }, [props.defaultSelectedMonth]);
-
-  for (let i = 0; i < 12; i++) {
-    years.push(presentYear + i);
-  }
-
-  return (
-    <div className={props.className}>
-      <div className="calendar-wrap" id={id}>
-        <div className={`calendar ${show ? "show" : ""}`}>
-          {/* ===== month calendar :: begin ===== */}
-          <div className="calendar-header">
-            <button className="table-btn" onClick={handlePreviousYear}>
-              &#x276E;
-            </button>
-            <p className="year-display" onClick={handleYearShow}>
-              {`${showYear ? "Back" : "Year"} ${changedYear}`}
-            </p>
-            <button className="table-btn" onClick={handleNextYear}>
-              &#x276F;
-            </button>
-          </div>
-
-          <table className={`year-table ${showYear ? "show" : ""}`}>
-            <tbody>
-              {years.map((year, index) => {
-                if (index % 3 === 0) {
-                  return (
-                    <tr key={index}>
-                      <td
-                        className={year === changedYear ? "selected" : ""}
-                        onClick={() => handleSelectYear(year)}
-                      >
-                        {year}
-                      </td>
-                      <td
-                        className={
-                          years[index + 1] === changedYear ? "selected" : ""
-                        }
-                        onClick={() => handleSelectYear(years[index + 1])}
-                      >
-                        {years[index + 1]}
-                      </td>
-                      <td
-                        className={
-                          years[index + 2] === changedYear ? "selected" : ""
-                        }
-                        onClick={() => handleSelectYear(years[index + 2])}
-                      >
-                        {years[index + 2]}
-                      </td>
-                    </tr>
-                  );
-                }
-                return null;
-              })}
-            </tbody>
-          </table>
-
-          <table className="month-table">
-            <tbody>
-              <tr>
-                {months.slice(0, 3).map((month, i) => (
-                  <td
-                    key={i}
-                    className={selectedMonth === i ? "selected" : ""}
-                    onClick={() => handleMonthClick(i)}
-                  >
-                    {month}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                {months.slice(3, 6).map((month, i) => (
-                  <td
-                    key={i}
-                    className={selectedMonth === i + 3 ? "selected" : ""}
-                    onClick={() => handleMonthClick(i + 3)}
-                  >
-                    {month}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                {months.slice(6, 9).map((month, i) => (
-                  <td
-                    key={i}
-                    className={selectedMonth === i + 6 ? "selected" : ""}
-                    onClick={() => handleMonthClick(i + 6)}
-                  >
-                    {month}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                {months.slice(9).map((month, i) => (
-                  <td
-                    key={i}
-                    className={selectedMonth === i + 9 ? "selected" : ""}
-                    onClick={() => handleMonthClick(i + 9)}
-                  >
-                    {month}
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-          {/* ===== month calendar :: end ===== */}
-        </div>
-        <div
-          className={`text-box ${props.isDisabled ? "disabled" : ""} ${
-            show ? "focus" : ""
-          } ${props.isReadOnly ? "read-only" : ""}`}
-          onClick={handleShow}
-          disabled={props.isDisabled || props.isReadOnly}
-        >
-          {state.isFocused ? (
-            <input
-              type="text"
-              className={month ? "selected" : ""}
-              onChange={handleMonthChange}
-              onBlur={handleBlur}
-              onFocus={handleFocus}
-              disabled={props.isDisabled || props.isReadOnly}
-            />
-          ) : (
-            <input
-              type="text"
-              className={month ? "selected" : ""}
-              onBlur={handleBlur}
-              onFocus={handleFocus}
-              disabled={props.isDisabled || props.isReadOnly}
-              value={
-                month < 9
-                  ? `0${month + 1}/${changedYear}`
-                  : `${month + 1}/${changedYear}`
-              }
-            />
-          )}
-        </div>
-      </div>
-      {props.disableControl && (
-        <button className="table-btn" onClick={handleEnable}>
-          {!props.isDisabled ? "Disable" : "Enable"}
-        </button>
-      )}
-
-      {props.resetControl && (
-        <button className="table-btn" onClick={handleReset}>
-          Reset
-        </button>
-      )}
-    </div>
-  );
-};
-
 const months = [
-  "January",
-  "February",
-  "March",
-  "April",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
   "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
-const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-export { MonthOnly };
+const weekdays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
