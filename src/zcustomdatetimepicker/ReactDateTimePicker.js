@@ -1174,6 +1174,7 @@ export default function ReactDateTimePicker(props) {
             }
             endTimeValue = `${endHour}:${endMinute}:${endSecond} ${inputEndTimeFormat}`;
           } else {
+            console.log("boring day")
             endHour = action.hour;
             endMinute = action.minute;
             endSecond = action.second;
@@ -1192,6 +1193,8 @@ export default function ReactDateTimePicker(props) {
             }
             endTimeValue = `${endHour}:${endMinute} ${inputEndTimeFormat}`;
           } else {
+            console.log("boring day")
+
             endHour = action.hour;
             endMinute = action.minute;
             endSecond = action.second;
@@ -1556,10 +1559,12 @@ export default function ReactDateTimePicker(props) {
       if (
         selectedEnd > selectedStart ||
         selectedEnd.toDateString() === selectedStart.toDateString()
-      ) {
-        dispatch({ type: "APPLY" });
+        ) {
+        console.log("apply")
+        dispatch({ type: "APPLY"});
       }
-    }
+
+          }
   };
 
   const handleDocumentClick = (e) => {
@@ -1650,6 +1655,8 @@ export default function ReactDateTimePicker(props) {
     for (let i = 1; i <= 12; i++) {
       const value = i < 10 ? `0${i}` : i.toString();
       let disabled = true;
+      // disabled = i < eveHour
+      console.log('hour', disabled = i < eveHour)
       if (timeFormat === "PM") {
         eveHour = parseInt(selectedHour) + 12;
       } else {
@@ -1661,6 +1668,7 @@ export default function ReactDateTimePicker(props) {
           disabled = false;
         }
       }
+     
 
       if (currentHour > 11 && show === "show") {
         currentPmHour = currentHour - 12;
@@ -2438,16 +2446,16 @@ console.log('com2',currentHour)
                 second,
               });
             }
-            if(hour < currentHour || minute < currentMinute || second < currentSecond){
-              console.log("heello")
-              dispatch({
-                type: "SET_TIME",
-                format: capitalMeridiem,
-                hour:currentHour,
-                minute:currentMinute,
-                second:currentSecond,
-              })
-            }
+            // if(hour < currentHour || minute < currentMinute || second < currentSecond){
+            //   console.log("heello")
+            //   dispatch({
+            //     type: "SET_TIME",
+            //     format: capitalMeridiem,
+            //     hour:currentHour,
+            //     minute:currentMinute,
+            //     second:currentSecond,
+            //   })
+            // }
 
             if (selectedEnd && selectedEnd === selectedStart) {
               console.log("working");
