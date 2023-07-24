@@ -3138,7 +3138,6 @@ export default function ReactDateTimePicker(props) {
             timeFormat === "AM" ||
             (timeFormat === "PM" && capitalMeridiem === "PM")
           ) {
-            console.log("worked");
             if (hour > selectedHour) {
               dispatch({
                 type: "SET_END_TIME",
