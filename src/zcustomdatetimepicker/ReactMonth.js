@@ -210,7 +210,7 @@ const ReactMonth = (props) => {
       if (month > 12) {
         month -= 12;
       }
-      if (!props.hideError) {
+      if (props.error) {
         const isValidMonth = !isNaN(dateObject) && dateObject instanceof Date;
         dispatch({ type: "VALIDATE_MONTH", payload: isValidMonth });
       }
@@ -223,7 +223,7 @@ const ReactMonth = (props) => {
         previousMonth.push(prevChangeValue);
       }
     } else {
-      if (!props.hideError) {
+      if (props.error) {
         dispatch({ type: "VALIDATE_MONTH", payload: false });
       }
     }
@@ -460,7 +460,7 @@ const ReactMonth = (props) => {
           }`}
           disabled={props.isDisabled || props.isReadOnly}
         >
-          {props.isFocused ? (
+          {props.onFocus ? (
             <input
               type="text"
               onClick={handleShow}
@@ -477,6 +477,7 @@ const ReactMonth = (props) => {
                   ? props.placeholder
                   : "MM/YYYY"
               }
+              tabIndex={props.tabIndex}
             />
           ) : (
             <input
@@ -489,6 +490,7 @@ const ReactMonth = (props) => {
               disabled={props.isDisabled || props.isReadOnly}
               value={inputValueText}
               name={props.name}
+              tabIndex={props.tabIndex}
               placeholder={
                 props.placeholder
                   ? props.placeholder
@@ -499,7 +501,7 @@ const ReactMonth = (props) => {
             />
           )}
 
-          {props.isUndo && props.undoClick && (
+          {props.isUndo && (
             <button className="icon-btn" onClick={handleUndo}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -551,7 +553,7 @@ const ReactMonth = (props) => {
           </p>
         </div>
       </div>
-      {props.disableControl && (
+      {/* {props.disableControl && (
         <button className="table-btn" onClick={handleEnable}>
           {!props.isDisabled ? "Disable" : "Enable"}
         </button>
@@ -561,7 +563,7 @@ const ReactMonth = (props) => {
         <button className="table-btn" onClick={handleReset}>
           Reset
         </button>
-      )}
+      )} */}
     </div>
   );
 };
