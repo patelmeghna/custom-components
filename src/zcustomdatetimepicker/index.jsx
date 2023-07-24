@@ -20,7 +20,7 @@ function DatePicker() {
     <Container className="py-5">
       <ReactDateTimePicker
         name="demo-date"
-        // format="yyyy/mm/dd"
+        format="yyyy/mm/dd"
         // placeholder="Add date in formate of yyyy/mm/dd"
         onChange={(data) => setStartValue(data)}
         selectedMode="dateTime"
@@ -31,7 +31,7 @@ function DatePicker() {
         // maxDate="2024-08-19"
         // isSecondHide
         // reset={reset}
-        // clockTimeFormat="am-pm"
+        clockTimeFormat="am-pm"
         // isDisabled={isDisabled}
         isMinCurrentTime 
       />
