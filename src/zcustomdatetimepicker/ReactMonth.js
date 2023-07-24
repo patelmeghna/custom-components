@@ -231,8 +231,11 @@ const ReactMonth = (props) => {
 
   const handleReset = () => {
     dispatch({ type: "RESET" });
-    props.reset && props.reset();
   };
+
+  useEffect(() => {
+    handleReset();
+  }, [props.reset]);
 
   const handleEnable = () => {
     props.setIsDisabled(!props.isDisabled);
