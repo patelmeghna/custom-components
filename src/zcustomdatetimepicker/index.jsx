@@ -32,8 +32,9 @@ function DatePicker() {
         // reset={reset}
         clockTimeFormat="am-pm"
         // isDisabled={isDisabled}
-      />
-      {/* <p>Result: {startValue}</p>
+        />
+        <p>Result: {startValue}</p>
+        {/* 
       <div className="d-flex">
         <button className="btn btn-secondary me-2" onClick={() => setIsDisabled(!isDisabled)}>Disable</button>
         <button className="btn btn-danger" onClick={handleReset}>Reset</button>

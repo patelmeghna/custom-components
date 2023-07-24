@@ -611,7 +611,13 @@ export default function ReactDateTimePicker(props) {
           newEndTimeFormat = "";
         } else {
           if (newTimeFormat === "PM") {
-            newEndTimeFormat = "PM";
+            if (
+              state.selectedEnd &&
+              state.selectedStart.toDateString() ===
+                state.selectedEnd.toDateString()
+            ) {
+              newEndTimeFormat = "PM";
+            }
           }
         }
         if (!props.range) {
@@ -723,6 +729,7 @@ export default function ReactDateTimePicker(props) {
               selectedMinute: startMinuteTime,
               selectedSecond: startSecondTime,
               show: toggleTime,
+              timeFormat: newTimeFormat,
             };
           } else {
             return {
@@ -731,6 +738,7 @@ export default function ReactDateTimePicker(props) {
               selectedHour: startHourTime,
               selectedMinute: startMinuteTime,
               show: toggleTime,
+              timeFormat: newTimeFormat,
             };
           }
 
@@ -883,6 +891,7 @@ export default function ReactDateTimePicker(props) {
                 selectedEndMinute: endMinuteTime,
                 selectedEndSecond: endSecondTime,
                 show: "",
+                endTimeFormat: newEndTimeFormat,
               };
             }
             if (props.isSecondHide) {
@@ -892,6 +901,7 @@ export default function ReactDateTimePicker(props) {
                 selectedEndHour: endHourTime,
                 selectedEndMinute: endMinuteTime,
                 show: "",
+                endTimeFormat: newEndTimeFormat,
               };
             }
           }
@@ -2382,10 +2392,13 @@ export default function ReactDateTimePicker(props) {
     }
 
     if (!props.range) {
-      props.onChange && props.onChange(startInputValue);
-    } else {
       props.onChange &&
-        props.onChange(`${startInputValue} To ${endInputValue}`);
+        props.onChange(startInputValue !== null ? startInputValue : "");
+    } else {
+      if (startInputValue !== null && endInputValue !== null) {
+        props.onChange &&
+          props.onChange(`${startInputValue} To ${endInputValue}`);
+      }
     }
   };
 
@@ -2402,10 +2415,13 @@ export default function ReactDateTimePicker(props) {
 
   useEffect(() => {
     if (!selectedEnd || !props.range) {
-      props.onChange && props.onChange(startInputValue);
-    } else {
       props.onChange &&
-        props.onChange(`${startInputValue} To ${endInputValue}`);
+        props.onChange(startInputValue !== null && startInputValue);
+    } else {
+      if (startInputValue !== null && endInputValue !== null) {
+        props.onChange &&
+          props.onChange(`${startInputValue} To ${endInputValue}`);
+      }
     }
     if (
       selectedStart &&
@@ -2426,7 +2442,10 @@ export default function ReactDateTimePicker(props) {
 
   useEffect(() => {
     props.onEndChange && props.onEndChange(endInputValue);
-    props.onChange && props.onChange(`${startInputValue} To ${endInputValue}`);
+    if (startInputValue !== null && endInputValue !== null) {
+      props.onChange &&
+        props.onChange(`${startInputValue} To ${endInputValue}`);
+    }
   }, [
     selectedEnd,
     selectedEndHour,
