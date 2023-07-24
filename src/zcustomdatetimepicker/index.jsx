@@ -5,7 +5,7 @@ import ReactMonth from "./ReactMonth";
 
 function DatePicker() {
   // const [isDisabled, setIsDisabled] = useState(false);
-  const [startValue, setStartValue] = useState("");
+  const [startValue, setStartValue] = useState("2023-07-26 12:12:00 To 2023-07-30 12:20:10");
   const [monthValue, setMonthValue] = useState("02/2022");
 
   // console.log('length', startValue)
@@ -14,7 +14,7 @@ function DatePicker() {
     <Container className="py-5">
       <ReactDateTimePicker
         name="date-disable-reset"
-        format="yyyy/mm/dd"
+        format="dd-mm-yyyy"
         selectedMode="dateTime"
         onChange={(data) => setStartValue(data)}
         value={startValue}
@@ -23,7 +23,7 @@ function DatePicker() {
         minDate
         isClear
         clearClick={() => {alert("hello")}}
-        // isSecondHide={true}
+        isSecondHide={true}
         clockTimeFormat="am-pm"
         // isDisabled={true}
         error
