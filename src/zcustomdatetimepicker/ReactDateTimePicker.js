@@ -59,21 +59,33 @@ export default function ReactDateTimePicker(props) {
 
   // ============ Default value :: begin ============
   const inputChangedValue = (value) => {
-    const format = props.format || "DD/MM/YYYY";
+    let format = props.format || "DD/MM/YYYY";
+    const lowercaseValue = value.toLowerCase();
+    let lowercaseFormat = format.toLowerCase();
+
+    let str = lowercaseFormat
+      .replace("dd", "\\d{2}")
+      .replace("mm", "\\d{2}")
+      .replace("yyyy", "\\d{4}");
+
+    let regex = new RegExp(`^${str}$`);
+
+    if (!regex.test(lowercaseValue)) {
+      format = "YYYY-MM-DD";
+      lowercaseFormat = format.toLowerCase();
+
+      str = lowercaseFormat
+        .replace("dd", "\\d{2}")
+        .replace("mm", "\\d{2}")
+        .replace("yyyy", "\\d{4}");
+
+      regex = new RegExp(`^${str}$`);
+    }
 
     let isDateValid;
     let dateValue;
     let rearrangedDateStr;
 
-    const lowercaseFormat = format.toLowerCase();
-    const lowercaseValue = value.toLowerCase();
-
-    const str = lowercaseFormat
-      .replace("dd", "\\d{2}")
-      .replace("mm", "\\d{2}")
-      .replace("yyyy", "\\d{4}");
-
-    const regex = new RegExp(`^${str}$`);
     isDateValid = lowercaseValue.match(regex);
 
     if (lowercaseValue.includes(" ")) {
@@ -895,7 +907,7 @@ export default function ReactDateTimePicker(props) {
         let defaultCurrentHour = state.selectedHour,
           defaultCurrentMinute = state.selectedMinute,
           defaultCurrentSecond = state.selectedSecond,
-          defaultCurrentFormat,
+          defaultCurrentFormat = "",
           calendarState;
 
         if (props.clockTimeFormat === "am-pm") {
@@ -930,7 +942,8 @@ export default function ReactDateTimePicker(props) {
             }
           }
           // cond 2
-          if (new Date().getHours() === 12 && state.timeFormat === "AM") {
+          if (new Date().getHours() === 12 && state.timeFormat === "PM") {
+            defaultCurrentFormat = "PM";
             if (state.selectedHour === new Date().getHours()) {
               if (state.selectedMinute < new Date().getMinutes()) {
                 if (new Date().getMinutes().toString().length === 1) {
@@ -950,6 +963,9 @@ export default function ReactDateTimePicker(props) {
                 }
               }
             }
+          }
+          if (new Date().getHours() === 12 && state.timeFormat === "AM") {
+            defaultCurrentFormat = "PM";
           }
           // cond 3
           if (new Date().getHours() > 12 && state.timeFormat === "PM") {
@@ -1009,14 +1025,25 @@ export default function ReactDateTimePicker(props) {
           }
         }
 
-        return {
-          ...state,
-          selectedHour: defaultCurrentHour,
-          selectedMinute: defaultCurrentMinute,
-          selectedSecond: defaultCurrentSecond,
-          time: `${defaultCurrentHour}:${defaultCurrentMinute}:${defaultCurrentSecond} ${defaultCurrentFormat}`,
-          show: calendarState,
-        };
+        if (!props.isSecondHide) {
+          return {
+            ...state,
+            selectedHour: defaultCurrentHour,
+            selectedMinute: defaultCurrentMinute,
+            selectedSecond: defaultCurrentSecond,
+            time: `${defaultCurrentHour}:${defaultCurrentMinute}:${defaultCurrentSecond} ${defaultCurrentFormat}`,
+            show: calendarState,
+          };
+        } else {
+          return {
+            ...state,
+            selectedHour: defaultCurrentHour,
+            selectedMinute: defaultCurrentMinute,
+            selectedSecond: defaultCurrentSecond,
+            time: `${defaultCurrentHour}:${defaultCurrentMinute} ${defaultCurrentFormat}`,
+            show: calendarState,
+          };
+        }
 
       // apply current date handler :: end
 
@@ -1184,7 +1211,10 @@ export default function ReactDateTimePicker(props) {
                 };
               }
             } else {
-              if (state.selectedEndHour.toString() < state.selectedHour) {
+              if (
+                state.selectedEndHour &&
+                state.selectedEndHour.toString() < state.selectedHour
+              ) {
                 return {
                   ...state,
                   selectedEndHour: state.selectedHour,
@@ -1212,8 +1242,10 @@ export default function ReactDateTimePicker(props) {
         }
       // empty end field :: end
 
-      case "REMOVE_END_DATE":
-        return { ...state, selectedEnd: state.selectedStart };
+      // case "REMOVE_END_DATE":
+      //   if (props.value && props.value === null) {
+      //     return { ...state, selectedEnd: state.selectedStart };
+      //   }
 
       case "FOCUS":
         return { ...state, isFocused: true };
@@ -1754,7 +1786,7 @@ export default function ReactDateTimePicker(props) {
       dispatch({ type: "CHANGE_TIME_FORMAT" });
     }
 
-    dispatch({ type: "REMOVE_END_DATE" });
+    // dispatch({ type: "REMOVE_END_DATE" });
   }, []);
 
   // useEffect(() => {
@@ -2034,7 +2066,10 @@ export default function ReactDateTimePicker(props) {
           selectedEnd &&
           selectedEnd.toDateString() === selectedStart.toDateString()
         ) {
-          if (selectedEndHour.toString() === selectedHour.toString()) {
+          if (
+            selectedEndHour &&
+            selectedEndHour.toString() === selectedHour.toString()
+          ) {
             disabled = i < selectedMinute;
           }
         }
@@ -2142,7 +2177,10 @@ export default function ReactDateTimePicker(props) {
           selectedEnd &&
           selectedEnd.toDateString() === selectedStart.toDateString()
         ) {
-          if (selectedEndHour.toString() === selectedHour.toString()) {
+          if (
+            selectedEndHour &&
+            selectedEndHour.toString() === selectedHour.toString()
+          ) {
             if (selectedEndMinute.toString() === selectedMinute.toString()) {
               disabled = i < selectedSecond;
             }
