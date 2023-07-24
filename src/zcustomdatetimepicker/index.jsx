@@ -5,31 +5,39 @@ import ReactMonth from "./ReactMonth";
 
 function DatePicker() {
   // const [isDisabled, setIsDisabled] = useState(false);
-  const [startValue, setStartValue] = useState("2023-07-26 12:12:00 To 2023-07-30 12:20:10");
+  const [startValue, setStartValue] = useState("");
   const [monthValue, setMonthValue] = useState("02/2022");
+  const [reset, setReset] = useState(false)
+  const [isDisabled, setIsDisabled] = useState(false);
 
+  const handleReset = () => {
+    setStartValue("");
+    setReset(true);
+  }
   // console.log('length', startValue)
 
   return (
     <Container className="py-5">
       <ReactDateTimePicker
-        name="date-disable-reset"
-        format="dd-mm-yyyy"
+        name="demo-date"
+        // format="yyyy/mm/dd"
+        // placeholder="Add date in formate of yyyy/mm/dd"
+        onChange={(data) => setStartValue(data)}
         selectedMode="dateTime"
-        onChange={(data) => {setStartValue(data);}}
+        range={true}
         value={startValue}
-        id="disable-reset-demo"
-        range
-        minDate
-        isClear
-        clearClick={() => {alert("hello")}}
-        isSecondHide={true}
+        id="placeholder-demo"
+        minDate="2023-01-14"
+        maxDate="2024-04-19"
+        // reset={reset}
         clockTimeFormat="am-pm"
-        // isDisabled={true}
-        error
-        isUndo
-        isMinCurrentTime
+        // isDisabled={isDisabled}
       />
+      {/* <p>Result: {startValue}</p>
+      <div className="d-flex">
+        <button className="btn btn-secondary me-2" onClick={() => setIsDisabled(!isDisabled)}>Disable</button>
+        <button className="btn btn-danger" onClick={handleReset}>Reset</button>
+      </div> */}
 
       <h4>Month only</h4>
 
