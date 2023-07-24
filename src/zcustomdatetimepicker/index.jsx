@@ -24,7 +24,7 @@ function DatePicker() {
         isClear
         clearClick={() => {alert("hello")}}
         // isSecondHide={true}
-        // clockTimeFormat="am-pm"
+        clockTimeFormat="am-pm"
         // isDisabled={true}
         error
         isUndo
