@@ -1338,6 +1338,15 @@ export default function ReactDateTimePicker(props) {
         let endSecond = state.selectedEndSecond;
         let endTimeValue;
 
+        if (
+          state.selectedEnd.toDateString() ===
+          state.selectedStart.toDateString()
+        ) {
+          if (state.timeFormat === "PM") {
+            inputEndTimeFormat = "PM";
+          }
+        }
+
         if (!props.isSecondHide) {
           if (props.clockTimeFormat === "am-pm") {
             inputEndTimeFormat = action.format;
@@ -1736,15 +1745,12 @@ export default function ReactDateTimePicker(props) {
         }
 
         if (selectedStart.toDateString() === minCalDate.toDateString()) {
-          console.log("date3");
-
           dispatch({ type: "APPLY" });
         }
       } else {
         dispatch({ type: "APPLY" });
       }
     } else if (show === "show-end" && selectedEnd !== null) {
-      console.log("m", selectedEnd !== null);
       if (selectedStart.toDateString() === selectedEnd.toDateString()) {
         if (timeFormat === endTimeFormat) {
           if (selectedEndHour >= selectedHour) {
@@ -1764,7 +1770,6 @@ export default function ReactDateTimePicker(props) {
         selectedEnd > selectedStart ||
         selectedEnd.toDateString() === selectedStart.toDateString()
       ) {
-        console.log("apply");
         dispatch({ type: "APPLY" });
       }
     }
@@ -2072,7 +2077,6 @@ export default function ReactDateTimePicker(props) {
         if (isStartDateSelected) {
           disabled = false;
         }
-        console.log("com2", currentHour);
         if (
           selectedStart &&
           selectedStart.toDateString() === currentDate.toDateString() &&
@@ -2387,8 +2391,6 @@ export default function ReactDateTimePicker(props) {
 
   // ===============================================
 
-  console.log("end", startInputValue);
-  console.log("endTIme", endTime);
   let endInputValue;
 
   if (showEndClock === "show") {
@@ -2397,7 +2399,6 @@ export default function ReactDateTimePicker(props) {
     endInputValue = selectedEnd && `${endDate}`;
   }
   // form variables
-  // console.log(selectedEnd && endInputValue)
 
   useEffect(() => {
     if (!selectedEnd || !props.range) {
@@ -2516,7 +2517,6 @@ export default function ReactDateTimePicker(props) {
         lowercaseFormat.indexOf("yyyy"),
         lowercaseFormat.indexOf("yyyy") + 4
       );
-      console.log("yyyy:", yyyy);
 
       const dateArr = [yyyy, mm, dd];
       const rearrangedDateStr = dateArr.join("-");
@@ -2527,14 +2527,12 @@ export default function ReactDateTimePicker(props) {
         parseInt(yyyy) >= minYear &&
         parseInt(yyyy) <= maxYear
       ) {
-        console.log("maxYear condition reached!");
         if (props.minDate && !props.maxDate) {
           if (
             minCalDate < new Date(rearrangedDateStr) ||
             new Date(rearrangedDateStr).toDateString() ===
               minCalDate.toDateString()
           ) {
-            console.log(new Date(rearrangedDateStr));
             dispatch({
               type: "SET_SELECTED_START",
               payload: new Date(rearrangedDateStr),
@@ -2583,8 +2581,6 @@ export default function ReactDateTimePicker(props) {
           previousSelectedStartDate.push(rearrangedDateStr);
         }
       } else {
-        console.log("trewq");
-
         dispatch({
           type: "SET_SELECTED_START",
           payload: new Date(),
@@ -2633,7 +2629,6 @@ export default function ReactDateTimePicker(props) {
           ? minute <= 60 && hour <= 24
           : minute <= 60 && hour <= 24 && second <= 60
       ) {
-        console.log("minute", minute);
         if (props.minDate && props.isMinCurrentTime) {
           if (selectedStart.toDateString() > minCalDate.toDateString()) {
             dispatch({
@@ -2656,7 +2651,6 @@ export default function ReactDateTimePicker(props) {
               });
             }
             // if(hour < currentHour || minute < currentMinute || second < currentSecond){
-            //   console.log("heello")
             //   dispatch({
             //     type: "SET_TIME",
             //     format: capitalMeridiem,
@@ -3122,12 +3116,11 @@ export default function ReactDateTimePicker(props) {
         let newDate;
         if (lowercaseValue.includes(" ")) {
           [newDate, time, amPm] = lowercaseValue.split(" ");
+          capitalMeridiem = amPm.toUpperCase();
         }
 
-        capitalMeridiem = amPm.toUpperCase();
-
         if (time.includes(":")) {
-          [hour, minute, second] = matches[0].split(":");
+          [hour, minute, second] = time.split(":");
         }
       } else {
         if (matches[0].includes(":")) {
@@ -3137,21 +3130,15 @@ export default function ReactDateTimePicker(props) {
 
       if (
         props.isSecondHide
-          ? minute <= 60 && hour <= 24
-          : minute <= 60 && hour <= 24 && second <= 60
+          ? minute <= 60 && hour <= 12
+          : minute <= 60 && hour <= 12 && second <= 60
       ) {
         if (selectedEnd.toDateString() === selectedStart.toDateString()) {
-          if (hour > selectedHour) {
-            dispatch({
-              type: "SET_END_TIME",
-              format: capitalMeridiem,
-              hour,
-              minute,
-              second,
-            });
-          }
-          if (hour === selectedHour.toString()) {
-            if (minute > selectedMinute) {
+          if (
+            timeFormat === "AM" ||
+            (timeFormat === "PM" && capitalMeridiem === "PM")
+          ) {
+            if (hour > selectedHour) {
               dispatch({
                 type: "SET_END_TIME",
                 format: capitalMeridiem,
@@ -3160,8 +3147,8 @@ export default function ReactDateTimePicker(props) {
                 second,
               });
             }
-            if (minute === selectedMinute.toString()) {
-              if (second > selectedSecond) {
+            if (hour === selectedHour.toString()) {
+              if (minute > selectedMinute) {
                 dispatch({
                   type: "SET_END_TIME",
                   format: capitalMeridiem,
@@ -3169,6 +3156,49 @@ export default function ReactDateTimePicker(props) {
                   minute,
                   second,
                 });
+              }
+              if (minute === selectedMinute.toString()) {
+                if (second > selectedSecond) {
+                  dispatch({
+                    type: "SET_END_TIME",
+                    format: capitalMeridiem,
+                    hour,
+                    minute,
+                    second,
+                  });
+                }
+              }
+            }
+          } else {
+            if (hour > selectedHour) {
+              dispatch({
+                type: "SET_END_TIME",
+                format: "PM",
+                hour,
+                minute,
+                second,
+              });
+            }
+            if (hour === selectedHour.toString()) {
+              if (minute > selectedMinute) {
+                dispatch({
+                  type: "SET_END_TIME",
+                  format: "PM",
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+              if (minute === selectedMinute.toString()) {
+                if (second > selectedSecond) {
+                  dispatch({
+                    type: "SET_END_TIME",
+                    format: "PM",
+                    hour,
+                    minute,
+                    second,
+                  });
+                }
               }
             }
           }
@@ -3199,7 +3229,6 @@ export default function ReactDateTimePicker(props) {
             selectedStart.getDate()
           )
         ) {
-          console.log("set");
           dispatch({
             type: "SET_END_TIME",
             format: capitalMeridiem,
@@ -3216,7 +3245,6 @@ export default function ReactDateTimePicker(props) {
               minute >= selectedMinute &&
               second >= selectedSecond
             ) {
-              console.log("set2");
               dispatch({
                 type: "SET_END_TIME",
                 format: "PM",
@@ -3227,7 +3255,6 @@ export default function ReactDateTimePicker(props) {
             }
 
             if (hour > selectedHour) {
-              console.log("set3");
               dispatch({
                 type: "SET_END_TIME",
                 format: "PM",
@@ -3239,7 +3266,6 @@ export default function ReactDateTimePicker(props) {
 
             if (hour === selectedHour.toString()) {
               if (minute > selectedMinute) {
-                console.log("set4");
                 dispatch({
                   type: "SET_END_TIME",
                   format: "PM",
@@ -3251,7 +3277,6 @@ export default function ReactDateTimePicker(props) {
 
               if (minute === selectedMinute.toDateString()) {
                 if (second >= selectedSecond) {
-                  console.log("set5");
                   dispatch({
                     type: "SET_END_TIME",
                     format: "PM",
@@ -3265,7 +3290,6 @@ export default function ReactDateTimePicker(props) {
           }
           if (timeFormat === "AM") {
             if (capitalMeridiem === "PM") {
-              console.log("set6");
               dispatch({
                 type: "SET_END_TIME",
                 format: capitalMeridiem,
@@ -3280,8 +3304,6 @@ export default function ReactDateTimePicker(props) {
                 minute >= selectedMinute &&
                 second >= selectedSecond
               ) {
-                console.log("set7");
-
                 dispatch({
                   type: "SET_END_TIME",
                   format: capitalMeridiem,
@@ -3292,8 +3314,6 @@ export default function ReactDateTimePicker(props) {
               }
 
               if (hour > selectedHour) {
-                console.log("set8");
-
                 dispatch({
                   type: "SET_END_TIME",
                   format: capitalMeridiem,
@@ -3305,8 +3325,6 @@ export default function ReactDateTimePicker(props) {
 
               if (hour === selectedHour.toString()) {
                 if (minute > selectedMinute) {
-                  console.log("set9");
-
                   dispatch({
                     type: "SET_END_TIME",
                     format: capitalMeridiem,
