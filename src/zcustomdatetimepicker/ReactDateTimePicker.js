@@ -1334,7 +1334,6 @@ export default function ReactDateTimePicker(props) {
             }
             endTimeValue = `${endHour}:${endMinute}:${endSecond} ${inputEndTimeFormat}`;
           } else {
-            console.log("boring day")
             endHour = action.hour;
             endMinute = action.minute;
             endSecond = action.second;
@@ -1353,7 +1352,6 @@ export default function ReactDateTimePicker(props) {
             }
             endTimeValue = `${endHour}:${endMinute} ${inputEndTimeFormat}`;
           } else {
-            console.log("boring day")
 
             endHour = action.hour;
             endMinute = action.minute;
@@ -1696,12 +1694,14 @@ export default function ReactDateTimePicker(props) {
 
         if (props.clockTimeFormat === "am-pm") {
           if (selectedStart > minCalDate) {
+
             dispatch({ type: "APPLY" });
           }
           if (minCalDate.getHours() <= 11) {
             if (timeFormat === "AM") {
               if (selectedStart.toDateString() === minCalDate.toDateString()) {
                 if (selectedHour >= minCalDate.getHours()) {
+
                   dispatch({ type: "APPLY" });
                 }
               }
@@ -1710,19 +1710,25 @@ export default function ReactDateTimePicker(props) {
             if (timeFormat === "PM") {
               if (selectedStart.toDateString() === minCalDate.toDateString()) {
                 if (parseInt(selectedHour) + 12 >= minCalDate.getHours()) {
+
                   dispatch({ type: "APPLY" });
+
                 }
               }
             }
           }
         } else {
           dispatch({ type: "APPLY" });
+
         }
 
         if (selectedStart.toDateString() === minCalDate.toDateString()) {
-          dispatch({ type: "APPLY_CURRENT_DATETIME" });
+          console.log("date3")
+
+          dispatch({ type: "APPLY" });
         }
       } else {
+
         dispatch({ type: "APPLY" });
       }
     } else if (show === "show-end" && selectedEnd !== null) {
@@ -1730,11 +1736,13 @@ export default function ReactDateTimePicker(props) {
       if (selectedStart.toDateString() === selectedEnd.toDateString()) {
         if (timeFormat === endTimeFormat) {
           if (selectedEndHour >= selectedHour) {
+
             dispatch({ type: "APPLY" });
           }
       }
 
         if (timeFormat === "AM" && endTimeFormat === "PM") {
+
           dispatch({ type: "APPLY" });
         }
       }
