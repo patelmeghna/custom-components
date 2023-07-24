@@ -2928,7 +2928,6 @@ export default function ReactDateTimePicker(props) {
         }
       }
     }
-    console.log(hour);
 
     // check validity of input text
     if (props.error) {
