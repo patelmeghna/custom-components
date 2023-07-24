@@ -27,11 +27,13 @@ function DatePicker() {
         range={true}
         value={startValue}
         id="placeholder-demo"
-        minDate="2023-01-14"
-        maxDate="2024-04-19"
+        minDate="2023-07-24"
+        // maxDate="2024-08-19"
+        // isSecondHide
         // reset={reset}
-        clockTimeFormat="am-pm"
+        // clockTimeFormat="am-pm"
         // isDisabled={isDisabled}
+        isMinCurrentTime 
       />
       {/* <p>Result: {startValue}</p>
       <div className="d-flex">

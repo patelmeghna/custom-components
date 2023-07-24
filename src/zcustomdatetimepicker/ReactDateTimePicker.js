@@ -1754,7 +1754,7 @@ export default function ReactDateTimePicker(props) {
 
         if (
           (timeFormat === "AM" && endTimeFormat === "PM") ||
-          (timeFormat === "PM" && endTimeFormat === "PM")
+          (timeFormat === "PM" && endTimeFormat === "PM") 
         ) {
           dispatch({ type: "APPLY" });
         }
