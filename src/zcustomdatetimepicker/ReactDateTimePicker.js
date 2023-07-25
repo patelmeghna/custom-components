@@ -3277,8 +3277,8 @@ export default function ReactDateTimePicker(props) {
 
       if (
         props.isSecondHide
-          ? minute <= 60 && hour <= 12
-          : minute <= 60 && hour <= 12 && second <= 60
+          ? minute <= 60 && hour <= 24
+          : minute <= 60 && hour <= 24 && second <= 60
       ) {
         if (selectedEnd.toDateString() === selectedStart.toDateString()) {
           if (
