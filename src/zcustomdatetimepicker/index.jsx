@@ -10,29 +10,23 @@ function DatePicker() {
   const [reset, setReset] = useState(false)
   const [isDisabled, setIsDisabled] = useState(false);
 
-  const handleReset = () => {
-    setStartValue("");
-    setReset(true);
-  }
-  // console.log('length', startValue)
+  // const handleReset = () => {
+  //   setStartValue("");
+  //   setReset(true);
+  // }
+  // console.log(startValue)
 
   return (
     <Container className="py-5">
       <ReactDateTimePicker
-        name="demo-date"
-        // format="yyyy/mm/dd"
-        // placeholder="Add date in formate of yyyy/mm/dd"
-        onChange={(data) => setStartValue(data)}
+        name="min-current-time"
+        id="min-current-time"
         selectedMode="dateTime"
-        range={true}
         value={startValue}
-        id="placeholder-demo"
-        minDate="2023-01-14"
-        maxDate="2024-04-19"
-        // reset={reset}
-        clockTimeFormat="am-pm"
-        // isDisabled={isDisabled}
-        />
+        onChange={(date) => setStartValue(date)}
+        minDate={true}
+        isMinCurrentTime={true}
+      />
         <p>Result: {startValue}</p>
         {/* 
       <div className="d-flex">
