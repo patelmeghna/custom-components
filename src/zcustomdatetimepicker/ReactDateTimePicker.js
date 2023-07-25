@@ -2153,6 +2153,7 @@ export default function ReactDateTimePicker(props) {
             disabled = true;
           }
         }
+        console.log('sel',selectedStart.toString() === currentDate.toString())
       } else if (currentHour < 12 && show === "show") {
         if (
           selectedStart &&
