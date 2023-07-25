@@ -1834,7 +1834,7 @@ export default function ReactDateTimePicker(props) {
   useEffect(() => {
     renderCount.current += 1;
 
-    if (renderCount.current === 2) {
+    if (renderCount.current === 3) {
       dispatch({ type: "HIDE_CALENDAR_AT_START" });
     }
   });
@@ -2159,7 +2159,9 @@ export default function ReactDateTimePicker(props) {
         if (
           selectedStart &&
           selectedStart.toDateString() === currentDate.toDateString() &&
+          selectedHour &&
           currentHour.toString() === selectedHour.toString() &&
+          selectedMinute &&
           currentMinute.toString() === selectedMinute.toString()
         ) {
           if (timeFormat === "AM") {
@@ -2246,8 +2248,6 @@ export default function ReactDateTimePicker(props) {
       );
     }
   }
-  console.log(currentSecond, "second");
-  console.log(currentMinute, "minute");
   // Determine the date format based on the props or use default "DD/MM/YYYY"
   const str = props.format || "DD/MM/YYYY";
 
