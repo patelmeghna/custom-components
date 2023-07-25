@@ -9,27 +9,36 @@ function DatePicker() {
   const [monthValue, setMonthValue] = useState("02/2022");
   const [reset, setReset] = useState(false)
   const [isDisabled, setIsDisabled] = useState(false);
+  const [dateValue, setDateValue] = useState("");
+  const [undoValue, setUndoValue] = useState([]);
+  
+  const onDateChange = (data) => {
+    setDateValue(data);
+    if (undoValue[undoValue.length - 1] !== dateValue) {
+      setUndoValue([...undoValue, dateValue]);
+    }
+  }
 
-  // const handleReset = () => {
-  //   setStartValue("");
-  //   setReset(true);
-  // }
-  // console.log(startValue)
+  const onUndoChange = () => {
+    setDateValue(undoValue[undoValue.length - 2]);
+    setUndoValue(newValue => newValue.slice(0, -1));
+  }
 
   return (
     <Container className="py-5">
       <ReactDateTimePicker
-        name="min-current-time"
-        id="min-current-time"
+        name="undo-date"
+        id="undo-date"
+        isUndo={true}
+        undoClick={onUndoChange}
+        onChange={onDateChange}
+        value={dateValue}
+        clockTimeFormat="am-pm"
+        minDate
+        isMinCurrentTime
         selectedMode="dateTime"
-        value={startValue}
-        onChange={(date) => setStartValue(date)}
-        minDate={true}
-        isMinCurrentTime={true}
-        range
-        // clockTimeFormat={"am-pm"}
       />
-        <p>Result: {startValue}</p>
+        <p>Result: {dateValue}</p>
         {/* 
       <div className="d-flex">
         <button className="btn btn-secondary me-2" onClick={() => setIsDisabled(!isDisabled)}>Disable</button>
