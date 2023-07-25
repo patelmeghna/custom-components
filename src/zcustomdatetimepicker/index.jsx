@@ -26,6 +26,8 @@ function DatePicker() {
         onChange={(date) => setStartValue(date)}
         minDate={true}
         isMinCurrentTime={true}
+        range
+        clockTimeFormat="am-pm"
       />
         <p>Result: {startValue}</p>
         {/* 
