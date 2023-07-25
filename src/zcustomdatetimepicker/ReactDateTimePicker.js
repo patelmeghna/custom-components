@@ -3900,7 +3900,7 @@ export default function ReactDateTimePicker(props) {
                 }
                 disabled={props.isDisabled || props.isReadOnly}
                 readOnly={selectedStart === null ? true : false}
-                name={props.eName}
+                name={props.name}
                 tabIndex={props.endTabIndex}
               />
             ) : (
@@ -3910,7 +3910,7 @@ export default function ReactDateTimePicker(props) {
                 onChange={handleEndDateChange}
                 disabled={props.isDisabled || props.isReadOnly}
                 readOnly={selectedStart === null ? true : false}
-                name={props.eName}
+                name={props.name}
                 value={endInputValue !== null ? endInputValue : ""}
                 onBlur={handleEndBlur}
                 onFocus={handleEndFocus}
