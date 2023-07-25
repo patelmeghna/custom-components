@@ -1147,6 +1147,8 @@ export default function ReactDateTimePicker(props) {
                   return {
                     ...state,
                     selectedEndHour: state.selectedHour,
+                    selectedEndMinute: state.selectedMinute,
+                    selectedEndSecond: state.selectedSecond,
                     endTime: `${state.selectedEndHour}:${
                       state.selectedEndMinute
                     }${!props.isSecondHide && `:${state.selectedEndSecond}`}`,
@@ -1165,6 +1167,7 @@ export default function ReactDateTimePicker(props) {
                     return {
                       ...state,
                       selectedEndMinute: state.selectedMinute,
+                      selectedEndSecond: state.selectedSecond,
                       endTime: `${state.selectedEndHour}:${
                         state.selectedEndMinute
                       }${!props.isSecondHide && `:${state.selectedEndSecond}`}`,
@@ -1206,6 +1209,8 @@ export default function ReactDateTimePicker(props) {
                       ...state,
                       endTimeFormat: state.timeFormat,
                       selectedEndHour: state.selectedHour,
+                      selectedEndMinute: state.selectedMinute,
+                      selectedEndSecond: state.selectedSecond,
                       endTime: `${state.selectedEndHour}:${
                         state.selectedEndMinute
                       }${
@@ -1227,6 +1232,7 @@ export default function ReactDateTimePicker(props) {
                         ...state,
                         endTimeFormat: state.timeFormat,
                         selectedEndMinute: state.selectedMinute,
+                        selectedEndSecond: state.selectedSecond,
                         endTime: `${state.selectedEndHour}:${
                           state.selectedEndMinute
                         }${
