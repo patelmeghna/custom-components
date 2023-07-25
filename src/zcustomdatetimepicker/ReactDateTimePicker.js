@@ -1104,6 +1104,7 @@ export default function ReactDateTimePicker(props) {
             toggle = "";
           }
         }
+
         const selected =
           new Date(action.year, action.month, action.day) ||
           (props.minDate && minCalDate);
@@ -2090,6 +2091,7 @@ export default function ReactDateTimePicker(props) {
         if (
           selectedStart &&
           selectedStart.toDateString() === currentDate.toDateString() &&
+          selectedHour &&
           currentHour.toString() === selectedHour.toString()
         ) {
           disabled = i < currentMinute;
@@ -2201,7 +2203,9 @@ export default function ReactDateTimePicker(props) {
         if (
           selectedStart &&
           selectedStart.toDateString() === currentDate.toDateString() &&
+          selectedHour &&
           currentHour.toString() === selectedHour.toString() &&
+          selectedMinute &&
           currentMinute.toString() === selectedMinute.toString()
         ) {
           disabled = i < currentSecond;
@@ -2243,7 +2247,8 @@ export default function ReactDateTimePicker(props) {
       );
     }
   }
-
+  console.log(currentSecond, "second");
+  console.log(currentMinute, "minute");
   // Determine the date format based on the props or use default "DD/MM/YYYY"
   const str = props.format || "DD/MM/YYYY";
 
@@ -2328,6 +2333,33 @@ export default function ReactDateTimePicker(props) {
     startInputValue = selectedStart && `${startDate}`;
   }
 
+  let endInputValue;
+
+  if (showEndClock === "show") {
+    endInputValue = selectedEnd && `${endDate} ${endTime}`;
+  } else {
+    endInputValue = selectedEnd && `${endDate}`;
+  }
+
+  useEffect(() => {
+    renderCount.current += 1;
+
+    if (renderCount.current > 4) {
+      if (!props.range) {
+        props.onChange &&
+          props.onChange(startInputValue !== null ? startInputValue : "");
+      } else {
+        if (
+          startInputValue !== null &&
+          (endInputValue !== null || endInputValue !== undefined)
+        ) {
+          props.onChange &&
+            props.onChange(`${startInputValue} To ${endInputValue}`);
+        }
+      }
+    }
+  }, [selectedEnd, selectedStart, time, endTime]);
+
   const handleDayClick = (day) => {
     if (show === "show") {
       previousSelectedStartDate.push(`${year}-${month + 1}-${day}`);
@@ -2396,7 +2428,10 @@ export default function ReactDateTimePicker(props) {
       props.onChange &&
         props.onChange(startInputValue !== null ? startInputValue : "");
     } else {
-      if (startInputValue !== null && endInputValue !== null) {
+      if (
+        startInputValue !== null &&
+        (endInputValue !== null || endInputValue !== undefined)
+      ) {
         props.onChange &&
           props.onChange(`${startInputValue} To ${endInputValue}`);
       }
@@ -2404,26 +2439,9 @@ export default function ReactDateTimePicker(props) {
   };
 
   // ===============================================
-
-  let endInputValue;
-
-  if (showEndClock === "show") {
-    endInputValue = selectedEnd && `${endDate} ${endTime}`;
-  } else {
-    endInputValue = selectedEnd && `${endDate}`;
-  }
   // form variables
 
   useEffect(() => {
-    if (!selectedEnd || !props.range) {
-      props.onChange &&
-        props.onChange(startInputValue !== null && startInputValue);
-    } else {
-      if (startInputValue !== null && endInputValue !== null) {
-        props.onChange &&
-          props.onChange(`${startInputValue} To ${endInputValue}`);
-      }
-    }
     if (
       selectedStart &&
       selectedEnd &&
@@ -2439,21 +2457,6 @@ export default function ReactDateTimePicker(props) {
     timeFormat,
     selectedSecond,
     time,
-  ]);
-
-  useEffect(() => {
-    props.onEndChange && props.onEndChange(endInputValue);
-    if (startInputValue !== null && endInputValue !== null) {
-      props.onChange &&
-        props.onChange(`${startInputValue} To ${endInputValue}`);
-    }
-  }, [
-    selectedEnd,
-    selectedEndHour,
-    selectedEndMinute,
-    endTimeFormat,
-    selectedEndSecond,
-    endTime,
   ]);
 
   // Determine the previous button state based on the "show" value and current month/year
@@ -2495,7 +2498,7 @@ export default function ReactDateTimePicker(props) {
 
     if (props.range) {
       if (endInputValue) {
-        props.onChange && props.onChange(`${value}To ${endInputValue}`);
+        props.onChange && props.onChange(`${value} To ${endInputValue}`);
       }
     }
 
