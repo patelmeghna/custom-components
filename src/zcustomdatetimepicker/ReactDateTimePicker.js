@@ -1135,12 +1135,68 @@ export default function ReactDateTimePicker(props) {
             }
             if (
               props.selectedMode === "dateTime" &&
-              state.showEndClock === "show"
+              state.showEndClock === "show" &&
+              selected.toDateString() === state.selectedStart.toDateString()
             ) {
-              if (
-                selected.toDateString() === state.selectedStart.toDateString()
-              ) {
-                if (!props.clockTimeFormat) {
+              if (!props.clockTimeFormat) {
+                if (
+                  state.selectedEndHour &&
+                  state.selectedHour &&
+                  state.selectedEndHour < state.selectedHour
+                ) {
+                  return {
+                    ...state,
+                    selectedEndHour: state.selectedHour,
+                    endTime: `${state.selectedEndHour}:${
+                      state.selectedEndMinute
+                    }${!props.isSecondHide && `:${state.selectedEndSecond}`}`,
+                    selectedEnd: selected,
+                  };
+                }
+                if (
+                  state.selectedEndHour &&
+                  state.selectedHour &&
+                  state.selectedEndHour === state.selectedHour
+                ) {
+                  if (
+                    state.selectedEndMinute &&
+                    state.selectedEndMinute < state.selectedMinute
+                  ) {
+                    return {
+                      ...state,
+                      selectedEndMinute: state.selectedMinute,
+                      endTime: `${state.selectedEndHour}:${
+                        state.selectedEndMinute
+                      }${!props.isSecondHide && `:${state.selectedEndSecond}`}`,
+                      selectedEnd: selected,
+                    };
+                  }
+                  if (!props.isSecondHide) {
+                    if (
+                      state.selectedEndMinute &&
+                      state.selectedEndMinute === state.selectedMinute
+                    ) {
+                      if (
+                        state.selectedEndSecond &&
+                        state.selectedEndSecond < state.selectedSecond
+                      ) {
+                        return {
+                          ...state,
+                          selectedEndSecond: state.selectedSecond,
+                          endTime: `${state.selectedEndHour}:${state.selectedEndMinute}:${state.selectedEndSecond}`,
+                          selectedEnd: selected,
+                        };
+                      }
+                    }
+                  }
+                }
+              }
+              if (props.clockTimeFormat === "am-pm") {
+                if (
+                  (state.timeFormat === "PM" && state.endTimeFormat === "AM") ||
+                  (state.timeFormat === "AM" && state.endTimeFormat === "AM") ||
+                  (state.timeFormat === "PM" && state.endTimeFormat === "PM")
+                ) {
                   if (
                     state.selectedEndHour &&
                     state.selectedHour &&
@@ -1148,16 +1204,14 @@ export default function ReactDateTimePicker(props) {
                   ) {
                     return {
                       ...state,
+                      endTimeFormat: state.timeFormat,
                       selectedEndHour: state.selectedHour,
                       endTime: `${state.selectedEndHour}:${
                         state.selectedEndMinute
-                      }${!props.isSecondHide && `:${state.selectedEndSecond}`}`,
+                      }${
+                        !props.isSecondHide && `:${state.selectedEndSecond}`
+                      } ${state.endTimeFormat}`,
                       selectedEnd: selected,
-                      show:
-                        state.showEndClock === "" ||
-                        state.showEndClock === undefined
-                          ? ""
-                          : "show-end",
                     };
                   }
                   if (
@@ -1171,18 +1225,14 @@ export default function ReactDateTimePicker(props) {
                     ) {
                       return {
                         ...state,
+                        endTimeFormat: state.timeFormat,
                         selectedEndMinute: state.selectedMinute,
                         endTime: `${state.selectedEndHour}:${
                           state.selectedEndMinute
                         }${
                           !props.isSecondHide && `:${state.selectedEndSecond}`
-                        }`,
+                        } ${state.endTimeFormat}`,
                         selectedEnd: selected,
-                        show:
-                          state.showEndClock === "" ||
-                          state.showEndClock === undefined
-                            ? ""
-                            : "show-end",
                       };
                     }
                     if (!props.isSecondHide) {
@@ -1196,97 +1246,11 @@ export default function ReactDateTimePicker(props) {
                         ) {
                           return {
                             ...state,
+                            endTimeFormat: state.timeFormat,
                             selectedEndSecond: state.selectedSecond,
-                            endTime: `${state.selectedEndHour}:${state.selectedEndMinute}:${state.selectedEndSecond}`,
+                            endTime: `${state.selectedEndHour}:${state.selectedEndMinute}:${state.selectedEndSecond} ${state.endTimeFormat}`,
                             selectedEnd: selected,
-                            show:
-                              state.showEndClock === "" ||
-                              state.showEndClock === undefined
-                                ? ""
-                                : "show-end",
                           };
-                        }
-                      }
-                    }
-                  }
-                }
-                if (props.clockTimeFormat === "am-pm") {
-                  if (
-                    (state.timeFormat === "PM" &&
-                      (state.endTimeFormat === "AM" ||
-                        state.endTimeHour === "PM")) ||
-                    (state.timeFormat === "AM" && state.endTimeFormat === "AM")
-                  ) {
-                    if (
-                      state.selectedEndHour &&
-                      state.selectedHour &&
-                      state.selectedEndHour < state.selectedHour
-                    ) {
-                      return {
-                        ...state,
-                        endTimeFormat: state.timeFormat,
-                        selectedEndHour: state.selectedHour,
-                        endTime: `${state.selectedEndHour}:${
-                          state.selectedEndMinute
-                        }${
-                          !props.isSecondHide && `:${state.selectedEndSecond}`
-                        } ${state.endTimeFormat}`,
-                        selectedEnd: selected,
-                        show:
-                          state.showEndClock === "" ||
-                          state.showEndClock === undefined
-                            ? ""
-                            : "show-end",
-                      };
-                    }
-                    if (
-                      state.selectedEndHour &&
-                      state.selectedHour &&
-                      state.selectedEndHour === state.selectedHour
-                    ) {
-                      if (
-                        state.selectedEndMinute &&
-                        state.selectedEndMinute < state.selectedMinute
-                      ) {
-                        return {
-                          ...state,
-                          endTimeFormat: state.timeFormat,
-                          selectedEndMinute: state.selectedMinute,
-                          endTime: `${state.selectedEndHour}:${
-                            state.selectedEndMinute
-                          }${
-                            !props.isSecondHide && `:${state.selectedEndSecond}`
-                          } ${state.endTimeFormat}`,
-                          selectedEnd: selected,
-                          show:
-                            state.showEndClock === "" ||
-                            state.showEndClock === undefined
-                              ? ""
-                              : "show-end",
-                        };
-                      }
-                      if (!props.isSecondHide) {
-                        if (
-                          state.selectedEndMinute &&
-                          state.selectedEndMinute === state.selectedMinute
-                        ) {
-                          if (
-                            state.selectedEndSecond &&
-                            state.selectedEndSecond < state.selectedSecond
-                          ) {
-                            return {
-                              ...state,
-                              endTimeFormat: state.timeFormat,
-                              selectedEndSecond: state.selectedSecond,
-                              endTime: `${state.selectedEndHour}:${state.selectedEndMinute}:${state.selectedEndSecond} ${state.endTimeFormat}`,
-                              selectedEnd: selected,
-                              show:
-                                state.showEndClock === "" ||
-                                state.showEndClock === undefined
-                                  ? ""
-                                  : "show-end",
-                            };
-                          }
                         }
                       }
                     }
