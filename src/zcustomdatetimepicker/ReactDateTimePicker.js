@@ -628,8 +628,21 @@ export default function ReactDateTimePicker(props) {
         if (state.show === "show") {
           // start date selection :: begin
           if (props.clockTimeFormat === "am-pm") {
-            if (startHourTime === undefined || startHourTime === null) {
+            if (
+              state.selectedStartHour === undefined ||
+              state.selectedStartHour === null
+            ) {
               // start
+              if (
+                props.minDate &&
+                state.selectedStart &&
+                state.selectedStart.toDateString() === minCalDate.toDateString()
+              ) {
+                if (new Date().getHours() > 12) {
+                  newTimeFormat = "PM";
+                  newEndTimeFormat = "PM";
+                }
+              }
               if (new Date().getHours() > 12) {
                 if ((new Date().getHours() - 12).toString().length === 1) {
                   startHourTime = `0${new Date().getHours() - 12}`;
@@ -1147,6 +1160,8 @@ export default function ReactDateTimePicker(props) {
                   return {
                     ...state,
                     selectedEndHour: state.selectedHour,
+                    selectedEndMinute: state.selectedMinute,
+                    selectedEndSecond: state.selectedSecond,
                     endTime: `${state.selectedEndHour}:${
                       state.selectedEndMinute
                     }${!props.isSecondHide && `:${state.selectedEndSecond}`}`,
@@ -1165,6 +1180,7 @@ export default function ReactDateTimePicker(props) {
                     return {
                       ...state,
                       selectedEndMinute: state.selectedMinute,
+                      selectedEndSecond: state.selectedSecond,
                       endTime: `${state.selectedEndHour}:${
                         state.selectedEndMinute
                       }${!props.isSecondHide && `:${state.selectedEndSecond}`}`,
@@ -1206,6 +1222,8 @@ export default function ReactDateTimePicker(props) {
                       ...state,
                       endTimeFormat: state.timeFormat,
                       selectedEndHour: state.selectedHour,
+                      selectedEndMinute: state.selectedMinute,
+                      selectedEndSecond: state.selectedSecond,
                       endTime: `${state.selectedEndHour}:${
                         state.selectedEndMinute
                       }${
@@ -1227,6 +1245,7 @@ export default function ReactDateTimePicker(props) {
                         ...state,
                         endTimeFormat: state.timeFormat,
                         selectedEndMinute: state.selectedMinute,
+                        selectedEndSecond: state.selectedSecond,
                         endTime: `${state.selectedEndHour}:${
                           state.selectedEndMinute
                         }${
@@ -1964,11 +1983,11 @@ export default function ReactDateTimePicker(props) {
     }
   });
 
-  // useEffect(() => {
-  //   if (props.value) {
-  //     dispatch({ type: "DEFAULT_VALUES" });
-  //   }
-  // }, [props.value, props.range, props.isSecondHide]);
+  useEffect(() => {
+    if (props.value && props.value !== null) {
+      dispatch({ type: "DEFAULT_VALUES" });
+    }
+  }, [props.value]);
 
   useEffect(() => {
     dispatch({ type: "TOGGLE_SHOW" });
@@ -3939,7 +3958,7 @@ export default function ReactDateTimePicker(props) {
               />
             )}
 
-            {props.isUndo && isFocused && (
+            {props.isUndo && (
               <button className="icon-btn" onClick={handleStartUndo}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
