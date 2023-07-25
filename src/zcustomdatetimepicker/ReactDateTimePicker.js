@@ -1845,7 +1845,6 @@ export default function ReactDateTimePicker(props) {
 
   const handleStartUndo = () => {
     props.undoClick && props.undoClick();
-    console.log("clicked");
   };
 
   const handleEndUndo = () => {
