@@ -27,7 +27,8 @@ function DatePicker() {
         minDate={true}
         isMinCurrentTime={true}
         range
-        // clockTimeFormat={"am-pm"}
+        clockTimeFormat={"am-pm"}
+        // isSecondHide={true}
       />
         <p>Result: {startValue}</p>
         {/* 
