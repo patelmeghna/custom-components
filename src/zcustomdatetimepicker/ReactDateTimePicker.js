@@ -4013,7 +4013,11 @@ export default function ReactDateTimePicker(props) {
             )}
 
             {props.isUndo && !props.range && (
-              <button className="icon-btn" onClick={handleStartUndo}>
+              <button
+                disabled={props.isDisabled || props.isReadOnly}
+                className="icon-btn"
+                onClick={handleStartUndo}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="18"
@@ -4027,7 +4031,11 @@ export default function ReactDateTimePicker(props) {
             )}
 
             {props.isClear && isFocused && (
-              <button onClick={handleClearClick} className="clear-btn">
+              <button
+                onClick={handleClearClick}
+                className="clear-btn"
+                disabled={props.isDisabled || props.isReadOnly}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="64"
@@ -4047,7 +4055,11 @@ export default function ReactDateTimePicker(props) {
               </button>
             )}
             {!validateStart && (
-              <button onClick={handleShowError} className="error-icon">
+              <button
+                onClick={handleShowError}
+                className="error-icon"
+                disabled={props.isDisabled || props.isReadOnly}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="32.002"
@@ -4128,7 +4140,11 @@ export default function ReactDateTimePicker(props) {
             )}
 
             {props.isUndo && props.range && (
-              <button className="icon-btn" onClick={handleStartUndo}>
+              <button
+                className="icon-btn"
+                onClick={handleStartUndo}
+                disabled={props.isDisabled || props.isReadOnly}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="18"
@@ -4142,7 +4158,11 @@ export default function ReactDateTimePicker(props) {
             )}
 
             {props.isClear && isEndFocused && (
-              <button onClick={handleClearClickEnd} className="clear-btn">
+              <button
+                onClick={handleClearClickEnd}
+                className="clear-btn"
+                disabled={props.isDisabled || props.isReadOnly}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="64"
@@ -4162,7 +4182,11 @@ export default function ReactDateTimePicker(props) {
               </button>
             )}
             {!validateEnd && (
-              <button onClick={handleShowEndError} className="error-icon">
+              <button
+                onClick={handleShowEndError}
+                className="error-icon"
+                disabled={props.isDisabled || props.isReadOnly}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="32.002"

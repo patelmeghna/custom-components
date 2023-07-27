@@ -9,7 +9,7 @@ function DatePicker() {
   const [monthValue, setMonthValue] = useState("02/2022");
   const [reset, setReset] = useState(false)
   const [isDisabled, setIsDisabled] = useState(false);
-  const [dateValue, setDateValue] = useState("");
+  const [dateValue, setDateValue] = useState("21/09/2023 12:23:22 PM To 27/09/2023 02:44:23 PM");
   const [undoValue, setUndoValue] = useState([""]);
   
   const onDateChange = (data) => {
@@ -47,6 +47,7 @@ function DatePicker() {
         selectedMode="dateTime"
         isSecondHide
         range
+        isDisabled
       />
         <p>Result: {dateValue}</p>
         {/* 
