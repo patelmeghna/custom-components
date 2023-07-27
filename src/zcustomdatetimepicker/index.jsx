@@ -47,7 +47,7 @@ function DatePicker() {
         selectedMode="dateTime"
         isSecondHide
         range
-        isDisabled
+        isReadOnly
       />
         <p>Result: {dateValue}</p>
         {/* 
