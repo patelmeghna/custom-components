@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import { Container } from "react-bootstrap";
 import ReactDateTimePicker from "./ReactDateTimePicker";
 import ReactMonth from "./ReactMonth";
@@ -10,19 +10,27 @@ function DatePicker() {
   const [reset, setReset] = useState(false)
   const [isDisabled, setIsDisabled] = useState(false);
   const [dateValue, setDateValue] = useState("");
-  const [undoValue, setUndoValue] = useState([]);
+  const [undoValue, setUndoValue] = useState([""]);
   
   const onDateChange = (data) => {
     setDateValue(data);
-    if (undoValue[undoValue.length - 1] !== dateValue) {
-      setUndoValue([...undoValue, dateValue]);
-    }
   }
 
   const onUndoChange = () => {
-    setDateValue(undoValue[undoValue.length - 2]);
-    setUndoValue(newValue => newValue.slice(0, -1));
-  }
+    if (undoValue.length >= 3) {
+      setDateValue(undoValue[undoValue.length - 2]);
+      setUndoValue((newValue) => newValue.slice(0, -1));
+    }
+  };
+
+  useEffect(() => {    
+    if (undoValue[undoValue.length - 1] !== dateValue && dateValue !== null) {
+      setUndoValue([...undoValue, dateValue]);
+    }
+  }, [dateValue]);
+
+  // console.log(undoValue);
+  // console.log(dateValue);
 
   return (
     <Container className="py-5">
@@ -37,6 +45,8 @@ function DatePicker() {
         minDate
         isMinCurrentTime
         selectedMode="dateTime"
+        isSecondHide
+        range
       />
         <p>Result: {dateValue}</p>
         {/* 
