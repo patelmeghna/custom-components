@@ -10,7 +10,8 @@ import Demo from "./TableComponent/Demo";
 import Home from "./Home";
 import TableLayout from "./TableComponent/layout";
 import DatePicker from "./zcustomdatetimepicker";
-import CustomTab from "./TabComponent/CustomTab"
+import TabComponent from "./TabComponent/CustomTab";
+import MainComponents from "./TabComponent/MainComponent";
 
 function App() {
   const [data, setData] = useState([]);
@@ -58,6 +59,8 @@ function App() {
     
           <Route index element={<Home />} />
           <Route path="/date-picker" element={<DatePicker />} />
+          <Route path="/tab-com" element={<TabComponent/>} />
+          <Route path="/tab-coms" element={<MainComponents/>}/>
           <Route path="/*" element={<TableLayout />}>
             <Route
               path="table1"
