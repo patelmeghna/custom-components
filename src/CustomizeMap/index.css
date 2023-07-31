@@ -1,0 +1,10 @@
+/* styles.css */
+.map-container {
+  width: 600px;
+  height: 400px;
+}
+
+.map {
+  height: 100%;
+  width: 100%;
+}

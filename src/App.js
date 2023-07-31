@@ -56,7 +56,6 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
-    
           <Route index element={<Home />} />
           <Route path="/date-picker" element={<DatePicker />} />
           <Route path="/tab-com" element={<TabComponent/>} />

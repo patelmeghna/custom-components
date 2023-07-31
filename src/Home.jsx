@@ -19,6 +19,7 @@ const Home = () => {
         <Link className="btn btn-primary m-1" to="/tab-com">
           Custom Tab
         </Link>
+        <Link className="btn btn-primary m-1" to="/customize-map">Map Customization</Link>
       </div>
     </Container>
   );

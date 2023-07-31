@@ -5,10 +5,7 @@ import ReactMonth from "./ReactMonth";
 
 function DatePicker() {
   // const [isDisabled, setIsDisabled] = useState(false);
-  const [startValue, setStartValue] = useState("");
-  const [monthValue, setMonthValue] = useState("");
-  const [reset, setReset] = useState(false)
-  const [isDisabled, setIsDisabled] = useState(false);
+  const [monthValue, setMonthValue] = useState("02/2022");
   const [dateValue, setDateValue] = useState("");
   const [undoValue, setUndoValue] = useState([""]);
   
@@ -29,7 +26,13 @@ function DatePicker() {
     }
   }, [dateValue]);
 
-  // console.log(undoValue);
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDateValue('21/09/2023');
+    }, 5000);
+
+    return () => clearTimeout(timeoutId);
+  }, []);
   // console.log(dateValue);
 
   return (
@@ -47,7 +50,6 @@ function DatePicker() {
         isMinCurrentTime
         selectedMode="dateTime"
         isSecondHide
-        // isReadOnly
       />
         <p>Result: {dateValue}</p>
         {/* 
