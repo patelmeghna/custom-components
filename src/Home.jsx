@@ -16,6 +16,9 @@ const Home = () => {
         <Link className="btn btn-primary m-1" to="/date-picker">
           Custom Date Time Picker
         </Link>
+        <Link className="btn btn-primary m-1" to="/custom-tab">
+          Custom Tab
+        </Link>
       </div>
     </Container>
   );

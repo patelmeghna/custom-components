@@ -41,6 +41,7 @@ function DatePicker() {
         name="undo-date"
         id="undo-date"
         isUndo={true}
+        range
         undoClick={onUndoChange}
         onChange={onDateChange}
         value={dateValue}
