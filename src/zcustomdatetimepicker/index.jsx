@@ -50,7 +50,6 @@ function DatePicker() {
         isMinCurrentTime
         selectedMode="dateTime"
         isSecondHide
-        range
       />
         <p>Result: {dateValue}</p>
         {/* 
