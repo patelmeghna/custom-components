@@ -20,9 +20,18 @@ const MapIndex = () => {
   const featureGroupRef = useRef();
   const [storedShapes, setStoredShapes] = useState([]);
 
+  const generateUniqueId = () => {
+    // A function to generate a unique ID with the current timestamp and a random number
+    const timestamp = Date.now();
+    const randomNumber = Math.floor(Math.random() * 10000);
+    return `${timestamp}-${randomNumber}`;
+  };
+
   const onCreated = (e) => {
     const drawnShape = e.layer;
     let shapeObject;
+
+    const shapeId = generateUniqueId();
 
     if (drawnShape instanceof L.Marker) {
       const { lat, lng } = drawnShape.getLatLng();
@@ -57,6 +66,8 @@ const MapIndex = () => {
       shapeObject = { type: "polyline", latlngs: drawnShape.getLatLngs() };
     }
 
+    shapeObject.id = shapeId;
+
     // Retrieve existing shapes from local storage or initialize an empty array
     const existingShapes =
       JSON.parse(localStorage.getItem("drawnShapes")) || [];
@@ -66,6 +77,7 @@ const MapIndex = () => {
 
     // Save the updated shapes to local storage
     localStorage.setItem("drawnShapes", JSON.stringify(existingShapes));
+    setStoredShapes(existingShapes);
   };
 
   const recreateShapesOnMap = (shapes) => {
