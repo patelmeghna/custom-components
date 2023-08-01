@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from "react";
-import { MapContainer, TileLayer, FeatureGroup } from "react-leaflet";
+import { useEffect, useRef, useState } from "react";
+import { MapContainer, TileLayer, FeatureGroup, useMap } from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
@@ -17,33 +17,98 @@ L.Icon.Default.mergeOptions({
 });
 
 const MapIndex = () => {
-  const featureGroupRef = useRef(null);
+  const featureGroupRef = useRef();
+  const [storedShapes, setStoredShapes] = useState([]);
 
   const onCreated = (e) => {
-    // Access the featureGroupRef and get the leafletElement
     const drawnShape = e.layer;
-    let latlngs;
+    let shapeObject;
 
-    if (
-      drawnShape instanceof L.Marker ||
-      drawnShape instanceof L.CircleMarker
-    ) {
-      // For markers, get the latitude and longitude directly
+    if (drawnShape instanceof L.Marker) {
       const { lat, lng } = drawnShape.getLatLng();
-      latlngs = { lat, lng };
+      shapeObject = { type: "marker", lat, lng };
+    } else if (drawnShape instanceof L.CircleMarker) {
+      const { lat, lng } = drawnShape.getLatLng();
+      const radius =
+        drawnShape.getRadius() > 10
+          ? drawnShape.getRadius() / 10
+          : drawnShape.getRadius();
+      shapeObject = { type: "circleMarker", lat, lng, radius };
     } else if (drawnShape instanceof L.Circle) {
-      // For circles, get the center and the radius
-      const center = drawnShape.getLatLng();
-      const radius = drawnShape.getRadius();
-      latlngs = { center, radius };
-    } else {
-      // For other shapes (rectangle, polyline, polygon), get the coordinates
-      latlngs = drawnShape.getLatLngs();
+      const { lat, lng } = drawnShape.getLatLng();
+      const radius = drawnShape.getRadius() / 1000;
+      shapeObject = { type: "circle", lat, lng, radius };
+    } else if (drawnShape instanceof L.Polygon) {
+      // For Polygon
+      const latlngs = drawnShape.getLatLngs()[0]; // Extract the outer ring (main polygon)
+      const firstPoint = latlngs[0];
+      const lastPoint = latlngs[latlngs.length - 1];
+      const isClosed = firstPoint.equals(lastPoint);
+
+      if (!isClosed) {
+        // If not closed, add the first point's lat/lng values at the end to close the polygon
+        latlngs.push(firstPoint);
+        drawnShape.setLatLngs([latlngs]); // Wrap in an array to maintain polygon format
+      }
+
+      shapeObject = { type: "polygon", latlngs };
+    } else if (drawnShape instanceof L.Polyline) {
+      // For Polyline
+      shapeObject = { type: "polyline", latlngs: drawnShape.getLatLngs() };
     }
 
-    // You can handle the latlngs data as per your requirements
-    console.log(latlngs);
+    // Retrieve existing shapes from local storage or initialize an empty array
+    const existingShapes =
+      JSON.parse(localStorage.getItem("drawnShapes")) || [];
+
+    // Add the new shape object to the existingShapes array
+    existingShapes.push(shapeObject);
+
+    // Save the updated shapes to local storage
+    localStorage.setItem("drawnShapes", JSON.stringify(existingShapes));
   };
+
+  const recreateShapesOnMap = (shapes) => {
+    const featureGroup = featureGroupRef.current;
+    if (featureGroup) {
+      featureGroup.clearLayers();
+      shapes.forEach((shape) => {
+        // Add the shape to the map based on its type
+        if (shape.type === "marker") {
+          const { lat, lng } = shape;
+          L.marker([lat, lng]).addTo(featureGroup);
+        } else if (shape.type === "circleMarker") {
+          const { lat, lng, radius } = shape;
+          L.circleMarker([lat, lng], { radius }).addTo(featureGroup);
+        } else if (shape.type === "circle") {
+          const { lat, lng, radius } = shape;
+          L.circle([lat, lng], { radius }).addTo(featureGroup);
+        } else if (shape.type === "polygon") {
+          const { latlngs } = shape;
+          L.polygon(latlngs).addTo(featureGroup);
+        } else if (shape.type === "polyline") {
+          const { latlngs } = shape;
+          L.polyline(latlngs).addTo(featureGroup);
+        }
+      });
+    }
+  };
+
+  useEffect(() => {
+    // Retrieve the stored shapes from local storage
+    const storedShapesFromStorage =
+      JSON.parse(localStorage.getItem("drawnShapes")) || [];
+
+    // Set the stored shapes to trigger the recreation on render
+    setStoredShapes(storedShapesFromStorage);
+  }, []);
+
+  // Recreate shapes when storedShapes change
+  useEffect(() => {
+    if (storedShapes.length > 0) {
+      recreateShapesOnMap(storedShapes);
+    }
+  }, [storedShapes]);
 
   return (
     <MapContainer
@@ -58,7 +123,7 @@ const MapIndex = () => {
       <FeatureGroup ref={featureGroupRef}>
         <EditControl
           position="topright"
-          onCreated={onCreated} // Add the onCreated callback here
+          onCreated={onCreated}
           draw={{
             circle: true,
             rectangle: true,
