@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, FeatureGroup, useMap } from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
+import "./index.css";
 
 import iconMarker from "leaflet/dist/images/marker-icon.png";
 import iconRetina from "leaflet/dist/images/marker-icon-2x.png";
@@ -19,9 +20,10 @@ L.Icon.Default.mergeOptions({
 const MapIndex = () => {
   const featureGroupRef = useRef();
   const [storedShapes, setStoredShapes] = useState([]);
+  const [shapeId, setShapeId] = useState();
+  const [onDeleteStart, setOnDeleteStart] = useState(false);
 
   const generateUniqueId = () => {
-    // A function to generate a unique ID with the current timestamp and a random number
     const timestamp = Date.now();
     const randomNumber = Math.floor(Math.random() * 10000);
     return `${timestamp}-${randomNumber}`;
@@ -31,7 +33,7 @@ const MapIndex = () => {
     const drawnShape = e.layer;
     let shapeObject;
 
-    const shapeId = generateUniqueId();
+    let shapeId = generateUniqueId();
 
     if (drawnShape instanceof L.Marker) {
       const { lat, lng } = drawnShape.getLatLng();
@@ -48,74 +50,242 @@ const MapIndex = () => {
       const radius = drawnShape.getRadius() / 1000;
       shapeObject = { type: "circle", lat, lng, radius };
     } else if (drawnShape instanceof L.Polygon) {
-      // For Polygon
-      const latlngs = drawnShape.getLatLngs()[0]; // Extract the outer ring (main polygon)
+      const latlngs = drawnShape.getLatLngs()[0];
       const firstPoint = latlngs[0];
       const lastPoint = latlngs[latlngs.length - 1];
       const isClosed = firstPoint.equals(lastPoint);
 
       if (!isClosed) {
-        // If not closed, add the first point's lat/lng values at the end to close the polygon
         latlngs.push(firstPoint);
-        drawnShape.setLatLngs([latlngs]); // Wrap in an array to maintain polygon format
+        drawnShape.setLatLngs([latlngs]);
       }
 
       shapeObject = { type: "polygon", latlngs };
     } else if (drawnShape instanceof L.Polyline) {
-      // For Polyline
       shapeObject = { type: "polyline", latlngs: drawnShape.getLatLngs() };
     }
 
     shapeObject.id = shapeId;
 
-    // Retrieve existing shapes from local storage or initialize an empty array
     const existingShapes =
       JSON.parse(localStorage.getItem("drawnShapes")) || [];
 
-    // Add the new shape object to the existingShapes array
     existingShapes.push(shapeObject);
 
-    // Save the updated shapes to local storage
     localStorage.setItem("drawnShapes", JSON.stringify(existingShapes));
     setStoredShapes(existingShapes);
   };
+
+  // const handleOnDeleteStart = () => {
+  //   console.log("start");
+  // };
+
+  const handleOnDeleteStop = () => {
+    console.log("stopped");
+
+    const remainingLayers = featureGroupRef.current?.getLayers();
+    const shapesRemaining = remainingLayers && remainingLayers.length > 0;
+
+    if (remainingLayers) {
+      // Array to store the shape information with unique IDs
+      const remainingShapesInfo = [];
+
+      // Iterate through the layers and store the shape info
+      remainingLayers.forEach((layer) => {
+        let shapeType;
+        let shapeInfo;
+
+        if (layer instanceof L.Marker) {
+          shapeType = "marker";
+          const { lat, lng } = layer.getLatLng();
+          shapeInfo = { id: generateUniqueId(), type: shapeType, lat, lng };
+        } else if (layer instanceof L.CircleMarker) {
+          shapeType = "circleMarker";
+          const { lat, lng } = layer.getLatLng();
+          const radius = layer.getRadius();
+          shapeInfo = {
+            id: generateUniqueId(),
+            type: shapeType,
+            lat,
+            lng,
+            radius,
+          };
+        } else if (layer instanceof L.Circle) {
+          shapeType = "circle";
+          const { lat, lng } = layer.getLatLng();
+          const radius = layer.getRadius();
+          shapeInfo = {
+            id: generateUniqueId(),
+            type: shapeType,
+            lat,
+            lng,
+            radius,
+          };
+        } else if (layer instanceof L.Polygon) {
+          shapeType = "polygon";
+          const latlngs = layer
+            .getLatLngs()[0]
+            .map((point) => [point.lat, point.lng]);
+          shapeInfo = { id: generateUniqueId(), type: shapeType, latlngs };
+        } else if (layer instanceof L.Polyline) {
+          shapeType = "polyline";
+          const latlngs = layer
+            .getLatLngs()
+            .map((point) => [point.lat, point.lng]);
+          shapeInfo = { id: generateUniqueId(), type: shapeType, latlngs };
+        }
+
+        if (shapeType && shapeInfo) {
+          remainingShapesInfo.push(shapeInfo);
+        }
+      });
+
+      console.log("Remaining shapes information:", remainingShapesInfo);
+      localStorage.setItem("drawnShapes", JSON.stringify(remainingShapesInfo));
+    }
+  };
+
+  // const handleDelete = () => {
+  //   console.log("in progress");
+  // };
+
+  const handleShapeClick = (id) => {
+    setShapeId(id);
+  };
+
+  /* handle edit start */
+
+  const handleEdit = () => {
+    // add unique id for every shape for delete function
+
+    const remainingLayers = featureGroupRef.current?.getLayers();
+
+    if (remainingLayers) {
+      // Array to store the shape information with unique IDs
+      const remainingShapesInfo = [];
+
+      // Iterate through the layers and store the shape info
+      remainingLayers.forEach((layer) => {
+        let shapeType;
+        let shapeInfo;
+
+        if (layer instanceof L.Marker) {
+          shapeType = "marker";
+          const { lat, lng } = layer.getLatLng();
+          shapeInfo = { id: generateUniqueId(), type: shapeType, lat, lng };
+        } else if (layer instanceof L.CircleMarker) {
+          shapeType = "circleMarker";
+          const { lat, lng } = layer.getLatLng();
+          const radius = layer.getRadius();
+          shapeInfo = {
+            id: generateUniqueId(),
+            type: shapeType,
+            lat,
+            lng,
+            radius,
+          };
+        } else if (layer instanceof L.Circle) {
+          shapeType = "circle";
+          const { lat, lng } = layer.getLatLng();
+          const radius = layer.getRadius();
+          shapeInfo = {
+            id: generateUniqueId(),
+            type: shapeType,
+            lat,
+            lng,
+            radius,
+          };
+        } else if (layer instanceof L.Polygon) {
+          shapeType = "polygon";
+          const latlngs = layer
+            .getLatLngs()[0]
+            .map((point) => [point.lat, point.lng]);
+          shapeInfo = { id: generateUniqueId(), type: shapeType, latlngs };
+        } else if (layer instanceof L.Polyline) {
+          shapeType = "polyline";
+          const latlngs = layer
+            .getLatLngs()
+            .map((point) => [point.lat, point.lng]);
+          shapeInfo = { id: generateUniqueId(), type: shapeType, latlngs };
+        }
+
+        if (shapeType && shapeInfo) {
+          remainingShapesInfo.push(shapeInfo);
+        }
+      });
+
+      console.log("Remaining shapes information:", remainingShapesInfo);
+      localStorage.setItem("drawnShapes", JSON.stringify(remainingShapesInfo));
+    }
+  };
+
+  /* handle edit ends*/
 
   const recreateShapesOnMap = (shapes) => {
     const featureGroup = featureGroupRef.current;
     if (featureGroup) {
       featureGroup.clearLayers();
       shapes.forEach((shape) => {
-        // Add the shape to the map based on its type
+        let layer;
+
         if (shape.type === "marker") {
           const { lat, lng } = shape;
-          L.marker([lat, lng]).addTo(featureGroup);
+          layer = L.marker([lat, lng]);
         } else if (shape.type === "circleMarker") {
           const { lat, lng, radius } = shape;
-          L.circleMarker([lat, lng], { radius }).addTo(featureGroup);
+          layer = L.circleMarker([lat, lng], { radius });
         } else if (shape.type === "circle") {
           const { lat, lng, radius } = shape;
-          L.circle([lat, lng], { radius }).addTo(featureGroup);
+          layer = L.circle([lat, lng], { radius });
         } else if (shape.type === "polygon") {
           const { latlngs } = shape;
-          L.polygon(latlngs).addTo(featureGroup);
+          layer = L.polygon(latlngs);
         } else if (shape.type === "polyline") {
           const { latlngs } = shape;
-          L.polyline(latlngs).addTo(featureGroup);
+          layer = L.polyline(latlngs);
+        }
+
+        if (layer) {
+          layer.addTo(featureGroup);
+
+          layer.on("click", (e) => {
+            e.originalEvent.stopPropagation();
+            handleShapeClick(shape.id);
+          });
+
+          layer.on("mousedown", (e) => {
+            e.originalEvent.stopPropagation();
+            handleShapeClick(shape.id);
+          });
         }
       });
     }
   };
 
+  const handleShapeEdit = (e) => {
+    const editedShape = storedShapes.find(
+      (shape) => shape.id === e.layer._leaflet_id
+    );
+  };
+
   useEffect(() => {
-    // Retrieve the stored shapes from local storage
     const storedShapesFromStorage =
       JSON.parse(localStorage.getItem("drawnShapes")) || [];
 
-    // Set the stored shapes to trigger the recreation on render
     setStoredShapes(storedShapesFromStorage);
+
+    const featureGroup = featureGroupRef.current;
+    if (featureGroup) {
+      featureGroup.on("edit", handleShapeEdit);
+    }
+
+    return () => {
+      if (featureGroup) {
+        featureGroup.off("edit", handleShapeEdit);
+      }
+    };
   }, []);
 
-  // Recreate shapes when storedShapes change
   useEffect(() => {
     if (storedShapes.length > 0) {
       recreateShapesOnMap(storedShapes);
@@ -136,6 +306,8 @@ const MapIndex = () => {
         <EditControl
           position="topright"
           onCreated={onCreated}
+          onDeleteStop={handleOnDeleteStop}
+          onEditStop={handleEdit}
           draw={{
             circle: true,
             rectangle: true,
