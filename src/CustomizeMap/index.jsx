@@ -35,6 +35,61 @@ const MapIndex = () => {
     return `${timestamp}-${randomNumber}`;
   };
 
+  // handle create
+  const onCreated = (e) => {
+    const drawnShape = e.layer;
+    let shapeObject;
+
+    const shapeId = generateUniqueId();
+
+    if (drawnShape instanceof L.Marker) {
+      const { lat, lng } = drawnShape.getLatLng();
+      shapeObject = { type: "marker", lat, lng };
+    } else if (drawnShape instanceof L.CircleMarker) {
+      const { lat, lng } = drawnShape.getLatLng();
+      const radius =
+        drawnShape.getRadius() > 10
+          ? drawnShape.getRadius() / 10
+          : drawnShape.getRadius();
+      shapeObject = { type: "circleMarker", lat, lng, radius };
+    } else if (drawnShape instanceof L.Circle) {
+      const { lat, lng } = drawnShape.getLatLng();
+      const radius = drawnShape.getRadius() / 1000;
+      shapeObject = { type: "circle", lat, lng, radius };
+    } else if (drawnShape instanceof L.Polygon) {
+      // For Polygon
+      const latlngs = drawnShape.getLatLngs()[0]; // Extract the outer ring (main polygon)
+      const firstPoint = latlngs[0];
+      const lastPoint = latlngs[latlngs.length - 1];
+      const isClosed = firstPoint.equals(lastPoint);
+
+      if (!isClosed) {
+        // If not closed, add the first point's lat/lng values at the end to close the polygon
+        latlngs.push(firstPoint);
+        drawnShape.setLatLngs([latlngs]); // Wrap in an array to maintain polygon format
+      }
+
+      shapeObject = { type: "polygon", latlngs };
+    } else if (drawnShape instanceof L.Polyline) {
+      // For Polyline
+      shapeObject = { type: "polyline", latlngs: drawnShape.getLatLngs() };
+    }
+
+    shapeObject.id = shapeId;
+
+    // Retrieve existing shapes from local storage or initialize an empty array
+    const existingShapes =
+      JSON.parse(localStorage.getItem("drawnShapes")) || [];
+
+    // Add the new shape object to the existingShapes array
+    existingShapes.push(shapeObject);
+
+    // Save the updated shapes to local storage
+    localStorage.setItem("drawnShapes", JSON.stringify(existingShapes));
+    setStoredShapes(existingShapes);
+  };
+  // handle create
+
   /* handle edit start */
 
   const handleEdit = () => {
