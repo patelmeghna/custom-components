@@ -27,6 +27,7 @@ L.Icon.Default.mergeOptions({
 const MapIndex = () => {
   const featureGroupRef = useRef();
   const [storedShapes, setStoredShapes] = useState([]);
+  const [changeShape, setChangeShape] = useState(false);
 
   const generateUniqueId = () => {
     const timestamp = Date.now();
@@ -99,10 +100,12 @@ const MapIndex = () => {
         }
 
         if (layer) {
-          layer.on("click", () => {
-            // Open the link URL when the shape is clicked
-            window.open(linkUrl, "_blank");
-          });
+          if (changeShape) {
+            layer.on("click", () => {
+              // Open the link URL when the shape is clicked
+              window.open(linkUrl, "_blank");
+            });
+          }
         }
       });
 
@@ -149,10 +152,20 @@ const MapIndex = () => {
 
           layer.addTo(featureGroup);
 
-          layer.on("click", () => {
-            // Open the link URL when the shape is clicked
-            window.open(linkUrl, "_blank");
+          const tooltipContent = `<div><strong>Shape Type:</strong> ${shape.type}</div><div><a href="${linkUrl}" target="_blank">Link</a></div>`;
+
+          // Add the shape to the featureGroup and attach the tooltip
+          layer.addTo(featureGroup).bindTooltip(tooltipContent, {
+            direction: "top", // Adjust the direction of the tooltip as needed
+            permanent: true, // Set to 'true' if you want the tooltip to be always visible
           });
+
+          if (changeShape) {
+            layer.on("click", () => {
+              // Open the link URL when the shape is clicked
+              window.open(linkUrl, "_blank");
+            });
+          }
         }
       });
     }
@@ -202,8 +215,16 @@ const MapIndex = () => {
         <EditControl
           position="topright"
           onCreated={handleEdit}
-          onDeleteStop={handleEdit}
-          onEditStop={handleEdit}
+          onDeleteStart={() => setChangeShape(true)}
+          onDeleteStop={() => {
+            setChangeShape(false);
+            handleEdit();
+          }}
+          onEditStart={() => setChangeShape(true)}
+          onEditStop={() => {
+            setChangeShape(false);
+            handleEdit();
+          }}
           draw={{
             circle: true,
             rectangle: true,
