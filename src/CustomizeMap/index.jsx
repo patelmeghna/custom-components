@@ -90,12 +90,22 @@ const MapIndex = () => {
           shapeInfo = { id: generateUniqueId(), type: shapeType, latlngs };
         }
 
+        const linkUrl = "https://google.com"; // Replace this with the link URL for the specific shape
         if (shapeType && shapeInfo) {
+          // Add the link information to the shapeInfo object
+          shapeInfo.linkUrl = linkUrl;
+
           remainingShapesInfo.push(shapeInfo);
+        }
+
+        if (layer) {
+          layer.on("click", () => {
+            // Open the link URL when the shape is clicked
+            window.open(linkUrl, "_blank");
+          });
         }
       });
 
-      console.log("Remaining shapes information:", remainingShapesInfo);
       localStorage.setItem("drawnShapes", JSON.stringify(remainingShapesInfo));
     }
   };
@@ -135,7 +145,14 @@ const MapIndex = () => {
         }
 
         if (layer) {
+          const linkUrl = shape.linkUrl;
+
           layer.addTo(featureGroup);
+
+          layer.on("click", () => {
+            // Open the link URL when the shape is clicked
+            window.open(linkUrl, "_blank");
+          });
         }
       });
     }
