@@ -251,8 +251,14 @@ export default function ReactDateTimePicker(props) {
           selectedEnd: rangeEndDate,
           month: defaultMonth,
           year: defaultYear,
-          time: `${defaultStartTime} ${defaultTimeFormat}`,
-          endTime: `${defaultEndSelectedTime} ${defaultEndTimeFormat}`,
+          time:
+            props.clockTimeFormat === "am-pm"
+              ? `${defaultStartTime} ${defaultTimeFormat}`
+              : defaultStartTime,
+          endTime:
+            props.clockTimeFormat === "am-pm"
+              ? `${defaultEndSelectedTime} ${defaultEndTimeFormat}`
+              : defaultEndSelectedTime,
           hour: hour,
           minute: minute,
           endHour: endTimeHour,
@@ -620,16 +626,24 @@ export default function ReactDateTimePicker(props) {
             }
           }
         }
-        if (!props.range) {
-          toggleTime = "";
-        } else {
-          toggleTime = "show-end";
-        }
         if (state.show === "show") {
           // start date selection :: begin
           if (props.clockTimeFormat === "am-pm") {
-            if (startHourTime === undefined || startHourTime === null) {
+            if (
+              state.selectedHour === undefined ||
+              state.selectedHour === null
+            ) {
               // start
+              if (
+                props.minDate &&
+                state.selectedStart &&
+                state.selectedStart.toDateString() === minCalDate.toDateString()
+              ) {
+                if (new Date().getHours() > 12) {
+                  newTimeFormat = "PM";
+                  newEndTimeFormat = "PM";
+                }
+              }
               if (new Date().getHours() > 12) {
                 if ((new Date().getHours() - 12).toString().length === 1) {
                   startHourTime = `0${new Date().getHours() - 12}`;
@@ -655,7 +669,7 @@ export default function ReactDateTimePicker(props) {
                 } else {
                   startHourTime = state.selectedHour - 12;
                 }
-              } else {
+              } else if (startHourTime <= 12) {
                 if (
                   startHourTime >= 0 &&
                   startHourTime < 10 &&
@@ -728,7 +742,7 @@ export default function ReactDateTimePicker(props) {
               selectedHour: startHourTime,
               selectedMinute: startMinuteTime,
               selectedSecond: startSecondTime,
-              show: toggleTime,
+              show: props.range ? "show-end" : "",
               timeFormat: newTimeFormat,
             };
           } else {
@@ -737,7 +751,7 @@ export default function ReactDateTimePicker(props) {
               time: `${startHourTime}:${startMinuteTime} ${newTimeFormat}`,
               selectedHour: startHourTime,
               selectedMinute: startMinuteTime,
-              show: toggleTime,
+              show: props.range ? "show-end" : "",
               timeFormat: newTimeFormat,
             };
           }
@@ -908,24 +922,24 @@ export default function ReactDateTimePicker(props) {
 
           // end date selection :: end
 
-          if (
-            state.selectedEnd &&
-            state.selectedStart &&
-            state.selectedStart > state.selectedEnd &&
-            props.range
-          ) {
-            return {
-              ...state,
-              selectedEnd: state.selectedStart,
-            };
-          }
+          // if (
+          //   state.selectedEnd &&
+          //   state.selectedStart &&
+          //   state.selectedStart > state.selectedEnd &&
+          //   props.range
+          // ) {
+          //   return {
+          //     ...state,
+          //     selectedEnd: state.selectedStart,
+          //   };
+          // }
         }
 
-        return {
-          ...state,
-          endTime: ``,
-          show: "",
-        };
+      // return {
+      //   ...state,
+      //   endTime: ``,
+      //   show: "",
+      // };
       // apply event handler :: end
 
       // apply current date handler :: begin
@@ -968,30 +982,38 @@ export default function ReactDateTimePicker(props) {
             }
           }
           // cond 2
-          if (new Date().getHours() === 12 && state.timeFormat === "PM") {
-            defaultCurrentFormat = "PM";
-            if (state.selectedHour === new Date().getHours()) {
-              if (state.selectedMinute < new Date().getMinutes()) {
-                if (new Date().getMinutes().toString().length === 1) {
-                  defaultCurrentMinute = `0${new Date().getMinutes()}`;
-                } else {
-                  defaultCurrentMinute = new Date().getMinutes();
-                }
-              }
+          if (
+            props.minDate &&
+            state.selectedStart &&
+            state.selectedStart.toDateString() === minCalDate.toDateString()
+          ) {
+            if (props.isMinCurrentTime) {
+              if (new Date().getHours() === 12 && state.timeFormat === "PM") {
+                defaultCurrentFormat = "PM";
+                if (state.selectedHour === new Date().getHours()) {
+                  if (state.selectedMinute < new Date().getMinutes()) {
+                    if (new Date().getMinutes().toString().length === 1) {
+                      defaultCurrentMinute = `0${new Date().getMinutes()}`;
+                    } else {
+                      defaultCurrentMinute = new Date().getMinutes();
+                    }
+                  }
 
-              if (state.selectedMinute === new Date().getMinutes()) {
-                if (state.selectedSecond < new Date().getSeconds()) {
-                  if (new Date().getSeconds().toString().length === 1) {
-                    defaultCurrentSecond = `0${new Date().getSeconds()}`;
-                  } else {
-                    defaultCurrentSecond = new Date().getSeconds();
+                  if (state.selectedMinute === new Date().getMinutes()) {
+                    if (state.selectedSecond < new Date().getSeconds()) {
+                      if (new Date().getSeconds().toString().length === 1) {
+                        defaultCurrentSecond = `0${new Date().getSeconds()}`;
+                      } else {
+                        defaultCurrentSecond = new Date().getSeconds();
+                      }
+                    }
                   }
                 }
               }
+              if (new Date().getHours() === 12 && state.timeFormat === "AM") {
+                defaultCurrentFormat = "PM";
+              }
             }
-          }
-          if (new Date().getHours() === 12 && state.timeFormat === "AM") {
-            defaultCurrentFormat = "PM";
           }
           // cond 3
           if (new Date().getHours() > 12 && state.timeFormat === "PM") {
@@ -1134,6 +1156,149 @@ export default function ReactDateTimePicker(props) {
               };
             }
             if (
+              props.selectedMode === "dateTime" &&
+              state.showEndClock === "show" &&
+              selected.toDateString() === state.selectedStart.toDateString()
+            ) {
+              if (!props.clockTimeFormat) {
+                if (
+                  state.selectedEndHour &&
+                  state.selectedHour &&
+                  state.selectedEndHour < state.selectedHour
+                ) {
+                  return {
+                    ...state,
+                    selectedEndHour: state.selectedHour,
+                    selectedEndMinute: state.selectedMinute,
+                    selectedEndSecond: state.selectedSecond,
+                    endTime: `${state.selectedEndHour}:${
+                      state.selectedEndMinute
+                    }${!props.isSecondHide && `:${state.selectedEndSecond}`}`,
+                    selectedEnd: selected,
+                  };
+                }
+                if (
+                  state.selectedEndHour &&
+                  state.selectedHour &&
+                  state.selectedEndHour === state.selectedHour
+                ) {
+                  if (
+                    state.selectedEndMinute &&
+                    state.selectedEndMinute < state.selectedMinute
+                  ) {
+                    return {
+                      ...state,
+                      selectedEndMinute: state.selectedMinute,
+                      selectedEndSecond: state.selectedSecond,
+                      endTime: `${state.selectedEndHour}:${
+                        state.selectedEndMinute
+                      }${!props.isSecondHide && `:${state.selectedEndSecond}`}`,
+                      selectedEnd: selected,
+                    };
+                  }
+                  if (!props.isSecondHide) {
+                    if (
+                      state.selectedEndMinute &&
+                      state.selectedEndMinute === state.selectedMinute
+                    ) {
+                      if (
+                        state.selectedEndSecond &&
+                        state.selectedEndSecond < state.selectedSecond
+                      ) {
+                        return {
+                          ...state,
+                          selectedEndSecond: state.selectedSecond,
+                          endTime: `${state.selectedEndHour}:${state.selectedEndMinute}:${state.selectedEndSecond}`,
+                          selectedEnd: selected,
+                        };
+                      }
+                    }
+                  }
+                }
+              }
+              if (props.clockTimeFormat === "am-pm") {
+                if (
+                  state.selectedEnd &&
+                  state.selectedEnd.toDateString() ===
+                    state.selectedStart.toDateString()
+                ) {
+                  if (
+                    state.timeFormat === "AM" &&
+                    state.endTimeFormat !== "PM"
+                  ) {
+                    if (
+                      (state.timeFormat === "PM" &&
+                        state.endTimeFormat === "AM") ||
+                      state.timeFormat === state.endTimeFormat
+                    ) {
+                      if (
+                        state.selectedEndHour &&
+                        state.selectedHour &&
+                        state.selectedEndHour < state.selectedHour
+                      ) {
+                        return {
+                          ...state,
+                          endTimeFormat: state.timeFormat,
+                          selectedEndHour: state.selectedHour,
+                          selectedEndMinute: state.selectedMinute,
+                          selectedEndSecond: state.selectedSecond,
+                          endTime: `${state.selectedEndHour}:${
+                            state.selectedEndMinute
+                          }${
+                            !props.isSecondHide && `:${state.selectedEndSecond}`
+                          } ${state.endTimeFormat}`,
+                          selectedEnd: selected,
+                        };
+                      }
+                      if (
+                        state.selectedEndHour &&
+                        state.selectedHour &&
+                        state.selectedEndHour === state.selectedHour
+                      ) {
+                        if (
+                          state.selectedEndMinute &&
+                          state.selectedEndMinute < state.selectedMinute
+                        ) {
+                          return {
+                            ...state,
+                            endTimeFormat: state.timeFormat,
+                            selectedEndMinute: state.selectedMinute,
+                            selectedEndSecond: state.selectedSecond,
+                            endTime: `${state.selectedEndHour}:${
+                              state.selectedEndMinute
+                            }${
+                              !props.isSecondHide &&
+                              `:${state.selectedEndSecond}`
+                            } ${state.endTimeFormat}`,
+                            selectedEnd: selected,
+                          };
+                        }
+                        if (!props.isSecondHide) {
+                          if (
+                            state.selectedEndMinute &&
+                            state.selectedEndMinute === state.selectedMinute
+                          ) {
+                            if (
+                              state.selectedEndSecond &&
+                              state.selectedEndSecond < state.selectedSecond
+                            ) {
+                              return {
+                                ...state,
+                                endTimeFormat: state.timeFormat,
+                                selectedEndSecond: state.selectedSecond,
+                                endTime: `${state.selectedEndHour}:${state.selectedEndMinute}:${state.selectedEndSecond} ${state.endTimeFormat}`,
+                                selectedEnd: selected,
+                              };
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            if (
               selected.toDateString() === state.selectedStart.toDateString() ||
               selected > state.selectedStart
             ) {
@@ -1218,12 +1383,14 @@ export default function ReactDateTimePicker(props) {
                       ...state,
                       selectedEndMinute: state.selectedMinute,
                     };
-                  } else if (state.selectedEndMinute === state.selectedMinute) {
-                    if (state.selectedSecond > state.selectedEndSecond) {
-                      return {
-                        ...state,
-                        selectedEndSecond: state.selectedSecond,
-                      };
+                  } else if (!props.isSecondHide) {
+                    if (state.selectedEndMinute === state.selectedMinute) {
+                      if (state.selectedSecond > state.selectedEndSecond) {
+                        return {
+                          ...state,
+                          selectedEndSecond: state.selectedSecond,
+                        };
+                      }
                     }
                   }
                 }
@@ -1253,14 +1420,16 @@ export default function ReactDateTimePicker(props) {
                     ...state,
                     selectedEndMinute: state.selectedMinute,
                   };
-                } else if (state.selectedEndMinute == state.selectedMinute) {
-                  if (
-                    state.selectedSecond > state.selectedEndSecond.toString()
-                  ) {
-                    return {
-                      ...state,
-                      selectedEndSecond: state.selectedSecond,
-                    };
+                } else if (!props.isSecondHide) {
+                  if (state.selectedEndMinute == state.selectedMinute) {
+                    if (
+                      state.selectedSecond > state.selectedEndSecond.toString()
+                    ) {
+                      return {
+                        ...state,
+                        selectedEndSecond: state.selectedSecond,
+                      };
+                    }
                   }
                 }
               }
@@ -1459,9 +1628,14 @@ export default function ReactDateTimePicker(props) {
       case "CHANGE_TIME_FORMAT":
         let changedFormat = "AM";
         if (props.isMinCurrentTime && props.minDate) {
-          if (props.clockTimeFormat) {
-            if (state.currentDate.getHours() >= 12) {
-              changedFormat = "PM";
+          if (
+            state.selectedStart &&
+            state.selectedStart.toDateString() === minCalDate.toDateString()
+          ) {
+            if (props.clockTimeFormat) {
+              if (state.currentDate.getHours() >= 12) {
+                changedFormat = "PM";
+              }
             }
           }
         }
@@ -1616,6 +1790,7 @@ export default function ReactDateTimePicker(props) {
     }
   }
 
+  // console.log(props.range);
   // disable select dropodwn :: end
 
   // handle event listeners :: begin
@@ -1701,6 +1876,9 @@ export default function ReactDateTimePicker(props) {
 
   const handleStartUndo = () => {
     props.undoClick && props.undoClick();
+    // if (props.value && props.value !== null) {
+    //   dispatch({ type: "DEFAULT_VALUES" });
+    // }
   };
 
   const handleEndUndo = () => {
@@ -1834,16 +2012,16 @@ export default function ReactDateTimePicker(props) {
   useEffect(() => {
     renderCount.current += 1;
 
-    if (renderCount.current === 2) {
+    if (renderCount.current === 3) {
       dispatch({ type: "HIDE_CALENDAR_AT_START" });
     }
   });
 
-  // useEffect(() => {
-  //   if (props.value) {
-  //     dispatch({ type: "DEFAULT_VALUES" });
-  //   }
-  // }, [props.value, props.range, props.isSecondHide]);
+  useEffect(() => {
+    if (props.value && props.value !== null) {
+      dispatch({ type: "DEFAULT_VALUES" });
+    }
+  }, [props.value]);
 
   useEffect(() => {
     dispatch({ type: "TOGGLE_SHOW" });
@@ -2160,7 +2338,9 @@ export default function ReactDateTimePicker(props) {
         if (
           selectedStart &&
           selectedStart.toDateString() === currentDate.toDateString() &&
+          selectedHour &&
           currentHour.toString() === selectedHour.toString() &&
+          selectedMinute &&
           currentMinute.toString() === selectedMinute.toString()
         ) {
           if (timeFormat === "AM") {
@@ -2247,8 +2427,6 @@ export default function ReactDateTimePicker(props) {
       );
     }
   }
-  console.log(currentSecond, "second");
-  console.log(currentMinute, "minute");
   // Determine the date format based on the props or use default "DD/MM/YYYY"
   const str = props.format || "DD/MM/YYYY";
 
@@ -2635,7 +2813,9 @@ export default function ReactDateTimePicker(props) {
         let newDate;
         if (lowercaseValue.includes(" ")) {
           [newDate, time, amPm] = lowercaseValue.split(" ");
-          capitalMeridiem = amPm.toUpperCase();
+          if (amPm !== null || amPm !== undefined || amPm !== "") {
+            capitalMeridiem = amPm.toUpperCase();
+          }
         }
 
         if (time.includes(":")) {
@@ -2664,14 +2844,26 @@ export default function ReactDateTimePicker(props) {
           }
 
           if (selectedStart.toDateString() === minCalDate.toDateString()) {
-            if (parseInt(hour) > new Date().getHours()) {
-              dispatch({
-                type: "SET_TIME",
-                format: capitalMeridiem,
-                hour,
-                minute,
-                second,
-              });
+            if (new Date().getHours() > 12) {
+              if (parseInt(hour) > new Date().getHours() - 12) {
+                dispatch({
+                  type: "SET_TIME",
+                  format: capitalMeridiem,
+                  hour,
+                  minute,
+                  second,
+                });
+              }
+            } else {
+              if (parseInt(hour) > new Date().getHours()) {
+                dispatch({
+                  type: "SET_TIME",
+                  format: capitalMeridiem,
+                  hour,
+                  minute,
+                  second,
+                });
+              }
             }
             // if(hour < currentHour || minute < currentMinute || second < currentSecond){
             //   dispatch({
@@ -3139,7 +3331,9 @@ export default function ReactDateTimePicker(props) {
         let newDate;
         if (lowercaseValue.includes(" ")) {
           [newDate, time, amPm] = lowercaseValue.split(" ");
-          capitalMeridiem = amPm.toUpperCase();
+          if (amPm !== null || amPm !== undefined || amPm !== "") {
+            capitalMeridiem = amPm.toUpperCase();
+          }
         }
 
         if (time.includes(":")) {
@@ -3153,8 +3347,8 @@ export default function ReactDateTimePicker(props) {
 
       if (
         props.isSecondHide
-          ? minute <= 60 && hour <= 12
-          : minute <= 60 && hour <= 12 && second <= 60
+          ? minute <= 60 && hour <= 24
+          : minute <= 60 && hour <= 24 && second <= 60
       ) {
         if (selectedEnd.toDateString() === selectedStart.toDateString()) {
           if (
@@ -3658,7 +3852,7 @@ export default function ReactDateTimePicker(props) {
                         <select
                           disabled={disableSelect}
                           className="table-select "
-                          value={selectedHour}
+                          value={selectedHour === null ? "" : selectedHour}
                           onChange={handleHourChange}
                         >
                           {hourOptions}
@@ -3667,7 +3861,7 @@ export default function ReactDateTimePicker(props) {
                         <select
                           disabled={disableSelect}
                           className="table-select "
-                          value={selectedMinute}
+                          value={selectedMinute === null ? "" : selectedMinute}
                           onChange={handleMinuteChange}
                         >
                           {minuteOptions}
@@ -3678,7 +3872,9 @@ export default function ReactDateTimePicker(props) {
                             <select
                               disabled={disableSelect}
                               className="table-select "
-                              value={selectedSecond}
+                              value={
+                                selectedSecond === null ? "" : selectedSecond
+                              }
                               onChange={handleSecondChange}
                             >
                               {secondsOptions}
@@ -3703,7 +3899,9 @@ export default function ReactDateTimePicker(props) {
                         <select
                           disabled={disableSelect}
                           className="table-select "
-                          value={selectedEndHour}
+                          value={
+                            selectedEndHour === null ? "" : selectedEndHour
+                          }
                           onChange={handleEndHourChange}
                         >
                           {hourOptions}
@@ -3712,7 +3910,9 @@ export default function ReactDateTimePicker(props) {
                         <select
                           disabled={disableSelect}
                           className="table-select "
-                          value={selectedEndMinute}
+                          value={
+                            selectedEndMinute === null ? "" : selectedEndMinute
+                          }
                           onChange={handleEndMinuteChange}
                         >
                           {minuteOptions}
@@ -3723,7 +3923,11 @@ export default function ReactDateTimePicker(props) {
                             <select
                               disabled={disableSelect}
                               className="table-select "
-                              value={selectedEndSecond}
+                              value={
+                                selectedEndSecond === null
+                                  ? ""
+                                  : selectedEndSecond
+                              }
                               onChange={handleEndSecondChange}
                             >
                               {secondsOptions}
@@ -3815,8 +4019,12 @@ export default function ReactDateTimePicker(props) {
               />
             )}
 
-            {props.isUndo && isFocused && (
-              <button className="icon-btn" onClick={handleStartUndo}>
+            {props.isUndo && !props.range && (
+              <button
+                disabled={props.isDisabled || props.isReadOnly}
+                className="icon-btn"
+                onClick={handleStartUndo}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="18"
@@ -3830,7 +4038,11 @@ export default function ReactDateTimePicker(props) {
             )}
 
             {props.isClear && isFocused && (
-              <button onClick={handleClearClick} className="clear-btn">
+              <button
+                onClick={handleClearClick}
+                className="clear-btn"
+                disabled={props.isDisabled || props.isReadOnly}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="64"
@@ -3850,7 +4062,11 @@ export default function ReactDateTimePicker(props) {
               </button>
             )}
             {!validateStart && (
-              <button onClick={handleShowError} className="error-icon">
+              <button
+                onClick={handleShowError}
+                className="error-icon"
+                disabled={props.isDisabled || props.isReadOnly}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="32.002"
@@ -3870,7 +4086,50 @@ export default function ReactDateTimePicker(props) {
               disabled={props.isDisabled || props.isReadOnly}
               className="calendar-btn"
             >
-              <img src={calendar} />
+              <svg
+                version="1.1"
+                id="Capa_1"
+                xmlns="http://www.w3.org/2000/svg"
+                x="0px"
+                y="0px"
+                width="511.634px"
+                height="511.634px"
+                viewBox="0 0 511.634 511.634"
+                // style="enable-background:new 0 0 511.634 511.634;"
+              >
+                <g>
+                  <path
+                    d="M482.513,83.942c-7.225-7.233-15.797-10.85-25.694-10.85h-36.541v-27.41c0-12.56-4.477-23.315-13.422-32.261
+		C397.906,4.475,387.157,0,374.591,0h-18.268c-12.565,0-23.318,4.475-32.264,13.422c-8.949,8.945-13.422,19.701-13.422,32.261v27.41
+		h-109.63v-27.41c0-12.56-4.475-23.315-13.422-32.261C178.64,4.475,167.886,0,155.321,0H137.05
+		c-12.562,0-23.317,4.475-32.264,13.422c-8.945,8.945-13.421,19.701-13.421,32.261v27.41H54.823c-9.9,0-18.464,3.617-25.697,10.85
+		c-7.233,7.232-10.85,15.8-10.85,25.697v365.453c0,9.89,3.617,18.456,10.85,25.693c7.232,7.231,15.796,10.849,25.697,10.849h401.989
+		c9.897,0,18.47-3.617,25.694-10.849c7.234-7.234,10.852-15.804,10.852-25.693V109.639
+		C493.357,99.739,489.743,91.175,482.513,83.942z M347.187,45.686c0-2.667,0.849-4.858,2.56-6.567
+		c1.711-1.711,3.901-2.568,6.57-2.568h18.268c2.67,0,4.853,0.854,6.57,2.568c1.712,1.712,2.567,3.903,2.567,6.567v82.224
+		c0,2.666-0.855,4.853-2.567,6.567c-1.718,1.709-3.9,2.568-6.57,2.568h-18.268c-2.669,0-4.859-0.855-6.57-2.568
+		c-1.711-1.715-2.56-3.901-2.56-6.567V45.686z M127.915,45.686c0-2.667,0.855-4.858,2.568-6.567
+		c1.714-1.711,3.901-2.568,6.567-2.568h18.271c2.667,0,4.858,0.854,6.567,2.568c1.711,1.712,2.57,3.903,2.57,6.567v82.224
+		c0,2.666-0.855,4.856-2.57,6.567c-1.713,1.709-3.9,2.568-6.567,2.568H137.05c-2.666,0-4.856-0.855-6.567-2.568
+		c-1.709-1.715-2.568-3.901-2.568-6.567V45.686z M456.812,475.088H54.823v-292.36h401.989V475.088z"
+                  />
+                </g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+              </svg>
             </button>
           </div>
           <div
@@ -3930,8 +4189,12 @@ export default function ReactDateTimePicker(props) {
               />
             )}
 
-            {props.isUndo && isEndFocused && (
-              <button className="icon-btn" onClick={handleEndUndo}>
+            {props.isUndo && props.range && (
+              <button
+                className="icon-btn"
+                onClick={handleStartUndo}
+                disabled={props.isDisabled || props.isReadOnly}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="18"
@@ -3945,7 +4208,11 @@ export default function ReactDateTimePicker(props) {
             )}
 
             {props.isClear && isEndFocused && (
-              <button onClick={handleClearClickEnd} className="clear-btn">
+              <button
+                onClick={handleClearClickEnd}
+                className="clear-btn"
+                disabled={props.isDisabled || props.isReadOnly}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="64"
@@ -3965,7 +4232,11 @@ export default function ReactDateTimePicker(props) {
               </button>
             )}
             {!validateEnd && (
-              <button onClick={handleShowEndError} className="error-icon">
+              <button
+                onClick={handleShowEndError}
+                className="error-icon"
+                disabled={props.isDisabled || props.isReadOnly}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="32.002"
@@ -3985,7 +4256,50 @@ export default function ReactDateTimePicker(props) {
               disabled={props.isDisabled || props.isReadOnly}
               className="calendar-btn"
             >
-              <img src={calendar} />
+              <svg
+                version="1.1"
+                id="Capa_1"
+                xmlns="http://www.w3.org/2000/svg"
+                x="0px"
+                y="0px"
+                width="511.634px"
+                height="511.634px"
+                viewBox="0 0 511.634 511.634"
+                // style="enable-background:new 0 0 511.634 511.634;"
+              >
+                <g>
+                  <path
+                    d="M482.513,83.942c-7.225-7.233-15.797-10.85-25.694-10.85h-36.541v-27.41c0-12.56-4.477-23.315-13.422-32.261
+		C397.906,4.475,387.157,0,374.591,0h-18.268c-12.565,0-23.318,4.475-32.264,13.422c-8.949,8.945-13.422,19.701-13.422,32.261v27.41
+		h-109.63v-27.41c0-12.56-4.475-23.315-13.422-32.261C178.64,4.475,167.886,0,155.321,0H137.05
+		c-12.562,0-23.317,4.475-32.264,13.422c-8.945,8.945-13.421,19.701-13.421,32.261v27.41H54.823c-9.9,0-18.464,3.617-25.697,10.85
+		c-7.233,7.232-10.85,15.8-10.85,25.697v365.453c0,9.89,3.617,18.456,10.85,25.693c7.232,7.231,15.796,10.849,25.697,10.849h401.989
+		c9.897,0,18.47-3.617,25.694-10.849c7.234-7.234,10.852-15.804,10.852-25.693V109.639
+		C493.357,99.739,489.743,91.175,482.513,83.942z M347.187,45.686c0-2.667,0.849-4.858,2.56-6.567
+		c1.711-1.711,3.901-2.568,6.57-2.568h18.268c2.67,0,4.853,0.854,6.57,2.568c1.712,1.712,2.567,3.903,2.567,6.567v82.224
+		c0,2.666-0.855,4.853-2.567,6.567c-1.718,1.709-3.9,2.568-6.57,2.568h-18.268c-2.669,0-4.859-0.855-6.57-2.568
+		c-1.711-1.715-2.56-3.901-2.56-6.567V45.686z M127.915,45.686c0-2.667,0.855-4.858,2.568-6.567
+		c1.714-1.711,3.901-2.568,6.567-2.568h18.271c2.667,0,4.858,0.854,6.567,2.568c1.711,1.712,2.57,3.903,2.57,6.567v82.224
+		c0,2.666-0.855,4.856-2.57,6.567c-1.713,1.709-3.9,2.568-6.567,2.568H137.05c-2.666,0-4.856-0.855-6.567-2.568
+		c-1.709-1.715-2.568-3.901-2.568-6.567V45.686z M456.812,475.088H54.823v-292.36h401.989V475.088z"
+                  />
+                </g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+                <g></g>
+              </svg>
             </button>
           </div>
         </div>

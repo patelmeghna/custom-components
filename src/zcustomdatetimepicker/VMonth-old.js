@@ -1,6 +1,6 @@
 import React, { useReducer, useEffect } from "react";
 
-const ReactMonth = (props) => {
+const VMonth = (props) => {
   const initialState = {
     show: false,
     presentYear: new Date().getFullYear(),
@@ -18,31 +18,21 @@ const ReactMonth = (props) => {
 
   const id = props.id;
 
-  let monthValue;
-  let yearValue;
-
-  if (props.value && props.value.length !== null) {
-    if (props.value.includes("/")) {
-      [monthValue, yearValue] = props.value.split("/");
-    }
-  }
-
   const reducer = (state, action) => {
     switch (action.type) {
       case "MONTH_IN_MONTHONLY":
-        const defaultDate = props.value
-          ? new Date(yearValue, monthValue - 1)
+        const defaultDate = props.defaultSelectedMonth
+          ? new Date(props.defaultSelectedMonth)
           : new Date();
-
         return {
           ...state,
           month: defaultDate.getMonth(),
           selectedMonth: defaultDate.getMonth(),
           presentYear: defaultDate.getFullYear(),
           changedYear: defaultDate.getFullYear(),
-          // previousMonth: state.previousMonth
-          //   ? [...state.previousMonth, props.defaultSelectedMonth]
-          //   : [props.defaultSelectedMonth],
+          previousMonth: state.previousMonth
+            ? [...state.previousMonth, props.defaultSelectedMonth]
+            : [props.defaultSelectedMonth],
         };
       case "UNDO":
         return {
@@ -202,15 +192,11 @@ const ReactMonth = (props) => {
     const matches = value.match(regex);
 
     if (matches && matches.length > 2) {
-      let month = parseInt(matches[1]) - 1;
+      const month = parseInt(matches[1]) - 1;
       const year = parseInt(matches[2]);
 
       const dateObject = new Date(year, month);
-
-      if (month > 12) {
-        month -= 12;
-      }
-      if (props.error) {
+      if (!props.hideError) {
         const isValidMonth = !isNaN(dateObject) && dateObject instanceof Date;
         dispatch({ type: "VALIDATE_MONTH", payload: isValidMonth });
       }
@@ -223,7 +209,7 @@ const ReactMonth = (props) => {
         previousMonth.push(prevChangeValue);
       }
     } else {
-      if (props.error) {
+      if (!props.hideError) {
         dispatch({ type: "VALIDATE_MONTH", payload: false });
       }
     }
@@ -231,11 +217,8 @@ const ReactMonth = (props) => {
 
   const handleReset = () => {
     dispatch({ type: "RESET" });
+    props.reset && props.reset();
   };
-
-  useEffect(() => {
-    handleReset();
-  }, [props.reset]);
 
   const handleEnable = () => {
     props.setIsDisabled(!props.isDisabled);
@@ -311,35 +294,32 @@ const ReactMonth = (props) => {
   }, []);
 
   useEffect(() => {
-    if (props.value) {
+    if (props.defaultSelectedMonth) {
       dispatch({ type: "MONTH_IN_MONTHONLY" });
     }
-  }, [props.value]);
+  }, [props.defaultSelectedMonth]);
 
   for (let i = 0; i < 12; i++) {
     years.push(presentYear + i);
   }
 
-  let inputValueText;
+  let placeholderText;
 
   if (props.placeholder) {
-    inputValueText = props.placeholder;
-  } else if (props.value.length !== 0) {
-    inputValueText =
-      monthValue < 9
-        ? `${monthValue}/${yearValue}`
-        : `${monthValue}/${yearValue}`;
+    placeholderText = props.placeholder;
   } else {
-    inputValueText =
-      month < 9 ? `0${month + 1}/${changedYear}` : `${month + 1}/${changedYear}`;
+    placeholderText =
+      month < 9
+        ? `0${month + 1}/${changedYear}`
+        : `${month + 1}/${changedYear}`;
   }
 
-  // useEffect(() => {
-  //   props.onChange && props.onChange(placeholderText);
-  // }, [month, changedYear]);
+  useEffect(() => {
+    props.onChange && props.onChange(placeholderText);
+  }, [month, changedYear]);
 
   const previousValue =
-    month < 9 ? `${changedYear}-0${month }` : `${changedYear}-${month }`;
+    month < 9 ? `${changedYear}-0${month + 1}` : `${changedYear}-${month + 1}`;
 
   useEffect(() => {
     if (!show) {
@@ -460,7 +440,7 @@ const ReactMonth = (props) => {
           }`}
           disabled={props.isDisabled || props.isReadOnly}
         >
-          {props.onFocus ? (
+          {props.isFocused ? (
             <input
               type="text"
               onClick={handleShow}
@@ -468,6 +448,7 @@ const ReactMonth = (props) => {
               onBlur={handleBlur}
               onFocus={handleFocus}
               onChange={handleMonthChange}
+              autoComplete="off"
               disabled={props.isDisabled || props.isReadOnly}
               name={props.name}
               placeholder={
@@ -477,7 +458,6 @@ const ReactMonth = (props) => {
                   ? props.placeholder
                   : "MM/YYYY"
               }
-              tabIndex={props.tabIndex}
             />
           ) : (
             <input
@@ -487,10 +467,10 @@ const ReactMonth = (props) => {
               onBlur={handleBlur}
               onFocus={handleFocus}
               onChange={handleMonthChange}
+              autoComplete="off"
               disabled={props.isDisabled || props.isReadOnly}
-              value={inputValueText}
+              value={props.value ? props.value : placeholderText}
               name={props.name}
-              tabIndex={props.tabIndex}
               placeholder={
                 props.placeholder
                   ? props.placeholder
@@ -501,7 +481,7 @@ const ReactMonth = (props) => {
             />
           )}
 
-          {props.isUndo && (
+          {props.isUndo && props.undoClick && (
             <button className="icon-btn" onClick={handleUndo}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -553,7 +533,7 @@ const ReactMonth = (props) => {
           </p>
         </div>
       </div>
-      {/* {props.disableControl && (
+      {props.disableControl && (
         <button className="table-btn" onClick={handleEnable}>
           {!props.isDisabled ? "Disable" : "Enable"}
         </button>
@@ -563,7 +543,7 @@ const ReactMonth = (props) => {
         <button className="table-btn" onClick={handleReset}>
           Reset
         </button>
-      )} */}
+      )}
     </div>
   );
 };
@@ -585,4 +565,4 @@ const months = [
 
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export default ReactMonth;
+export default VMonth;
