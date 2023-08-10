@@ -55,7 +55,7 @@ const tabsReducer = (state, action) => {
   }
 };
 
-const TabComponent = ({ tabs }) => {
+const TabComponent = ({ tabs , onCustomClick }) => {
   const initialState = {
     activeTab: null
   };
@@ -63,8 +63,17 @@ const TabComponent = ({ tabs }) => {
   const [state, dispatch] = useReducer(tabsReducer, initialState);
 
   const handleTabClick = (tabId) => {
+    const clickedTab = tabs.find((tab) => tab.id === tabId);
+    if (clickedTab && typeof clickedTab.onClick === 'function') {
+      clickedTab.onClick();
+    }
     dispatch({ type: 'SELECT_TAB', payload: tabId });
     console.log(tabId)
+
+
+    // if (onCustomClick) {
+    //   onCustomClick(tabId);
+    // }
   };
 
   return (

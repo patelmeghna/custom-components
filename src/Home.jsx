@@ -16,7 +16,7 @@ const Home = () => {
         <Link className="btn btn-primary m-1" to="/date-picker">
           Custom Date Time Picker
         </Link>
-        <Link className="btn btn-primary m-1" to="/tab-com">
+        <Link className="btn btn-primary m-1" to="/tab-coms">
           Custom Tab
         </Link>
         <Link className="btn btn-primary m-1" to="/customize-map">Map Customization</Link>

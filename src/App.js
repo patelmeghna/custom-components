@@ -12,6 +12,7 @@ import TableLayout from "./TableComponent/layout";
 import DatePicker from "./zcustomdatetimepicker";
 import TabComponent from "./TabComponent/CustomTab";
 import MainComponents from "./TabComponent/MainComponent";
+import MapIndex from "./CustomizeMap";
 
 function App() {
   const [data, setData] = useState([]);
@@ -60,6 +61,7 @@ function App() {
           <Route path="/date-picker" element={<DatePicker />} />
           <Route path="/tab-com" element={<TabComponent/>} />
           <Route path="/tab-coms" element={<MainComponents/>}/>
+          <Route path="/customize-map" element={<MapIndex />} />
           <Route path="/*" element={<TableLayout />}>
             <Route
               path="table1"

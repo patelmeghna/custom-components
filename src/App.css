@@ -19,4 +19,6 @@
 .header-link.active {
   background: #282c34;
 }
-
+.tab-item{
+ border: 1px solid black;
+}
