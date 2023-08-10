@@ -1325,10 +1325,13 @@ export default function ReactDateTimePicker(props) {
         };
 
       case "HIDE_CALENDAR":
-        console.log("028");
+        let hiddenState = state.show;
+        if (state.show === "show" || state.show === "show-end") {
+          hiddenState = "";
+        }
         return {
           ...state,
-          show: "",
+          show: hiddenState,
           showYear: "",
         };
       // basic functionalities of monthOnly :: end
@@ -1923,7 +1926,10 @@ export default function ReactDateTimePicker(props) {
 
   const handleApply = () => {
     console.log("021");
-    if (show === "show" && selectedStart !== null) {
+    if (show === "show") {
+      if (selectedStart === null) {
+        dispatch({ type: "APPLY_START_DATE" });
+      }
       if ((props.isMinCurrentTime && props.minDate) || props.isMinCurrentTime) {
         if (selectedStart > minCalDate) {
           dispatch({ type: "APPLY" });
@@ -1960,7 +1966,10 @@ export default function ReactDateTimePicker(props) {
       } else {
         dispatch({ type: "APPLY" });
       }
-    } else if (show === "show-end" && selectedEnd !== null) {
+    } else if (show === "show-end") {
+      if (selectedEnd === null) {
+        dispatch({ type: "APPLY_END_DATE" });
+      }
       if (selectedStart.toDateString() === selectedEnd.toDateString()) {
         if (timeFormat === endTimeFormat) {
           if (selectedEndHour >= selectedHour) {
@@ -1996,7 +2005,6 @@ export default function ReactDateTimePicker(props) {
   };
 
   const handleDocumentClick = (e) => {
-    console.log("022");
     if (!e.target.closest(`#${id}`)) {
       dispatch({ type: "HIDE_CALENDAR" });
       dispatch({ type: "HIDE_ERROR_MSG" });
