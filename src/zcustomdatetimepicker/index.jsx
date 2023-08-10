@@ -239,7 +239,6 @@ const DateTimeUndo = () => {
       setUndoValue((newValue) => newValue.slice(0, -1));
     }
   };
-  console.log(undoValue);
 
   return (
     <>
