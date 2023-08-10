@@ -76,8 +76,9 @@ const MapIndex = () => {
       shapeObject = { type: "polyline", latlngs: drawnShape.getLatLngs() };
       console.log("latlng", drawnShape.getLatLngs());
     }
+    const id = Object.keys(drawnShape._renderer._layers);
 
-    shapeObject.id = shapeId;
+    shapeObject.id = id[id.length - 1];
     shapeObject.linkUrl = "https://google.com";
 
     // Retrieve existing shapes from local storage or initialize an empty array
@@ -269,6 +270,8 @@ const MapIndex = () => {
     }
   };
 
+  const button = <button>Click</button>;
+
   const recreateShapesOnMap = (shapes) => {
     const featureGroup = featureGroupRef.current;
     let leaflet_id;
@@ -306,11 +309,16 @@ const MapIndex = () => {
           const linkUrl = shape.linkUrl;
 
           layer.addTo(featureGroup);
+          let tooltipContent;
 
-          const tooltipContent = `<div><strong>Shape Type:</strong> ${shape.type}</div><div><a href="${linkUrl}" target="_blank">Link</a></div>`;
+          if (shape.title) {
+            tooltipContent = `<div><strong>Shape Title:</strong> ${shape.id}</div><div><a href="${linkUrl}" target="_blank">Link</a></div>`;
+          } else {
+            tooltipContent = `<div><strong>Shape Title:</strong> <button onClick="console.log(shape.id)">Click</button></div><div><a href="${linkUrl}" target="_blank">Link</a></div>`;
+          }
 
           // Add the shape to the featureGroup and attach the tooltip
-          layer.addTo(featureGroup).bindTooltip(tooltipContent, {
+          layer.addTo(featureGroup).bindPopup(tooltipContent, {
             direction: "top", // Adjust the direction of the tooltip as needed
             permanent: true, // Set to 'true' if you want the tooltip to be always visible
           });
