@@ -64,6 +64,7 @@ export default function ReactDateTimePicker(props) {
     let format = props.format || "DD/MM/YYYY";
     const lowercaseValue = value.toLowerCase();
     let lowercaseFormat = format.toLowerCase();
+    console.log("000");
 
     let str = lowercaseFormat
       .replace("dd", "\\d{2}")
@@ -2052,7 +2053,9 @@ export default function ReactDateTimePicker(props) {
 
   useEffect(() => {
     if (props.value && props.value !== null) {
-      dispatch({ type: "DEFAULT_VALUES" });
+      if (!isFocused) {
+        dispatch({ type: "DEFAULT_VALUES" });
+      }
     }
   }, [props.value]);
 
