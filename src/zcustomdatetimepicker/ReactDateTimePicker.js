@@ -1,7 +1,5 @@
 import "./zcustomdatetimepicker.css";
 import { useReducer, useEffect, useRef } from "react";
-import calendar from "./calendar.svg";
-import { act } from "@testing-library/react";
 
 export default function ReactDateTimePicker(props) {
   // initial value :: begin
