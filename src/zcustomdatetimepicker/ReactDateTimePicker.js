@@ -1,6 +1,7 @@
 import "./zcustomdatetimepicker.css";
 import { useReducer, useEffect, useRef } from "react";
 import calendar from "./calendar.svg";
+import { act } from "@testing-library/react";
 
 export default function ReactDateTimePicker(props) {
   // initial value :: begin
@@ -38,6 +39,7 @@ export default function ReactDateTimePicker(props) {
     validateEnd: true,
     hideError: true,
     hideErrorEnd: true,
+    shownId: "",
   };
   // initial value :: end
 
@@ -358,6 +360,7 @@ export default function ReactDateTimePicker(props) {
         return {
           ...state,
           show: showStart,
+          shownId: action.payload,
         };
       // Toggle the showEnd value based on various conditions
       case "TOGGLE_SHOW_END":
@@ -1333,6 +1336,7 @@ export default function ReactDateTimePicker(props) {
           ...state,
           show: hiddenState,
           showYear: "",
+          shownId: "",
         };
       // basic functionalities of monthOnly :: end
 
@@ -1691,6 +1695,7 @@ export default function ReactDateTimePicker(props) {
     hideErrorEnd,
     isFocused,
     isEndFocused,
+    shownId,
   } = state;
   // reducer hook :: end
 
@@ -1862,7 +1867,7 @@ export default function ReactDateTimePicker(props) {
   const handleShow = () => {
     console.log(`11`);
     if (!props.isDisabled || !props.isReadOnly) {
-      dispatch({ type: "TOGGLE_SHOW" });
+      dispatch({ type: "TOGGLE_SHOW", payload: id });
     }
   };
 
@@ -2004,24 +2009,30 @@ export default function ReactDateTimePicker(props) {
     dispatch({ type: "SHOW_END_ERROR_MSG" });
   };
 
-  const handleDocumentClick = (e) => {
-    if (!e.target.closest(`#${id}`)) {
-      dispatch({ type: "HIDE_CALENDAR" });
-      dispatch({ type: "HIDE_ERROR_MSG" });
-      dispatch({ type: "VALIDATE_START", payload: true });
-      dispatch({ type: "VALIDATE_END", payload: true });
-    }
-  };
-  // handle event listeners :: end
+  let handleDocumentClick;
 
-  // useEffect hook :: begin
+  if (shownId !== "" && id === shownId) {
+    handleDocumentClick = (e) => {
+      if (!e.target.closest(`#${id}`)) {
+        console.log("Dispatch actions");
+        dispatch({ type: "HIDE_CALENDAR" });
+        dispatch({ type: "HIDE_ERROR_MSG" });
+        dispatch({ type: "VALIDATE_START", payload: true });
+        dispatch({ type: "VALIDATE_END", payload: true });
+      }
+    };
+  }
+
+  // ...
 
   useEffect(() => {
-    document.addEventListener("click", handleDocumentClick);
-    return () => {
-      document.removeEventListener("click", handleDocumentClick);
-    };
-  }, []);
+    if (shownId !== "") {
+      document.addEventListener("click", handleDocumentClick);
+      return () => {
+        document.removeEventListener("click", handleDocumentClick);
+      };
+    }
+  }, [shownId]);
 
   let prevBtn = (
     <button className="table-btn prev" onClick={handlePrevious}>
@@ -2047,9 +2058,9 @@ export default function ReactDateTimePicker(props) {
     }
   }, [props.value]);
 
-  useEffect(() => {
-    dispatch({ type: "TOGGLE_SHOW" });
-  }, [props.range]);
+  // useEffect(() => {
+  //   dispatch({ type: "TOGGLE_SHOW" });
+  // }, [props.range]);
 
   // useEffect hook :: end
 

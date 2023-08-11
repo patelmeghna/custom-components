@@ -44,6 +44,7 @@ const MapIndex = () => {
 
     if (drawnShape instanceof L.Marker) {
       const { lat, lng } = drawnShape.getLatLng();
+      console.log(drawnShape);
       shapeObject = { type: "marker", lat, lng };
     } else if (drawnShape instanceof L.CircleMarker) {
       const { lat, lng } = drawnShape.getLatLng();
@@ -99,6 +100,7 @@ const MapIndex = () => {
   const handleEdited = (shape) => {
     leafletIds = Object.keys(shape.layers._layers);
     leafletInfo = shape.layers._layers;
+    console.log(leafletIds);
   };
 
   const handleChangeStart = () => {
@@ -283,16 +285,15 @@ const MapIndex = () => {
     const storedData = JSON.parse(localStorage.getItem("drawnShapes"));
 
     // Remove objects from the array based on leaflet IDs
-    const updatedData =
-      changeShape &&
-      storedData.filter((shape) => !leafletIds.includes(shape.id.toString()));
+    const updatedData = storedData.filter(
+      (shape) => !leafletIds.includes(shape.id.toString())
+    );
 
     // Store the updated array back in localStorage
     if (leafletIds && leafletIds.length > 0) {
+      console.log("updatedData", updatedData);
       localStorage.setItem("drawnShapes", JSON.stringify(updatedData));
       setStoredShapes(updatedData);
-    } else {
-      setStoredShapes(storedData);
     }
   };
 
@@ -424,7 +425,8 @@ const MapIndex = () => {
             rectangle: true,
             polyline: true,
             polygon: true,
-            marker: true,
+            marker: false,
+            circleMarker: true,
           }}
         />
       </FeatureGroup>
