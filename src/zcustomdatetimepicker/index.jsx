@@ -14,6 +14,10 @@ const DateWithResetAndDisabled = () => {
   const [isDisabled, setIsDisabled] = useState(false);
   const [reset, setReset] = useState(false);
 
+  setTimeout(() => {
+    setDateValue("27-10-2023");
+  }, 5000);
+
   return (
     <>
       <ReactDateTimePicker
@@ -239,7 +243,6 @@ const DateTimeUndo = () => {
       setUndoValue((newValue) => newValue.slice(0, -1));
     }
   };
-  console.log(undoValue);
 
   return (
     <>

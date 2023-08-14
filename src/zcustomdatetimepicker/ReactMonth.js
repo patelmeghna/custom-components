@@ -331,7 +331,9 @@ const ReactMonth = (props) => {
         : `${monthValue}/${yearValue}`;
   } else {
     inputValueText =
-      month < 9 ? `0${month + 1}/${changedYear}` : `${month + 1}/${changedYear}`;
+      month < 9
+        ? `0${month + 1}/${changedYear}`
+        : `${month + 1}/${changedYear}`;
   }
 
   // useEffect(() => {
@@ -339,7 +341,7 @@ const ReactMonth = (props) => {
   // }, [month, changedYear]);
 
   const previousValue =
-    month < 9 ? `${changedYear}-0${month }` : `${changedYear}-${month }`;
+    month < 9 ? `${changedYear}-0${month}` : `${changedYear}-${month}`;
 
   useEffect(() => {
     if (!show) {

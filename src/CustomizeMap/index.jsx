@@ -44,6 +44,7 @@ const MapIndex = () => {
 
     if (drawnShape instanceof L.Marker) {
       const { lat, lng } = drawnShape.getLatLng();
+      console.log(drawnShape);
       shapeObject = { type: "marker", lat, lng };
     } else if (drawnShape instanceof L.CircleMarker) {
       const { lat, lng } = drawnShape.getLatLng();
@@ -74,7 +75,6 @@ const MapIndex = () => {
     } else if (drawnShape instanceof L.Polyline) {
       // For Polyline
       shapeObject = { type: "polyline", latlngs: drawnShape.getLatLngs() };
-      console.log("latlng", drawnShape.getLatLngs());
     }
     const id = Object.keys(drawnShape._renderer._layers);
 
@@ -100,7 +100,7 @@ const MapIndex = () => {
   const handleEdited = (shape) => {
     leafletIds = Object.keys(shape.layers._layers);
     leafletInfo = shape.layers._layers;
-    console.log("info array", leafletIds);
+    console.log(leafletIds);
   };
 
   const handleChangeStart = () => {
@@ -127,18 +127,23 @@ const MapIndex = () => {
           setStoredShapes(storedData);
         } else {
           // Handle case where the ID is not found
-          console.error("Object with ID " + id + " not found!");
         }
       }
     }
     let findShape;
-    if (changeShape) {
+    if (leafletIds !== undefined) {
       findShape = storedData.filter((shape) =>
         leafletIds.includes(shape.id.toString())
       );
-    } else {
-      setStoredShapes(storedData);
     }
+    // console.log(findShape);
+    // if (changeShape) {
+    //   findShape = storedData.filter((shape) =>
+    //     leafletIds.includes(shape.id.toString())
+    //   );
+    // } else {
+    //   setStoredShapes(storedData);
+    // }
 
     const remainingLayers = featureGroupRef.current?.getLayers();
 
@@ -153,11 +158,15 @@ const MapIndex = () => {
 
         if (layer instanceof L.Marker) {
           const shapeType = "marker";
-          const matchingShapes = findShape.filter(
-            (shape) => shape.type === shapeType && leafletIds.includes(shape.id)
-          );
+          let matchingShapes;
+          if (leafletIds !== undefined) {
+            matchingShapes = findShape.filter(
+              (shape) =>
+                shape.type === shapeType && leafletIds.includes(shape.id)
+            );
+          }
 
-          if (matchingShapes.length > 0) {
+          if (matchingShapes && matchingShapes.length > 0) {
             matchingShapes.forEach((matchingShape) => {
               updateObjectByIdInLocalStorage(matchingShape.id, {
                 lat: leafletInfo[matchingShape.id]._latlng.lat,
@@ -168,14 +177,19 @@ const MapIndex = () => {
           // console.log("stop", leafletInfo[leafletIds]._latlng);
         } else if (layer instanceof L.CircleMarker) {
           const shapeType = "circleMarker";
-          const matchingShapes =
-            changeShape &&
-            findShape.filter(
-              (shape) =>
-                shape.type === shapeType && leafletIds.includes(shape.id)
-            );
+          const circle = "circle";
+          let matchingShapes, matchingShapesCircle;
+          if (leafletIds !== undefined) {
+            matchingShapes = findShape.filter((shape) => {
+              shape.type === shapeType && leafletIds.includes(shape.id);
+            });
 
-          if (matchingShapes.length > 0) {
+            matchingShapesCircle = findShape.filter(
+              (shape) =>
+                shape.type === "circle" && leafletIds.includes(shape.id)
+            );
+          }
+          if (matchingShapes && matchingShapes.length > 0) {
             matchingShapes.forEach((matchingShape) => {
               updateObjectByIdInLocalStorage(matchingShape.id, {
                 lat: leafletInfo[matchingShape.id]._latlng.lat,
@@ -183,16 +197,26 @@ const MapIndex = () => {
               });
             });
           }
+
+          if (matchingShapesCircle && matchingShapesCircle.length > 0) {
+            matchingShapesCircle.forEach((matchingShape) => {
+              updateObjectByIdInLocalStorage(matchingShape.id, {
+                lat: leafletInfo[matchingShape.id]._latlng.lat,
+                lng: leafletInfo[matchingShape.id]._latlng.lng,
+                radius: leafletInfo[matchingShape.id]._mRadius,
+              });
+            });
+          }
         } else if (layer instanceof L.Circle) {
           const shapeType = "circle";
-          const matchingShapes =
-            changeShape &&
-            findShape.filter(
-              (shape) =>
-                shape.type === shapeType && leafletIds.includes(shape.id)
-            );
+          let matchingShapes;
+          if (leafletIds !== undefined) {
+            matchingShapes = findShape.filter((shape) => {
+              shape.type === shapeType && leafletIds.includes(shape.id);
+            });
+          }
 
-          if (matchingShapes.length > 0) {
+          if (matchingShapes && matchingShapes.length > 0) {
             matchingShapes.forEach((matchingShape) => {
               updateObjectByIdInLocalStorage(matchingShape.id, {
                 lat: leafletInfo[matchingShape.id]._latlng.lat,
@@ -205,14 +229,15 @@ const MapIndex = () => {
           // console.log(shapeType, leafletInfo[leafletIds]);
         } else if (layer instanceof L.Polygon) {
           const shapeType = "polygon";
-          const matchingShapes =
-            changeShape &&
-            findShape.filter(
+          let matchingShapes;
+          if (leafletIds !== undefined) {
+            matchingShapes = findShape.filter(
               (shape) =>
                 shape.type === shapeType && leafletIds.includes(shape.id)
             );
+          }
 
-          if (matchingShapes.length > 0) {
+          if (matchingShapes && matchingShapes.length > 0) {
             matchingShapes.forEach((matchingShape) => {
               const latlngs = leafletInfo[matchingShape.id].getLatLngs()[0]; // Extract the outer ring (main polygon)
               const firstPoint = latlngs[0];
@@ -232,11 +257,14 @@ const MapIndex = () => {
           }
         } else if (layer instanceof L.Polyline) {
           const shapeType = "polyline";
-          const matchingShapes = findShape.filter(
-            (shape) => shape.type === shapeType && leafletIds.includes(shape.id)
-          );
-
-          if (matchingShapes.length > 0) {
+          let matchingShapes;
+          if (leafletIds !== undefined) {
+            matchingShapes = findShape.filter(
+              (shape) =>
+                shape.type === shapeType && leafletIds.includes(shape.id)
+            );
+          }
+          if (matchingShapes && matchingShapes.length > 0) {
             matchingShapes.forEach((matchingShape) => {
               updateObjectByIdInLocalStorage(matchingShape.id, {
                 latlngs: leafletInfo[matchingShape.id].getLatLngs(),
@@ -257,16 +285,15 @@ const MapIndex = () => {
     const storedData = JSON.parse(localStorage.getItem("drawnShapes"));
 
     // Remove objects from the array based on leaflet IDs
-    const updatedData =
-      changeShape &&
-      storedData.filter((shape) => !leafletIds.includes(shape.id.toString()));
+    const updatedData = storedData.filter(
+      (shape) => !leafletIds.includes(shape.id.toString())
+    );
 
     // Store the updated array back in localStorage
     if (leafletIds && leafletIds.length > 0) {
+      console.log("updatedData", updatedData);
       localStorage.setItem("drawnShapes", JSON.stringify(updatedData));
       setStoredShapes(updatedData);
-    } else {
-      setStoredShapes(storedData);
     }
   };
 
@@ -277,7 +304,7 @@ const MapIndex = () => {
     let leaflet_id;
 
     if (featureGroup) {
-      console.log(featureGroup);
+      // console.log(featureGroup);
       featureGroup.clearLayers();
       shapes.forEach((shape) => {
         let layer;
@@ -311,19 +338,13 @@ const MapIndex = () => {
           layer.addTo(featureGroup);
           let tooltipContent;
 
-          if (shape.title) {
-            tooltipContent = `<div><strong>Shape Title:</strong> ${shape.id}</div><div><a href="${linkUrl}" target="_blank">Link</a></div>`;
-          } else {
-            tooltipContent = `<div><strong>Shape Title:</strong> <button onClick="console.log(shape.id)">Click</button></div><div><a href="${linkUrl}" target="_blank">Link</a></div>`;
-          }
+          tooltipContent = `<div><strong>Shape Title:</strong> ${shape.id}</div><div></div>`;
 
           // Add the shape to the featureGroup and attach the tooltip
-          layer.addTo(featureGroup).bindPopup(tooltipContent, {
+          layer.addTo(featureGroup).bindTooltip(tooltipContent, {
             direction: "top", // Adjust the direction of the tooltip as needed
             permanent: true, // Set to 'true' if you want the tooltip to be always visible
           });
-
-          console.log(changeShape);
 
           if (!changeShape) {
             layer.on("click", () => {
@@ -404,7 +425,8 @@ const MapIndex = () => {
             rectangle: true,
             polyline: true,
             polygon: true,
-            marker: true,
+            marker: false,
+            circleMarker: true,
           }}
         />
       </FeatureGroup>

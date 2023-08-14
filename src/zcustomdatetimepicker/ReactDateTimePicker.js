@@ -1,6 +1,5 @@
 import "./zcustomdatetimepicker.css";
 import { useReducer, useEffect, useRef } from "react";
-import calendar from "./calendar.svg";
 
 export default function ReactDateTimePicker(props) {
   // initial value :: begin
@@ -38,6 +37,7 @@ export default function ReactDateTimePicker(props) {
     validateEnd: true,
     hideError: true,
     hideErrorEnd: true,
+    shownId: "",
   };
   // initial value :: end
 
@@ -64,6 +64,7 @@ export default function ReactDateTimePicker(props) {
     let format = props.format || "DD/MM/YYYY";
     const lowercaseValue = value.toLowerCase();
     let lowercaseFormat = format.toLowerCase();
+    console.log("000");
 
     let str = lowercaseFormat
       .replace("dd", "\\d{2}")
@@ -358,6 +359,7 @@ export default function ReactDateTimePicker(props) {
         return {
           ...state,
           show: showStart,
+          shownId: action.payload,
         };
       // Toggle the showEnd value based on various conditions
       case "TOGGLE_SHOW_END":
@@ -1325,10 +1327,15 @@ export default function ReactDateTimePicker(props) {
         };
 
       case "HIDE_CALENDAR":
+        let hiddenState = state.show;
+        if (state.show === "show" || state.show === "show-end") {
+          hiddenState = "";
+        }
         return {
           ...state,
-          show: "",
+          show: hiddenState,
           showYear: "",
+          shownId: "",
         };
       // basic functionalities of monthOnly :: end
 
@@ -1687,6 +1694,7 @@ export default function ReactDateTimePicker(props) {
     hideErrorEnd,
     isFocused,
     isEndFocused,
+    shownId,
   } = state;
   // reducer hook :: end
 
@@ -1790,27 +1798,31 @@ export default function ReactDateTimePicker(props) {
     }
   }
 
-  // console.log(props.range);
   // disable select dropodwn :: end
 
   // handle event listeners :: begin
   const handleFormatChange = () => {
+    console.log("01");
     dispatch({ type: "FORMAT_CHANGE" });
   };
 
   const handleEndFormatChange = () => {
+    console.log("02");
     dispatch({ type: "END_FORMAT_CHANGE" });
   };
 
   const handleEndHourChange = (e) => {
+    console.log("03");
     dispatch({ type: "CHANGE_END_HOUR", payload: e.target.value });
   };
 
   const handleEndMinuteChange = (e) => {
+    console.log("04");
     dispatch({ type: "CHANGE_END_MINUTE", payload: e.target.value });
   };
 
   const handleHourChange = (e) => {
+    console.log("05");
     dispatch({ type: "CHANGE_HOUR", payload: e.target.value });
 
     if (selectedEndHour && e.target.value > selectedEndHour) {
@@ -1819,6 +1831,7 @@ export default function ReactDateTimePicker(props) {
   };
 
   const handleMinuteChange = (e) => {
+    console.log("06");
     dispatch({ type: "CHANGE_MINUTE", payload: e.target.value });
 
     if (selectedEndMinute && e.target.value > selectedEndMinute) {
@@ -1827,6 +1840,7 @@ export default function ReactDateTimePicker(props) {
   };
 
   const handleSecondChange = (e) => {
+    console.log("07");
     dispatch({ type: "CHANGE_SECOND", payload: e.target.value });
 
     if (selectedEndHour && e.target.value > selectedEndSecond) {
@@ -1835,46 +1849,55 @@ export default function ReactDateTimePicker(props) {
   };
 
   const handleEndSecondChange = (e) => {
+    console.log("08");
     dispatch({ type: "CHANGE_END_SECOND", payload: e.target.value });
   };
 
   const handlePrevious = () => {
+    console.log("09");
     dispatch({ type: "PREVIOUS" });
   };
 
   const handleNext = () => {
+    console.log("10");
     dispatch({ type: "NEXT" });
   };
 
   const handleShow = () => {
+    console.log(`11`);
     if (!props.isDisabled || !props.isReadOnly) {
-      dispatch({ type: "TOGGLE_SHOW" });
+      dispatch({ type: "TOGGLE_SHOW", payload: id });
     }
   };
 
   const handleShowEnd = () => {
+    console.log("012");
     if (!props.isDisabled || !props.isReadOnly) {
       dispatch({ type: "TOGGLE_SHOW_END" });
     }
   };
 
   const handleShowClock = () => {
+    console.log("013");
     dispatch({ type: "TOGGLE_SHOW_CLOCK" });
   };
 
   const handleShowEndClock = () => {
+    console.log("014");
     dispatch({ type: "TOGGLE_SHOW_END_CLOCK" });
   };
 
   const handleReset = () => {
+    console.log("015");
     dispatch({ type: "RESET" });
   };
 
-  useEffect(() => {
-    handleReset();
-  }, [props.reset]);
+  // useEffect(() => {
+  //   handleReset();
+  // }, [props.reset]);
 
   const handleStartUndo = () => {
+    console.log("016");
     props.undoClick && props.undoClick();
     // if (props.value && props.value !== null) {
     //   dispatch({ type: "DEFAULT_VALUES" });
@@ -1882,6 +1905,7 @@ export default function ReactDateTimePicker(props) {
   };
 
   const handleEndUndo = () => {
+    console.log("017");
     let next = previousSelectedEndDate[previousSelectedEndDate.length - 2];
 
     if (previousSelectedEndDate.length > 1) {
@@ -1890,19 +1914,26 @@ export default function ReactDateTimePicker(props) {
     }
   };
   const handleEnable = () => {
+    console.log("018");
     props.setIsDisabled(!props.isDisabled);
   };
 
   const handleMonthChange = (e) => {
+    console.log("019");
     dispatch({ type: "CHANGE_MONTH", payload: e.target.value });
   };
 
   const handleYearChange = (e) => {
+    console.log("20");
     dispatch({ type: "CHANGE_YEAR_LIST", payload: e.target.value });
   };
 
   const handleApply = () => {
-    if (show === "show" && selectedStart !== null) {
+    console.log("021");
+    if (show === "show") {
+      if (selectedStart === null) {
+        dispatch({ type: "APPLY_START_DATE" });
+      }
       if ((props.isMinCurrentTime && props.minDate) || props.isMinCurrentTime) {
         if (selectedStart > minCalDate) {
           dispatch({ type: "APPLY" });
@@ -1939,7 +1970,10 @@ export default function ReactDateTimePicker(props) {
       } else {
         dispatch({ type: "APPLY" });
       }
-    } else if (show === "show-end" && selectedEnd !== null) {
+    } else if (show === "show-end") {
+      if (selectedEnd === null) {
+        dispatch({ type: "APPLY_END_DATE" });
+      }
       if (selectedStart.toDateString() === selectedEnd.toDateString()) {
         if (timeFormat === endTimeFormat) {
           if (selectedEndHour >= selectedHour) {
@@ -1964,32 +1998,40 @@ export default function ReactDateTimePicker(props) {
     }
   };
 
-  const handleDocumentClick = (e) => {
-    if (!e.target.closest(`#${id}`)) {
-      dispatch({ type: "HIDE_CALENDAR" });
-      dispatch({ type: "HIDE_ERROR_MSG" });
-      dispatch({ type: "VALIDATE_START", payload: true });
-      dispatch({ type: "VALIDATE_END", payload: true });
-    }
-  };
-
   const handleShowError = () => {
+    console.log("023");
     dispatch({ type: "SHOW_ERROR_MSG" });
   };
 
   const handleShowEndError = () => {
+    console.log("024");
     dispatch({ type: "SHOW_END_ERROR_MSG" });
   };
-  // handle event listeners :: end
 
-  // useEffect hook :: begin
+  let handleDocumentClick;
+
+  if (shownId !== "" && id === shownId) {
+    handleDocumentClick = (e) => {
+      if (!e.target.closest(`#${id}`)) {
+        console.log("Dispatch actions");
+        dispatch({ type: "HIDE_CALENDAR" });
+        dispatch({ type: "HIDE_ERROR_MSG" });
+        dispatch({ type: "VALIDATE_START", payload: true });
+        dispatch({ type: "VALIDATE_END", payload: true });
+      }
+    };
+  }
+
+  // ...
 
   useEffect(() => {
-    document.addEventListener("click", handleDocumentClick);
-    return () => {
-      document.removeEventListener("click", handleDocumentClick);
-    };
-  }, []);
+    if (shownId !== "") {
+      document.addEventListener("click", handleDocumentClick);
+      return () => {
+        document.removeEventListener("click", handleDocumentClick);
+      };
+    }
+  }, [shownId]);
 
   let prevBtn = (
     <button className="table-btn prev" onClick={handlePrevious}>
@@ -2010,22 +2052,16 @@ export default function ReactDateTimePicker(props) {
   }, []);
 
   useEffect(() => {
-    renderCount.current += 1;
-
-    if (renderCount.current === 3) {
-      dispatch({ type: "HIDE_CALENDAR_AT_START" });
-    }
-  });
-
-  useEffect(() => {
     if (props.value && props.value !== null) {
-      dispatch({ type: "DEFAULT_VALUES" });
+      if (!isFocused) {
+        dispatch({ type: "DEFAULT_VALUES" });
+      }
     }
   }, [props.value]);
 
-  useEffect(() => {
-    dispatch({ type: "TOGGLE_SHOW" });
-  }, [props.range]);
+  // useEffect(() => {
+  //   dispatch({ type: "TOGGLE_SHOW" });
+  // }, [props.range]);
 
   // useEffect hook :: end
 
@@ -2538,6 +2574,7 @@ export default function ReactDateTimePicker(props) {
   }, [selectedEnd, selectedStart, time, endTime]);
 
   const handleDayClick = (day) => {
+    console.log("025");
     if (show === "show") {
       previousSelectedStartDate.push(`${year}-${month + 1}-${day}`);
       dispatch({ type: "UNDO_STATE", payload: "start" });
@@ -2670,6 +2707,7 @@ export default function ReactDateTimePicker(props) {
   // Handle the change event of the date input
 
   const handleDateChange = (event) => {
+    console.log("026");
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
 
@@ -3224,6 +3262,7 @@ export default function ReactDateTimePicker(props) {
   // Handle the change event of the EndDate input
 
   const handleEndDateChange = (event) => {
+    console.log("027");
     const value = event.target.value;
     const format = props.format || "DD/MM/YYYY";
 
