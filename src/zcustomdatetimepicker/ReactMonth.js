@@ -136,11 +136,10 @@ const ReactMonth = (props) => {
           selectedMonth: action.selectedMonth,
           show: false,
         };
-
-      case "CHANGE_MONTH_AND_YEAR":
+        
+        case "CHANGE_MONTH_AND_YEAR":
         const [year, month] = action.payload.split("-").map(Number);
         const newDate = new Date(year, month, 1);
-
         return {
           ...state,
           month: newDate.getMonth(),
@@ -340,6 +339,7 @@ const ReactMonth = (props) => {
   //   props.onChange && props.onChange(placeholderText);
   // }, [month, changedYear]);
 
+  console.log('month' , selectedMonth)
   const previousValue =
     month < 9 ? `${changedYear}-0${month}` : `${changedYear}-${month}`;
 

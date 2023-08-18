@@ -15,8 +15,14 @@ const DateWithResetAndDisabled = () => {
   const [reset, setReset] = useState(false);
 
   setTimeout(() => {
-    setDateValue("27-10-2023");
+    setDateValue("28-10-2029");
   }, 5000);
+  const [date ,setDate] = useState([])
+
+  const previousDate = (date) => {
+    console.log('date' , date)
+    setDate(date);
+  }
 
   return (
     <>
@@ -27,12 +33,13 @@ const DateWithResetAndDisabled = () => {
         selectedMode="dateTime"
         onChange={(data) => setDateValue(data)}
         isDisabled={isDisabled}
-        value={dateValue}
+        value={date[date.length]}
+        previousDate={previousDate}
         reset={reset}
         id="disable-reset-demo"
         startTabIndex={"1"}
       />
-      <small>Result: </small> {dateValue}
+      <small>Result: </small> {date[date.length-1]}
       <button
         className="btn btn-secondary mr-2 ml-1 btn-sm"
         onClick={() => setIsDisabled(!isDisabled)}
@@ -55,26 +62,42 @@ const DateWithResetAndDisabled = () => {
 const DateWithMinDateMaxDateNPlaceholder = () => {
   const [dateValue, setDateValue] = useState("");
 
+
+  const [date ,setDate] = useState([])
+
+  const previousDate = (date) => {
+    console.log('date' , date)
+    setDate(date);
+  }
+
   return (
     <>
       <ReactDateTimePicker
         key={2}
-        name="demo-date"
-        format="yyyy/mm/dd"
-        placeholder="Add date in formate of yyyy/mm/dd"
         onChange={(data) => setDateValue(data)}
-        value={dateValue}
+        name="demo-date"
+        format="dd/mm/yyyy"
+        placeholder="Add date in formate of yyyy/mm/dd"
+        value={date[date.length]}
+        previousDate={previousDate}
         id="placeholder-demo"
         minDate="2023-01-14"
-        maxDate="2024-04-19"
+        maxDate="2029-04-19"
       />
-      <small>Result: </small> {dateValue}
+      <small>Result: </small> {date[date.length-1]}
     </>
   );
 };
 
 const DateTime = () => {
   const [dateValue, setDateValue] = useState("");
+
+  const [date ,setDate] = useState([])
+
+  const previousDate = (date) => {
+    console.log('date' , date.length-1)
+    setDate(date);
+  }
 
   return (
     <>
@@ -85,26 +108,28 @@ const DateTime = () => {
         selectedMode="dateTime"
         placeholder="MM/DD/YYYY HH:mm"
         onChange={(data) => setDateValue(data)}
-        value={dateValue}
+        value={date[date.length]}
+        previousDate={previousDate}
         id="datetime-demo"
       />
-      <small>Result: </small> {dateValue}
+      <small>Result: </small> {date[date.length-1]}
     </>
   );
 };
 
 const Month = () => {
   const [monthValue, setMonthValue] = useState("");
-
+ 
+  
   return (
     <>
       <ReactMonth
         key={4}
         name="demo-month"
         id="demo-month"
-        onChange={(data) => setMonthValue(data)}
         value={monthValue}
-      />
+        onChange={(data) => setMonthValue(data)}
+        />
       <small>Result: </small> {monthValue}
     </>
   );
@@ -112,6 +137,10 @@ const Month = () => {
 
 const DateWithValidation = () => {
   const [dateValue, setDateValue] = useState("");
+  const[date ,setDate] = useState([]);
+  const previousDate = (date) => {
+    setDate(date)
+  }
   return (
     <>
       <ReactDateTimePicker
@@ -121,9 +150,10 @@ const DateWithValidation = () => {
         error={true}
         errorMsg="This is invalid selection"
         onChange={(data) => setDateValue(data)}
-        value={dateValue}
+        previousDate={previousDate}
+        value={date[date.length]}
       />
-      <small>Result: </small> {dateValue}
+      <small>Result: </small> {date[date.length-1]}
     </>
   );
 };
@@ -149,7 +179,7 @@ const DatetimeWithRange = () => {
 };
 
 const DateTimeWithDefaultValue = () => {
-  const [defValue, setDefValue] = useState("30/07/2023 15:25:55");
+  const [defValue, setDefValue] = useState("14/07/2023 15:25:55");
 
   return (
     <>
@@ -168,7 +198,7 @@ const DateTimeWithDefaultValue = () => {
 
 const DateTimeRangeWithDefaultValue = () => {
   const [defValue, setDefValue] = useState(
-    "28/07/2023 15:25:55 To 31/07/2023 02:10:00"
+    "24/07/2023 15:25:55 To 29/07/2023 02:10:00"
   );
 
   return (
@@ -188,7 +218,7 @@ const DateTimeRangeWithDefaultValue = () => {
 };
 
 const DateTimeWith12HourFormat = () => {
-  const [defValue, setDefValue] = useState("12/08/2023 03:25:55 PM");
+  const [defValue, setDefValue] = useState("12/08/2018 03:25:55 AM");
 
   return (
     <>
@@ -208,7 +238,11 @@ const DateTimeWith12HourFormat = () => {
 
 const MinDateWithMinCurrentTime = () => {
   const [dateValue, setDateValue] = useState("");
+  const [date ,setDate] = useState([])
 
+  const previousDate = (date) => {
+    setDate(date)
+  }
   return (
     <>
       <ReactDateTimePicker
@@ -216,12 +250,13 @@ const MinDateWithMinCurrentTime = () => {
         name="min-current-time"
         id="min-current-time"
         selectedMode="dateTime"
-        value={dateValue}
+        value={date[date.length]}
+        previousDate={previousDate}
         onChange={(date) => setDateValue(date)}
         minDate={true}
         isMinCurrentTime={true}
       />
-      <small>Result: </small> {dateValue}
+      <small>Result: </small> {date[date.length-1]}
     </>
   );
 };
@@ -229,18 +264,22 @@ const MinDateWithMinCurrentTime = () => {
 const DateTimeUndo = () => {
   const [dateValue, setDateValue] = useState("");
   const [undoValue, setUndoValue] = useState([]);
+ 
 
   const onDateChange = (data) => {
     setDateValue(data);
     if (undoValue[undoValue.length - 1] !== dateValue && dateValue !== null) {
       setUndoValue([...undoValue, dateValue]);
     }
+ console.log('date',setDateValue(data))
+    
   };
 
   const onUndoChange = () => {
     if (undoValue.length >= 2) {
-      setDateValue(undoValue[undoValue.length - 1]);
+      setDateValue(undoValue[undoValue.length - 2]);
       setUndoValue((newValue) => newValue.slice(0, -1));
+    
     }
   };
 

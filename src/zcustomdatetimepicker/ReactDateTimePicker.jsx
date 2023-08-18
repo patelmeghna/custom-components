@@ -1,5 +1,5 @@
 import "./zcustomdatetimepicker.css";
-import { useReducer, useEffect, useRef } from "react";
+import { useReducer, useEffect, useRef, Children } from "react";
 
 export default function ReactDateTimePicker(props) {
   // initial value :: begin
@@ -158,14 +158,12 @@ export default function ReactDateTimePicker(props) {
   }
 
   if (typeof props.minDate !== "boolean") {
-    const date = `${new Date(props.minDate).getFullYear()}-${
-      new Date(props.minDate).getMonth() + 1
-    }-${new Date(props.minDate).getDate()}`;
+    const date = `${new Date(props.minDate).getFullYear()}-${new Date(props.minDate).getMonth() + 1
+      }-${new Date(props.minDate).getDate()}`;
     minCalDate = new Date(date);
   } else {
-    const date = `${new Date().getFullYear()}-${
-      new Date().getMonth() + 1
-    }-${new Date().getDate()}`;
+    const date = `${new Date().getFullYear()}-${new Date().getMonth() + 1
+      }-${new Date().getDate()}`;
     minCalDate = new Date(date);
   }
 
@@ -174,6 +172,7 @@ export default function ReactDateTimePicker(props) {
     switch (action.type) {
       // basic functions :: begin
       case "SET_CURRENT_DATE":
+
         return {
           ...state,
           currentDate: action.payload,
@@ -182,6 +181,7 @@ export default function ReactDateTimePicker(props) {
         };
 
       case "SET_MONTH":
+
         return {
           ...state,
           month: action.payload.getMonth(),
@@ -281,36 +281,48 @@ export default function ReactDateTimePicker(props) {
         };
 
       case "CHANGE_END_HOUR":
+
+
         return {
           ...state,
           selectedEndHour: action.payload,
         };
 
       case "CHANGE_END_MINUTE":
+
+
         return {
           ...state,
           selectedEndMinute: action.payload,
         };
 
       case "CHANGE_END_SECOND":
+
+
         return {
           ...state,
           selectedEndSecond: action.payload,
         };
 
       case "CHANGE_HOUR":
+
+
         return {
           ...state,
           selectedHour: action.payload,
         };
 
       case "CHANGE_MINUTE":
+
+
         return {
           ...state,
           selectedMinute: action.payload,
         };
 
       case "CHANGE_SECOND":
+
+
         return {
           ...state,
           selectedSecond: action.payload,
@@ -374,6 +386,7 @@ export default function ReactDateTimePicker(props) {
               state.show === "" || state.show === "show" ? "show-end" : "";
           }
         }
+        
         return {
           ...state,
           show: showEnd,
@@ -622,7 +635,7 @@ export default function ReactDateTimePicker(props) {
             if (
               state.selectedEnd &&
               state.selectedStart.toDateString() ===
-                state.selectedEnd.toDateString()
+              state.selectedEnd.toDateString()
             ) {
               newEndTimeFormat = "PM";
             }
@@ -1099,7 +1112,8 @@ export default function ReactDateTimePicker(props) {
 
       // apply start date :: begin
       case "APPLY_START_DATE":
-        if (state.show === "show" && state.selectedStart === null) {
+        console.log("app", state)
+        if (state.show === "show" && state.selectedStarzzzt) {
           return {
             ...state,
             selectedStart: new Date(),
@@ -1119,9 +1133,22 @@ export default function ReactDateTimePicker(props) {
 
       // date select :: begin
       case "SELECT_DATE":
+        // console.log("Action Parameters:", action.year, action.month + 1, action.day);
+
+
+
+        const updatedState = {
+          ...state,
+          selectedStart: new Date(action.year, action.month, action.day),
+
+        };
+        console.log("Updated State:", updatedState);
+       
+
+
         let toggle = state.show;
-        let selectedDate;
         if (state.showClock === "" || state.showClock === undefined) {
+          console.log("Current State:", {...state} );
           if (props.range) {
             toggle = "show-end";
           } else {
@@ -1132,6 +1159,9 @@ export default function ReactDateTimePicker(props) {
         const selected =
           new Date(action.year, action.month, action.day) ||
           (props.minDate && minCalDate);
+        
+        console.log('sel', selected)
+       
         if (!props.range) {
           return {
             ...state,
@@ -1140,15 +1170,17 @@ export default function ReactDateTimePicker(props) {
             show: toggle,
           };
         } else {
+
           if (state.show === "show") {
             return {
               ...state,
               selectedStart: selected,
               show:
-                state.showClock === undefined || state.showClock === ""
-                  ? "show-end"
-                  : "show",
+              state.showClock === undefined || state.showClock === ""
+              ? "show-end"
+              : "show",
             };
+       
           } else if (state.show === "show-end") {
             if (state.selectedStart === null) {
               return {
@@ -1163,6 +1195,7 @@ export default function ReactDateTimePicker(props) {
               selected.toDateString() === state.selectedStart.toDateString()
             ) {
               if (!props.clockTimeFormat) {
+
                 if (
                   state.selectedEndHour &&
                   state.selectedHour &&
@@ -1173,9 +1206,8 @@ export default function ReactDateTimePicker(props) {
                     selectedEndHour: state.selectedHour,
                     selectedEndMinute: state.selectedMinute,
                     selectedEndSecond: state.selectedSecond,
-                    endTime: `${state.selectedEndHour}:${
-                      state.selectedEndMinute
-                    }${!props.isSecondHide && `:${state.selectedEndSecond}`}`,
+                    endTime: `${state.selectedEndHour}:${state.selectedEndMinute
+                      }${!props.isSecondHide && `:${state.selectedEndSecond}`}`,
                     selectedEnd: selected,
                   };
                 }
@@ -1192,9 +1224,8 @@ export default function ReactDateTimePicker(props) {
                       ...state,
                       selectedEndMinute: state.selectedMinute,
                       selectedEndSecond: state.selectedSecond,
-                      endTime: `${state.selectedEndHour}:${
-                        state.selectedEndMinute
-                      }${!props.isSecondHide && `:${state.selectedEndSecond}`}`,
+                      endTime: `${state.selectedEndHour}:${state.selectedEndMinute
+                        }${!props.isSecondHide && `:${state.selectedEndSecond}`}`,
                       selectedEnd: selected,
                     };
                   }
@@ -1219,11 +1250,13 @@ export default function ReactDateTimePicker(props) {
                 }
               }
               if (props.clockTimeFormat === "am-pm") {
+
                 if (
                   state.selectedEnd &&
                   state.selectedEnd.toDateString() ===
-                    state.selectedStart.toDateString()
+                  state.selectedStart.toDateString()
                 ) {
+
                   if (
                     state.timeFormat === "AM" &&
                     state.endTimeFormat !== "PM"
@@ -1244,11 +1277,9 @@ export default function ReactDateTimePicker(props) {
                           selectedEndHour: state.selectedHour,
                           selectedEndMinute: state.selectedMinute,
                           selectedEndSecond: state.selectedSecond,
-                          endTime: `${state.selectedEndHour}:${
-                            state.selectedEndMinute
-                          }${
-                            !props.isSecondHide && `:${state.selectedEndSecond}`
-                          } ${state.endTimeFormat}`,
+                          endTime: `${state.selectedEndHour}:${state.selectedEndMinute
+                            }${!props.isSecondHide && `:${state.selectedEndSecond}`
+                            } ${state.endTimeFormat}`,
                           selectedEnd: selected,
                         };
                       }
@@ -1266,12 +1297,10 @@ export default function ReactDateTimePicker(props) {
                             endTimeFormat: state.timeFormat,
                             selectedEndMinute: state.selectedMinute,
                             selectedEndSecond: state.selectedSecond,
-                            endTime: `${state.selectedEndHour}:${
-                              state.selectedEndMinute
-                            }${
-                              !props.isSecondHide &&
+                            endTime: `${state.selectedEndHour}:${state.selectedEndMinute
+                              }${!props.isSecondHide &&
                               `:${state.selectedEndSecond}`
-                            } ${state.endTimeFormat}`,
+                              } ${state.endTimeFormat}`,
                             selectedEnd: selected,
                           };
                         }
@@ -1304,6 +1333,7 @@ export default function ReactDateTimePicker(props) {
               selected.toDateString() === state.selectedStart.toDateString() ||
               selected > state.selectedStart
             ) {
+
               return {
                 ...state,
                 selectedEnd: selected,
@@ -1314,6 +1344,8 @@ export default function ReactDateTimePicker(props) {
               };
             }
           }
+
+
         }
       // date select :: end
 
@@ -1375,7 +1407,7 @@ export default function ReactDateTimePicker(props) {
             state.selectedStart &&
             state.selectedEnd &&
             state.selectedStart.toDateString() ===
-              state.selectedEnd.toDateString()
+            state.selectedEnd.toDateString()
           ) {
             if (props.clockTimeFormat === "am-pm") {
               if (state.endTimeFormat === state.timeFormat) {
@@ -1414,7 +1446,7 @@ export default function ReactDateTimePicker(props) {
             } else {
               if (
                 state.selectedEndHour &&
-                state.selectedEndHour.toString() < state.selectedHour
+                state.selectedEndHour < state.selectedHour
               ) {
                 return {
                   ...state,
@@ -1422,7 +1454,7 @@ export default function ReactDateTimePicker(props) {
                 };
               }
               if (state.selectedEndHour == state.selectedHour) {
-                if (state.selectedEndMinute.toString() < state.selectedMinute) {
+                if (state.selectedEndMinute < state.selectedMinute) {
                   return {
                     ...state,
                     selectedEndMinute: state.selectedMinute,
@@ -1430,7 +1462,7 @@ export default function ReactDateTimePicker(props) {
                 } else if (!props.isSecondHide) {
                   if (state.selectedEndMinute == state.selectedMinute) {
                     if (
-                      state.selectedSecond > state.selectedEndSecond.toString()
+                      state.selectedSecond > state.selectedEndSecond
                     ) {
                       return {
                         ...state,
@@ -1702,6 +1734,7 @@ export default function ReactDateTimePicker(props) {
 
   // Determine the day value based on the selectedStart date or the current date
   if (selectedStart === null) {
+    // console.log('null4',selectedStart === null)
     day = new Date().getDate();
   } else {
     day = selectedStart.getDate();
@@ -1718,9 +1751,8 @@ export default function ReactDateTimePicker(props) {
     selectedSecond
   );
 
-  const dateWithTime = `${year}-${
-    month + 1
-  }-${day} ${selectedHour}:${selectedMinute}:${selectedSecond}`;
+  const dateWithTime = `${year}-${month + 1
+    }-${day} ${selectedHour}:${selectedMinute}:${selectedSecond}`;
 
   const endDay = selectedEnd && selectedEnd.getDate();
   // Create a new Date object with the full end date and time information if endDay is available
@@ -2469,10 +2501,10 @@ export default function ReactDateTimePicker(props) {
   const separator = str.includes("/")
     ? "/"
     : str.includes("-")
-    ? "-"
-    : str.includes(".")
-    ? "."
-    : "";
+      ? "-"
+      : str.includes(".")
+        ? "."
+        : "";
 
   let startDateNumber;
   if (selectedStart?.getDate() < 10) {
@@ -2573,29 +2605,33 @@ export default function ReactDateTimePicker(props) {
     }
   }, [selectedEnd, selectedStart, time, endTime]);
 
-  const handleDayClick = (day) => {
-    console.log("025");
-    if (show === "show") {
-      previousSelectedStartDate.push(`${year}-${month + 1}-${day}`);
-      dispatch({ type: "UNDO_STATE", payload: "start" });
-    } else {
-      previousSelectedEndDate.push(`${year}-${month + 1}-${day}`);
-      dispatch({ type: "UNDO_STATE", payload: "end" });
-    }
+    const handleDayClick = (day) => {
+      console.log("025");
 
-    if (props.minDate && !props.maxDate) {
-      if (
-        new Date(year, month, day) > minCalDate ||
-        new Date(year, month, day).toDateString() === minCalDate.toDateString()
-      ) {
-        dispatch({
-          type: "SELECT_DATE",
-          year,
-          month,
-          day,
-        });
+      if (show === "show") {
+        previousSelectedStartDate.push(`${day}/${month + 1}/${year}`);
+        console.log('selectedDate1',previousSelectedStartDate)
+        props.previousDate && props.previousDate(previousSelectedStartDate)
+        dispatch({ type: "UNDO_STATE", payload: "start" });
+      } else {
+        console.log("fixed")
+        previousSelectedEndDate.push(`${day}/${month + 1}/${year}`);
+        dispatch({ type: "UNDO_STATE", payload: "end" });
       }
-    }
+
+      if (props.minDate && !props.maxDate) {
+        if (
+          new Date(year, month, day) > minCalDate ||
+          new Date(year, month, day).toDateString() === minCalDate.toDateString()
+        ) {
+          dispatch({
+            type: "SELECT_DATE",
+            year,
+            month,
+            day,
+          });
+        }
+      }
 
     if (!props.minDate && props.maxDate) {
       if (
@@ -2612,13 +2648,14 @@ export default function ReactDateTimePicker(props) {
     }
 
     if (props.minDate && props.maxDate) {
+      console.log("bugs")
       if (
         (new Date(year, month, day) < maximumDate ||
           new Date(year, month, day).toDateString() ===
-            maximumDate.toDateString()) &&
+          maximumDate.toDateString()) &&
         (new Date(year, month, day) > minCalDate ||
           new Date(year, month, day).toDateString() ===
-            minCalDate.toDateString())
+          minCalDate.toDateString())
       ) {
         dispatch({
           type: "SELECT_DATE",
@@ -2769,7 +2806,7 @@ export default function ReactDateTimePicker(props) {
           if (
             minCalDate < new Date(rearrangedDateStr) ||
             new Date(rearrangedDateStr).toDateString() ===
-              minCalDate.toDateString()
+            minCalDate.toDateString()
           ) {
             dispatch({
               type: "SET_SELECTED_START",
@@ -2784,7 +2821,7 @@ export default function ReactDateTimePicker(props) {
           if (
             maximumDate > new Date(rearrangedDateStr) ||
             new Date(rearrangedDateStr).toDateString() ===
-              maximumDate.toDateString()
+            maximumDate.toDateString()
           ) {
             dispatch({
               type: "SET_SELECTED_START",
@@ -2798,10 +2835,10 @@ export default function ReactDateTimePicker(props) {
           if (
             (minCalDate < new Date(rearrangedDateStr) ||
               new Date(rearrangedDateStr).toDateString() ===
-                minCalDate.toDateString()) &&
+              minCalDate.toDateString()) &&
             (maximumDate > new Date(rearrangedDateStr) ||
               new Date(rearrangedDateStr).toDateString() ===
-                maximumDate.toDateString())
+              maximumDate.toDateString())
           ) {
             dispatch({
               type: "SET_SELECTED_START",
@@ -3312,10 +3349,10 @@ export default function ReactDateTimePicker(props) {
         if (
           (new Date(rearrangedDateStr) > selectedStart ||
             new Date(rearrangedDateStr).toDateString() ===
-              selectedStart.toDateString()) &&
+            selectedStart.toDateString()) &&
           (new Date(rearrangedDateStr) < maximumDate ||
             new Date(rearrangedDateStr).toDateString() ===
-              maximumDate.toDateString())
+            maximumDate.toDateString())
         ) {
           dispatch({
             type: "SET_SELECTED_END",
@@ -3327,7 +3364,7 @@ export default function ReactDateTimePicker(props) {
         if (
           new Date(rearrangedDateStr) > selectedStart ||
           new Date(rearrangedDateStr).toDateString() ===
-            selectedStart.toDateString()
+          selectedStart.toDateString()
         ) {
           dispatch({
             type: "SET_SELECTED_END",
@@ -3373,7 +3410,6 @@ export default function ReactDateTimePicker(props) {
             capitalMeridiem = amPm.toUpperCase();
           }
         }
-
         if (time.includes(":")) {
           [hour, minute, second] = time.split(":");
         }
@@ -3706,7 +3742,7 @@ export default function ReactDateTimePicker(props) {
             <div className="calendar-header">
               <>
                 {month === minCalDate.getMonth() &&
-                year === minCalDate.getFullYear() ? (
+                  year === minCalDate.getFullYear() ? (
                   <button
                     disabled
                     className="table-btn prev"
@@ -3743,7 +3779,7 @@ export default function ReactDateTimePicker(props) {
                   </select>
                 </div>
                 {month === maximumDate.getMonth() &&
-                year === maximumDate.getFullYear() ? (
+                  year === maximumDate.getFullYear() ? (
                   <button
                     disabled
                     className="table-btn next"
@@ -3800,53 +3836,50 @@ export default function ReactDateTimePicker(props) {
                           return (
                             <td
                               key={j}
-                              className={`day ${
-                                day < 1 ||
-                                day > lastDayOfMonth ||
-                                currentDate < minCalDate ||
-                                currentDate > maximumDate
+                              className={`day ${day < 1 ||
+                                  day > lastDayOfMonth ||
+                                  currentDate < minCalDate ||
+                                  currentDate > maximumDate
                                   ? "disabled"
                                   : selectedStart &&
                                     selectedEnd &&
                                     selectedStart <=
-                                      new Date(year, month, day) &&
+                                    new Date(year, month, day) &&
                                     selectedEnd >= new Date(year, month, day)
-                                  ? day === selectedStart.getDate() &&
-                                    month === selectedStart.getMonth() &&
-                                    year === selectedStart.getFullYear()
-                                    ? "first-date"
-                                    : day === selectedEnd.getDate() &&
-                                      month === selectedEnd.getMonth() &&
-                                      year === selectedEnd.getFullYear() &&
-                                      props.range
-                                    ? "last-date"
-                                    : props.range && "in-range"
-                                  : selectedStart &&
-                                    selectedStart.getDate() === day &&
-                                    selectedStart.getMonth() === month &&
-                                    selectedStart.getFullYear() === year
-                                  ? "start-range"
-                                  : selectedEnd &&
-                                    selectedEnd.getTime() ===
-                                      new Date(year, month, day).getTime()
-                                  ? "end-range"
-                                  : day === currentDate.getDate() &&
-                                    month === currentDate.getMonth() &&
-                                    year === currentDate.getFullYear()
-                                  ? "current"
-                                  : ""
-                              } ${currentDate < minCalDate ? "disabled" : ""} ${
-                                currentDate > maximumDate ? "disabled" : ""
-                              }${
-                                selectedStart &&
-                                new Date(year, month, day) < selectedStart &&
-                                new Date(year, month, day).toDateString() !==
+                                    ? day === selectedStart.getDate() &&
+                                      month === selectedStart.getMonth() &&
+                                      year === selectedStart.getFullYear()
+                                      ? "first-date"
+                                      : day === selectedEnd.getDate() &&
+                                        month === selectedEnd.getMonth() &&
+                                        year === selectedEnd.getFullYear() &&
+                                        props.range
+                                        ? "last-date"
+                                        : props.range && "in-range"
+                                    : selectedStart &&
+                                      selectedStart.getDate() === day &&
+                                      selectedStart.getMonth() === month &&
+                                      selectedStart.getFullYear() === year
+                                      ? "start-range"
+                                      : selectedEnd &&
+                                        selectedEnd.getTime() ===
+                                        new Date(year, month, day).getTime()
+                                        ? "end-range"
+                                        : day === currentDate.getDate() &&
+                                          month === currentDate.getMonth() &&
+                                          year === currentDate.getFullYear()
+                                          ? "current"
+                                          : ""
+                                } ${currentDate < minCalDate ? "disabled" : ""} ${currentDate > maximumDate ? "disabled" : ""
+                                }${selectedStart &&
+                                  new Date(year, month, day) < selectedStart &&
+                                  new Date(year, month, day).toDateString() !==
                                   selectedStart.toDateString()
                                   ? show === "show-end"
                                     ? "disabled"
                                     : ""
                                   : ""
-                              }`}
+                                }`}
                               onClick={() => handleDayClick(day)}
                             >
                               {day > 0 && day <= lastDayOfMonth ? day : ""}
@@ -3861,13 +3894,12 @@ export default function ReactDateTimePicker(props) {
 
             {/* ===== display value :: begin ===== */}
             <div
-              className={`time-range-wrap ${
-                show === "show"
+              className={`time-range-wrap ${show === "show"
                   ? showClock === "show" && "show"
                   : show === "show-end"
-                  ? showEndClock === "show" && "show-end"
-                  : ""
-              }`}
+                    ? showEndClock === "show" && "show-end"
+                    : ""
+                }`}
             >
               <div className="time-wrap">
                 {props.selectedMode === "dateTime" && (
@@ -3878,8 +3910,8 @@ export default function ReactDateTimePicker(props) {
                         show === "show"
                           ? handleShowClock
                           : show === "show-end"
-                          ? handleShowEndClock
-                          : undefined
+                            ? handleShowEndClock
+                            : undefined
                       }
                     >
                       🕒
@@ -4003,11 +4035,9 @@ export default function ReactDateTimePicker(props) {
         {/* ===== display value :: begin ===== */}
         <div className={props.range && "date-selection-input-wrap"}>
           <div
-            className={`text-box ${props.isDisabled ? "disabled" : ""} ${
-              show === "show" ? "focus" : ""
-            } ${props.isReadOnly ? "read-only" : ""} ${
-              validateStart ? "" : "error"
-            }`}
+            className={`text-box ${props.isDisabled ? "disabled" : ""} ${show === "show" ? "focus" : ""
+              } ${props.isReadOnly ? "read-only" : ""} ${validateStart ? "" : "error"
+              }`}
             disabled={props.isDisabled || props.isReadOnly}
           >
             {state.isFocused ? (
@@ -4018,15 +4048,14 @@ export default function ReactDateTimePicker(props) {
                 onBlur={handleBlur}
                 onClick={handleShow}
                 autoComplete="off"
-                className={`${selectedStart ? "selected" : ""} ${
-                  validateStart ? "error" : ""
-                }`}
+                className={`${selectedStart ? "selected" : ""} ${validateStart ? "error" : ""
+                  }`}
                 placeholder={
                   props.placeholder
                     ? props.placeholder
                     : props.format
-                    ? props.format
-                    : "DD/MM/YYYY"
+                      ? props.format
+                      : "DD/MM/YYYY"
                 }
                 disabled={props.isDisabled || props.isReadOnly}
                 name={props.name}
@@ -4040,15 +4069,14 @@ export default function ReactDateTimePicker(props) {
                 onBlur={handleBlur}
                 onClick={handleShow}
                 autoComplete="off"
-                className={`${selectedStart ? "selected" : ""} ${
-                  validateStart ? "error" : ""
-                }`}
+                className={`${selectedStart ? "selected" : ""} ${validateStart ? "error" : ""
+                  }`}
                 placeholder={
                   props.placeholder
                     ? props.placeholder
                     : props.format
-                    ? props.format
-                    : "DD/MM/YYYY"
+                      ? props.format
+                      : "DD/MM/YYYY"
                 }
                 disabled={props.isDisabled || props.isReadOnly}
                 name={props.name}
@@ -4133,7 +4161,7 @@ export default function ReactDateTimePicker(props) {
                 width="511.634px"
                 height="511.634px"
                 viewBox="0 0 511.634 511.634"
-                // style="enable-background:new 0 0 511.634 511.634;"
+              // style="enable-background:new 0 0 511.634 511.634;"
               >
                 <g>
                   <path
@@ -4173,11 +4201,9 @@ export default function ReactDateTimePicker(props) {
           <div
             className={
               props.range
-                ? `text-box ${props.isDisabled ? "disabled" : ""} ${
-                    show === "show-end" ? "focus" : ""
-                  } ${props.isReadOnly ? "read-only" : ""} ${
-                    validateEnd ? "" : "error"
-                  }`
+                ? `text-box ${props.isDisabled ? "disabled" : ""} ${show === "show-end" ? "focus" : ""
+                } ${props.isReadOnly ? "read-only" : ""} ${validateEnd ? "" : "error"
+                }`
                 : "d-none"
             }
             disabled={props.isDisabled || props.isReadOnly}
@@ -4195,8 +4221,8 @@ export default function ReactDateTimePicker(props) {
                   props.placeholder
                     ? props.placeholder
                     : props.format
-                    ? props.format
-                    : "DD/MM/YYYY"
+                      ? props.format
+                      : "DD/MM/YYYY"
                 }
                 disabled={props.isDisabled || props.isReadOnly}
                 readOnly={selectedStart === null ? true : false}
@@ -4220,8 +4246,8 @@ export default function ReactDateTimePicker(props) {
                   props.placeholder
                     ? props.placeholder
                     : props.format
-                    ? props.format
-                    : "DD/MM/YYYY"
+                      ? props.format
+                      : "DD/MM/YYYY"
                 }
                 tabIndex={props.endTabIndex}
               />
@@ -4303,7 +4329,7 @@ export default function ReactDateTimePicker(props) {
                 width="511.634px"
                 height="511.634px"
                 viewBox="0 0 511.634 511.634"
-                // style="enable-background:new 0 0 511.634 511.634;"
+              // style="enable-background:new 0 0 511.634 511.634;"
               >
                 <g>
                   <path
